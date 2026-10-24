@@ -1,19 +1,42 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.pure';
+import type { Quaternion } from '@babylonjs/core/Maths/math.vector.pure';
+import type { Nullable } from '@babylonjs/core/types';
 import { City } from './city';
-import { MapData } from './data';
+import { CityID, CityLinks, MapData } from './data';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.pure';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.pure';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture.pure';
+import { QuaternionFromYZAxisToRef } from 'babylonjs-tiaratumgames-tools';
+import { Axis } from '@babylonjs/core/Maths/math.axis';
+import { BlackColor, LandColor, WaterColor } from './constants';
 
 export abstract class MapProjection {
 
-    abstract projectToRef(lat: number, long: number, ref: Vector3): Vector3;
+    public cityDistance: number = 3;
+    public hoverDistance: number = 0.075;
+
+    public abstract projectToRef(lat: number, long: number, ref: Vector3): Vector3;
+
+    public constraintRef(ref: Vector3, quat?: Nullable<Quaternion>): Vector3 {
+        return ref;
+    }
+
+    public constraintHoveredRef(ref: Vector3, quat?: Nullable<Quaternion>): Vector3 {
+        return ref;
+    }
 }
 
 export class SphericalProjection extends MapProjection {
 
-    projectToRef(lat: number, long: number, ref: Vector3): Vector3 {
-        const radius = 2;
+    public radius: number = 10;
+
+    constructor(radius: number) {
+        super();
+        this.radius = radius;
+    }
+
+    public projectToRef(lat: number, long: number, ref: Vector3): Vector3 {
+        const radius = this.radius;
         const latRad = lat * (Math.PI / 180);
         const longRad = long * (Math.PI / 180);
         ref.x = radius * Math.sin(longRad) * Math.cos(latRad);
@@ -21,31 +44,113 @@ export class SphericalProjection extends MapProjection {
         ref.z = - radius * Math.cos(longRad) * Math.cos(latRad);
         return ref;
     }
+
+    public override constraintRef(ref: Vector3, quat?: Nullable<Quaternion>): Vector3 {
+        const length = ref.length();
+        if (length > 0) {
+            ref.scaleInPlace(this.radius / length);
+        }
+        if (quat) {
+            QuaternionFromYZAxisToRef(ref, Axis.Y, quat);
+        }
+        return ref;
+    }
+
+    public override constraintHoveredRef(ref: Vector3, quat?: Nullable<Quaternion>): Vector3 {
+        const length = ref.length();
+        if (length > 0) {
+            ref.scaleInPlace((this.radius + this.hoverDistance) / length);
+        }
+        if (quat) {
+            QuaternionFromYZAxisToRef(ref, Axis.Y, quat);
+        }
+        return ref;
+    }
 }
 
 export class PandemikMap {
 
-    public projection: MapProjection = new SphericalProjection();
+    public projection: MapProjection = new SphericalProjection(10);
     public cities: City[] = [];
 
     constructor() {
 
         let zero = MeshBuilder.CreateSphere("base", { diameter: 0.2 });
-        zero.position.z = -2;
+        zero.position.z = - 1;
+        this.projection.constraintRef(zero.position);
     
-        let base = MeshBuilder.CreateSphere("base", { diameter: 4 });
+        let base = MeshBuilder.CreateSphere("base", { diameter: 20 });
         base.rotation.y = Math.PI / 2;
         base.rotation.z = Math.PI;
+
         let baseMaterial = new StandardMaterial("base-material");
-        baseMaterial.diffuseTexture = new Texture("image.png", null, false, true);
+        let imgElement = document.createElement("img");
+        imgElement.src = "image-4.png";
+        imgElement.onload = () => {
+            let canvas = document.createElement("canvas");
+            canvas.width = imgElement.width;
+            canvas.height = imgElement.height;
+            let ctx = canvas.getContext("2d");
+            if (ctx) {
+                ctx.drawImage(imgElement, 0, 0);
+                let pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                for (let n = 0; n < pixelData.data.length; n+=4) {
+                    let r = pixelData.data[n];
+                    let g = pixelData.data[n+1];
+                    let b = pixelData.data[n+2];
+                    if (g === 255 && r === 0 && b === 0) {
+                        pixelData.data[n] = WaterColor.r * 255;
+                        pixelData.data[n+1] = WaterColor.g * 255;
+                        pixelData.data[n+2] = WaterColor.b * 255;
+                    }
+                    else if (b === 255 && r === 0 && g === 0) {
+                        pixelData.data[n] = BlackColor.r * 255;
+                        pixelData.data[n+1] = BlackColor.g * 255;
+                        pixelData.data[n+2] = BlackColor.b * 255;
+                    }
+                }
+                ctx.putImageData(pixelData, 0, 0);
+            }
+            baseMaterial.diffuseTexture = new Texture(canvas.toDataURL(), null, false, true);
+        };
+        baseMaterial.specularColor.copyFromFloats(0, 0, 0);
+        baseMaterial.emissiveColor.copyFromFloats(0, 0, 0);
         base.material = baseMaterial;
 
-        for (const cityData of MapData.cities) {
-            const city = new City(this, cityData.name, null);
-            city.lat = cityData.lat;
-            city.long = cityData.long;
-            this.projection.projectToRef(city.lat, city.long, city.position);
-            this.cities.push(city);
+        for (let cityId = 0; cityId < CityID.LAST; cityId++) {
+            const cityData = MapData.cities[cityId];
+            if (cityData) {
+                const city = new City(this, cityId, cityData.name, null);
+                city.lat = cityData.lat;
+                city.long = cityData.long;
+                this.cities.push(city);
+            }
+            else {
+                console.warn(`City data not found for cityId: ${cityId}`);
+            }
+        }
+
+        for (const link of CityLinks.links) {
+            let city1 = this.cities.find(c => c.cityId === link.city1);
+            let city2 = this.cities.find(c => c.cityId === link.city2);
+            if (city1 && city2) {
+                City.Connect(city1, city2);
+            }
+            else {
+                console.warn(`City link not found: ${link.city1} - ${link.city2}`);
+            }
+        }
+
+        for (const city of this.cities) {
+            city.updatePosition();
+        }
+    }
+
+    private cityIndex: number = 0;
+    public update(): void {
+        for (let n = 0; n < 5; n++) {
+            this.cities[this.cityIndex].stepUpdate();
+            this.cityIndex = (this.cityIndex + 1) % this.cities.length;
         }
     }
 }

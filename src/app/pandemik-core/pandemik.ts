@@ -34,6 +34,7 @@ export class Pandemik {
     }
     public gameCamera: ArcRotateCamera | null = null;
     public ambientLight: HemisphericLight | null = null;
+    public map: PandemikMap | null = null;
 
     constructor() {
         
@@ -48,14 +49,16 @@ export class Pandemik {
         })();
 
         this.scene = new Scene(this.engine);
-        this.scene.clearColor.set(0, 0, 0, 1);
+        this.scene.clearColor.set(1, 1, 1, 1);
 
-        this.gameCamera = new ArcRotateCamera("game-camera", Math.PI / 2, Math.PI / 2, 10, Vector3.Zero(), this.scene);
+        this.gameCamera = new ArcRotateCamera("game-camera", - Math.PI / 2, Math.PI / 2, 20, Vector3.Zero(), this.scene);
         this.gameCamera.attachControl(canvas, true);
 
-        this.ambientLight = new HemisphericLight("hemispheric-light", (new Vector3(2, 3, 1)).normalize(), this.scene);
+        this.ambientLight = new HemisphericLight("hemispheric-light", (new Vector3(2, 1, 3)).normalize(), this.scene);
+        this.ambientLight.groundColor.copyFromFloats(0.5, 0.5, 0.5);
+        this.ambientLight.diffuse.copyFromFloats(1, 1, 1);
 
-        let test = new PandemikMap();
+        this.map = new PandemikMap();
     }
 
     public start() {
@@ -70,7 +73,9 @@ export class Pandemik {
         let rawDT = this.scene ? this.scene.deltaTime / 1000 : 0;
         let fps = 1 / rawDT;
         if (isFinite(fps)) {
-            
+            if (this.map) {
+                this.map.update();
+            }
         }
     }
 }
