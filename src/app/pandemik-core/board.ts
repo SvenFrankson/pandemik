@@ -11,7 +11,11 @@ import { Axis } from '@babylonjs/core/Maths/math.axis';
 import { BlackColor, LandColor, WaterColor } from './constants';
 import { Mesh } from '@babylonjs/core/Meshes/mesh.pure';
 import { Pandemik } from './pandemik';
-import { QuickMaterial } from './tools';
+import { MakeOutline, QuickMaterial } from './tools';
+import { Color3 } from '@babylonjs/core/Maths/math.color.pure';
+import { Material } from '@babylonjs/core/Materials/material.pure';
+import { PBRMetallicRoughnessMaterial } from '@babylonjs/core/Materials/PBR/pbrMetallicRoughnessMaterial.pure';
+import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture.pure';
 
 export abstract class MapProjection {
 
@@ -71,7 +75,7 @@ export class SphericalProjection extends MapProjection {
     }
 }
 
-export class PandemikMap {
+export class Board {
 
     public projection: MapProjection = new SphericalProjection(10);
 
@@ -79,9 +83,92 @@ export class PandemikMap {
     public cities: City[] = [];
 
     public tokenMeshData: IMeshData[] | null = null;
-    public materials: StandardMaterial[] = [];
+    public environmentTexture: CubeTexture;
+    public frameMaterial: Material;
+    public alertFrameMaterials: PBRMetallicRoughnessMaterial[] = [];
+    public darkFrameMaterial: Material;
+    public infectionMaterial: Material;
+    public infectionMaterials: Material[] = [];
+    public cityMaterial: Material;
+    public alertCityMaterials: Material[] = [];
+    public plasticMaterials: Material[] = [];
+
+    private _makePlasticPBR(name: string, color: Color3, envTexture: CubeTexture): Material {
+        let plastic = new PBRMetallicRoughnessMaterial(name, this.pandemik.scene!);
+        plastic.baseColor = color;
+        plastic.roughness = 1;
+        plastic.environmentTexture = envTexture;
+
+        return plastic;
+    }
+
+    private _makeMetalPBR(name: string, color: Color3, envTexture: CubeTexture): Material {
+        let metalMaterial = new PBRMetallicRoughnessMaterial(name, this.pandemik.scene!);
+        metalMaterial.baseColor = color;
+        metalMaterial.metallic = 0.85;
+        metalMaterial.roughness = 0.15;
+        metalMaterial.environmentTexture = envTexture;
+
+        return metalMaterial;
+    }
 
     constructor(public pandemik: Pandemik) {
+        this.environmentTexture = CubeTexture.CreateFromPrefilteredData("environmentSpecular.env", this.pandemik.scene!);
+
+        let steelMaterialPBR = new PBRMetallicRoughnessMaterial("steel-pbr", this.pandemik.scene!);
+        steelMaterialPBR.baseColor = new Color3(0.5, 0.75, 1.0);
+        steelMaterialPBR.metallic = 1.0;
+        steelMaterialPBR.roughness = 0.15;
+        steelMaterialPBR.environmentTexture = this.environmentTexture;
+        this.frameMaterial = steelMaterialPBR;
+        
+        let alert1FrameMaterialPBR = this._makeMetalPBR("alert-1", Color3.FromHexString("#ccc127"), this.environmentTexture) as PBRMetallicRoughnessMaterial;
+        //alert1FrameMaterialPBR.emissiveColor = Color3.White().scale(0.05);
+        this.alertFrameMaterials.push(alert1FrameMaterialPBR);
+        
+        let alert2FrameMaterialPBR = this._makeMetalPBR("alert-2", Color3.FromHexString("#c77a21"), this.environmentTexture) as PBRMetallicRoughnessMaterial;
+        //alert2FrameMaterialPBR.emissiveColor = Color3.White().scale(0.05);
+        this.alertFrameMaterials.push(alert2FrameMaterialPBR);
+        
+        let alert3FrameMaterialPBR = this._makeMetalPBR("alert-3", Color3.FromHexString("#c52828"), this.environmentTexture) as PBRMetallicRoughnessMaterial;
+        //alert3FrameMaterialPBR.emissiveColor = Color3.White().scale(0.05);
+        this.alertFrameMaterials.push(alert3FrameMaterialPBR);
+
+        let darkSteelMaterialPBR = new PBRMetallicRoughnessMaterial("dark-steel-pbr", this.pandemik.scene!);
+        darkSteelMaterialPBR.baseColor = new Color3(0.5, 0.75, 1.0).scale(0.3);
+        darkSteelMaterialPBR.metallic = 0.7;
+        darkSteelMaterialPBR.roughness = 0.3;
+        darkSteelMaterialPBR.environmentTexture = this.environmentTexture;
+        this.darkFrameMaterial = darkSteelMaterialPBR;
+
+        let infectionMaterial = QuickMaterial(Color3.White(), 0, Color3.White().scale(0.5));
+        infectionMaterial.diffuseTexture = new Texture("virus.png", this.pandemik.scene!, undefined, false);
+        infectionMaterial.diffuseTexture.hasAlpha = true;
+        infectionMaterial.useAlphaFromDiffuseTexture = true;
+        this.infectionMaterial = infectionMaterial;
+
+        for (let i = 0; i <= 3; i++) {   
+            let mat = QuickMaterial(CityColor3s[i], 0, CityColor3s[i].scale(0.5));
+            mat.diffuseTexture = new Texture("virus.png", this.pandemik.scene!, undefined, false);
+            mat.diffuseTexture.hasAlpha = true;
+            mat.useAlphaFromDiffuseTexture = true;
+            this.infectionMaterials.push(mat);
+        }
+
+        let cityMaterial = QuickMaterial(Color3.White(), 0, Color3.Red());
+        cityMaterial.diffuseTexture = new Texture("biohazard.png", this.pandemik.scene!, undefined, false);
+        cityMaterial.diffuseTexture.hasAlpha = true;
+        cityMaterial.useAlphaFromDiffuseTexture = true;
+        this.cityMaterial = cityMaterial;
+
+        for (let i = 0; i < 3; i++) {
+            let alertCityMaterial = QuickMaterial(Color3.White(), 0, Color3.Red().scale((i + 1) / 3).scale(0.5));
+            alertCityMaterial.diffuseTexture = new Texture("biohazard.png", this.pandemik.scene!, undefined, false);
+            alertCityMaterial.diffuseTexture.hasAlpha = true;
+            alertCityMaterial.useAlphaFromDiffuseTexture = true;
+            this.alertCityMaterials.push(alertCityMaterial);
+        }
+        
         let zero = MeshBuilder.CreateSphere("base", { diameter: 0.2 });
         zero.position.z = - 1;
         this.projection.constraintRef(zero.position);
@@ -130,14 +217,13 @@ export class PandemikMap {
         this.tokenMeshData = await GetGLTFMeshDataArray("token.gltf", this.pandemik.scene!);
         this.tokenMeshData?.sort((a, b) => a.name.localeCompare(b.name));
 
-        this.materials = [];
+        this.plasticMaterials = [];
         for (let n = 0; n < CityColor3s.length; n++) {
-            let mat = QuickMaterial(CityColor3s[n]);
-            this.materials.push(mat);
+            this.plasticMaterials[n] = this._makePlasticPBR("", CityColor3s[n], this.environmentTexture);
         }
 
         for (let cityId = 0; cityId < CityID.LAST; cityId++) {
-            const cityData = MapData.cities[cityId];
+            const cityData = MapData[cityId];
             if (cityData) {
                 const city = new City(this, cityId, cityData.color, cityData.name, null);
                 city.lat = cityData.lat;
@@ -165,7 +251,25 @@ export class PandemikMap {
         }
     }
 
+    public onceStabilized(callback: () => void): void {
+        if (this.stabilized) {
+            callback();
+        }
+        else {
+            const loop = () => {
+                if (this.stabilized) {
+                    callback();
+                }
+                else {
+                    requestAnimationFrame(loop);
+                }
+            }
+            loop();
+        }
+    }
+
     private cityIndex: number = 0;
+    private _timer: number = 0;
     private stability: number = 0;
     private smoothness: number = 100;
     private stabilized: boolean = false;
@@ -184,6 +288,12 @@ export class PandemikMap {
                 }
             }
         }
+
+        //this._timer += this.pandemik.scene!.deltaTime / 1000;
+        //let f = (Math.sin(0.5 * this._timer * Math.PI * 2) + 1) / 2;
+        //let f2 = (Math.sin(0.25 * this._timer * Math.PI * 2) + 1) / 2;
+        //this.frameMaterialAlert.emissiveColor = new Color3(1.0, 0.0, 0.0).scale(f * f2);
+        
         for (let n = 0; n < this.cities.length; n++) {
             this.cities[n].update();
         }

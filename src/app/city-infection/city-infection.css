@@ -1,0 +1,31 @@
+div {
+	position: fixed;
+    width: 100px;
+    transform: translate(-50%, -100%);
+    z-index: 1;
+    border: 1px solid black;
+    border-radius: 4px;
+    color: black;
+    background-color: white;
+
+    margin: 0;
+    padding: 0px 4px;
+    font-size: 12px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, serif;
+    font-weight: 900;
+
+    pointer-events: none;
+    user-select: none;
+}
+
+div.city-infection-1 {
+    background-color: yellow;
+}
+
+div.city-infection-2 {
+    background-color: orange;
+}
+
+div.city-infection-3 {
+    background-color: red;
+}

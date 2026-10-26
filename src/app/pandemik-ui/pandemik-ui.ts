@@ -1,13 +1,14 @@
 import { Component, signal } from '@angular/core';
 import { Pandemik as Pandemik } from '../pandemik-core/pandemik';
 import { CityNametag } from '../city-nametag/city-nametag';
+import { CityInfection } from '../city-infection/city-infection';
 import { City } from '../pandemik-core/city';
 
 @Component({
   selector: 'app-pandemik-ui',
   templateUrl: './pandemik-ui.html',
   styleUrls: ['./pandemik-ui.css'],
-  imports: [CityNametag],
+  imports: [CityNametag, CityInfection],
 })
 export class PandemikUi {
 

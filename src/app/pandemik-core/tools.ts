@@ -4,11 +4,11 @@ import { Mesh } from "@babylonjs/core/Meshes/mesh.pure";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector.pure";
 
 
-export function QuickMaterial(color: Color3, specularIntensity: number = 0, emissiveIntensity: number = 0) {
+export function QuickMaterial(color: Color3, specularIntensity: number = 0, emissiveColor: Color3 = Color3.Black()) {
     const material = new StandardMaterial("quickMaterial");
     material.diffuseColor = color;
     material.specularColor.set(specularIntensity, specularIntensity, specularIntensity);
-    material.emissiveColor.set(emissiveIntensity, emissiveIntensity, emissiveIntensity);
+    material.emissiveColor = emissiveColor;
     return material;
 }
 

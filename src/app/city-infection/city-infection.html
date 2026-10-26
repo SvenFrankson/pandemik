@@ -1,0 +1,16 @@
+@for(infection of city().infections; track infection) {
+    @if (infection() > 0) {
+        <div class="city-infection-{{ infection().toFixed(0) }}" [style.left.px]="city().screenNorthX()" [style.top.px]="city().screenNorthY()" [style.opacity]="city().opacity()">
+            <i class="bi bi-virus" aria-hidden="true"></i>
+            @if (infection() === 1) {
+                CONTAINED
+            }
+            @if (infection() === 2) {
+                OUTBREAK
+            }
+            @if (infection() === 3) {
+                UNCONTROLLED
+            }
+        </div>
+    }
+}

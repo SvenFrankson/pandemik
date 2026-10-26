@@ -17,13 +17,15 @@
     "@angular/forms": "^21.2.0",
     "@angular/platform-browser": "^21.2.0",
     "@angular/router": "^21.2.0",
-    "rxjs": "~7.8.0",
-    "tslib": "^2.3.0",
     "@babylonjs/core": "*",
     "@babylonjs/inspector": "*",
     "@babylonjs/loaders": "*",
     "@types/earcut": "^3.0.0",
-    "babylonjs-tiaratumgames-tools": "^0.1.13"
+    "babylonjs-tiaratumgames-tools": "^0.1.13",
+    "bootstrap": "^6.0.0-alpha.1",
+    "bootstrap-icons": "^1.13.2",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@angular/build": "^21.2.16",

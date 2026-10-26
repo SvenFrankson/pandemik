@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Scene } from "@babylonjs/core/scene.pure";
-import { PandemikMap } from "./pandemik-map";
+import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
+import { Board } from "./board";
 import type { AudioEngineV2 } from "@babylonjs/core/AudioV2/abstractAudio/audioEngineV2";
 import { CreateAudioEngineAsync } from "@babylonjs/core/AudioV2/webAudio/webAudioEngine";
 import type { SpotLight } from "@babylonjs/core/Lights/spotLight.pure";
@@ -9,6 +10,9 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector.pure";
 import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera.pure";
 import { Engine } from "@babylonjs/core/Engines/engine.pure";
 import { HemisphericLight } from "@babylonjs/core";
+import { InfectionCard } from "./deck/infection-card";
+import { Deck } from "./deck/deck";
+import { CityID } from "./data";
 
 @Injectable({
 	providedIn: 'root',
@@ -34,7 +38,10 @@ export class Pandemik {
     }
     public gameCamera: ArcRotateCamera | null = null;
     public ambientLight: HemisphericLight | null = null;
-    public map: PandemikMap | null = null;
+    public glowLayer: GlowLayer | null = null;
+
+    public map: Board | null = null;
+    public infectionDeck: Deck<InfectionCard> | null = null;
 
     constructor() {
         
@@ -42,14 +49,13 @@ export class Pandemik {
 
     public async initialize(canvas: HTMLCanvasElement): Promise<void> {
         this.canvas = canvas;
-        this.engine = new Engine(canvas, true);
-        this.engine.disableUniformBuffers = true;
+        this.engine = new Engine(canvas, true, undefined, true);
         (async () => {
             this.audioEngine = await CreateAudioEngineAsync();
         })();
 
         this.scene = new Scene(this.engine);
-        this.scene.clearColor.set(1, 1, 1, 1);
+        this.scene.clearColor.set(0, 0, 0, 0);
 
         this.gameCamera = new ArcRotateCamera("game-camera", - Math.PI / 2, Math.PI / 2, 30, Vector3.Zero(), this.scene);
         this.gameCamera.wheelPrecision *= 2;
@@ -59,8 +65,43 @@ export class Pandemik {
         this.ambientLight.groundColor.copyFromFloats(0.5, 0.5, 0.5);
         this.ambientLight.diffuse.copyFromFloats(1, 1, 1);
 
-        this.map = new PandemikMap(this);
+        this.glowLayer = new GlowLayer("glow-layer", this.scene);
+
+        this.map = new Board(this);
         await this.map.instantiate();
+
+        this.infectionDeck = new Deck<InfectionCard>();
+        for (let cityId = 0; cityId < CityID.LAST; cityId++) {
+            this.infectionDeck.addCard(new InfectionCard(cityId));
+        }
+        this.infectionDeck.shuffle();
+
+        this.map.onceStabilized(async () => {
+            for (let n = 0; n < 3; n++) {
+                let card = this.infectionDeck!.drawCard();
+                if (card) {
+                    for (let i = 0; i < 3; i++) {
+                        await this.map!.cities[card.cityId].infect(card.diseaseColor);
+                    }
+                }
+            }
+            for (let n = 0; n < 3; n++) {
+                let card = this.infectionDeck!.drawCard();
+                if (card) {
+                    for (let i = 0; i < 2; i++) {
+                        await this.map!.cities[card.cityId].infect(card.diseaseColor);
+                    }
+                }
+            }
+            for (let n = 0; n < 3; n++) {
+                let card = this.infectionDeck!.drawCard();
+                if (card) {
+                    for (let i = 0; i < 1; i++) {
+                        await this.map!.cities[card.cityId].infect(card.diseaseColor);
+                    }
+                }
+            }
+        });
     }
 
     public start() {

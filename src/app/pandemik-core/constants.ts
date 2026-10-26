@@ -7,3 +7,4 @@ export var BlackColor = Color3.FromHexString("#2B303A");
 export var LandColor = Color3.FromHexString("#0C7C59");
 export var WaterColor = Color3.FromHexString("#58A4B0");
 export var GreyColor = Color3.FromHexString("#BAC1B8");
+export var GreenColor = Color3.FromHexString("#0C7C59");
