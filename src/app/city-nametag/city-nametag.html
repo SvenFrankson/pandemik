@@ -1,0 +1,3 @@
+@if (city().shown()) {
+	<div [style.left.px]="city().screenX()" [style.top.px]="city().screenY()">{{ city().name | uppercase }}</div>
+}

@@ -51,14 +51,16 @@ export class Pandemik {
         this.scene = new Scene(this.engine);
         this.scene.clearColor.set(1, 1, 1, 1);
 
-        this.gameCamera = new ArcRotateCamera("game-camera", - Math.PI / 2, Math.PI / 2, 20, Vector3.Zero(), this.scene);
+        this.gameCamera = new ArcRotateCamera("game-camera", - Math.PI / 2, Math.PI / 2, 30, Vector3.Zero(), this.scene);
+        this.gameCamera.wheelPrecision *= 2;
         this.gameCamera.attachControl(canvas, true);
 
         this.ambientLight = new HemisphericLight("hemispheric-light", (new Vector3(2, 1, 3)).normalize(), this.scene);
         this.ambientLight.groundColor.copyFromFloats(0.5, 0.5, 0.5);
         this.ambientLight.diffuse.copyFromFloats(1, 1, 1);
 
-        this.map = new PandemikMap();
+        this.map = new PandemikMap(this);
+        await this.map.instantiate();
     }
 
     public start() {
