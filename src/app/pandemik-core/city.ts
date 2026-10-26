@@ -1,5 +1,5 @@
 import { Mesh } from "@babylonjs/core/Meshes/mesh.pure";
-import { CityColor3s, type CityColor, type CityID } from "./data";
+import { CityColor3s, CityID, type CityColor } from "./data";
 import { Matrix, Quaternion } from "@babylonjs/core/Maths/math.vector.pure";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder.pure";
 import type { Scene } from "@babylonjs/core/scene";
@@ -7,7 +7,7 @@ import type { Nullable } from "@babylonjs/core/types";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector.pure";
 import { PandemikMap } from "./pandemik-map";
 import { CreateSphereVertexData } from "@babylonjs/core/Meshes/Builders/sphereBuilder.pure";
-import { MakeOutline, QuickMaterial } from "./tools";
+import { MakeOrthogonal, MakeOrthogonalInPlace, MakeOutline, QuickMaterial } from "./tools";
 import { Color3 } from "@babylonjs/core/Maths/math.color.pure";
 import { Angle, CreateBeveledBox, CreateBeveledCylinder, CreateBeveledCylinderVertexData, CreateTrailVertexData, GetGLTFMeshDataArray } from "babylonjs-tiaratumgames-tools";
 import { RedColor, GreyColor } from "./constants";
@@ -32,8 +32,16 @@ export class CityLink extends Mesh {
     }
 
     public updateMesh(): void {
-        let p0 = this.cityA.position;
-        let p1 = this.cityB.position;
+        let p0 = this.cityA.position.clone();
+        let p1 = this.cityB.position.clone();
+        let dir = p1.subtract(p0);
+
+        let dir0 = MakeOrthogonal(dir, p0).normalize();
+        p0.addInPlace(dir0.scale(this.cityA.radius * 0.95));
+
+        let dir1 = MakeOrthogonal(dir, p1).normalize();
+        p1.subtractInPlace(dir1.scale(this.cityB.radius * 0.95));
+
         let line = [p0];
         for (let n = 1; n < 30; n++) {
             let f = n / 30;
@@ -50,12 +58,16 @@ export class CityLink extends Mesh {
 
 export class City extends Mesh {
 
-    private _radius: number = 0.35;
+    public radius: number = 0.4;
 
     public cityId: CityID;
     public lat: number = 0;
     public long: number = 0;
     public basePosition: Vector3 = new Vector3(0, 0, 0);
+
+    public frame: Nullable<Mesh> = null;
+    public bottom: Nullable<Mesh> = null;
+    public picture: Nullable<Mesh> = null;
     public line: Nullable<Mesh> = null;
 
     public cityColor: CityColor;
@@ -78,8 +90,6 @@ export class City extends Mesh {
         link = new CityLink(cityA, cityB);
         cityA.links.push(link);
         cityB.links.push(link);
-
-        console.log(`Created link between ${cityA.name} and ${cityB.name}`);
         
         return link;
     }
@@ -89,14 +99,19 @@ export class City extends Mesh {
         this.cityId = cityId;
         this.rotationQuaternion = Quaternion.Identity();
         this.cityColor = cityColor;
-        this.color = CityColor3s[cityColor].clone();
-        let hsv = this.color.toHSV();
-        hsv.g *= 0.8;
-        this.color = Color3.FromHSV(hsv.r, hsv.g, hsv.b);
+        this.color = CityColor3s[cityColor];
         
-        CreateBeveledCylinderVertexData({ radius: this._radius, height: 2 * this.map.projection.hoverDistance }).applyToMesh(this);
-        this.material = QuickMaterial(this.color);
-        MakeOutline(this, Color3.White());
+        this.frame = new Mesh("frame", this.getScene());
+        this.frame.scaling.copyFromFloats(1, 1, 1).scaleInPlace(2 * this.radius);
+        this.frame.parent = this;
+        this.map.tokenMeshData![1].vertexData.applyToMesh(this.frame);
+        this.frame.material = QuickMaterial(Color3.White(), 0, 0.25);
+
+        this.bottom = new Mesh("bottom", this.getScene());
+        this.bottom.material = QuickMaterial(this.color);
+        this.bottom.visibility = 0.5;
+        this.bottom.parent = this.frame;
+        this.map.tokenMeshData![2].vertexData.applyToMesh(this.bottom);
 
         this.infections = Math.floor(Math.random() * 5);
         this.updateInfectionsMeshes();
@@ -107,7 +122,7 @@ export class City extends Mesh {
         let angle = Angle(this.position, camDir);
         this.shown.set(angle < 0.8 * Math.PI / 2);
         if (this.shown()) {
-            let p = Vector3.TransformCoordinates(new Vector3(0, 0, - this._radius - 0.05), this.getWorldMatrix());
+            let p = Vector3.TransformCoordinates(new Vector3(0, 0, - this.radius - 0.05), this.getWorldMatrix());
             let screenP = Vector3.Project(
                 p,
                 Matrix.Identity(),
@@ -129,11 +144,19 @@ export class City extends Mesh {
         if (!this.line) {
             this.line = new Mesh("line", this.getScene());
             this.line.visibility = 1;
-            this.line.material = this.material;
+            this.line.material = QuickMaterial(this.color, 0, 0);
         }
 
-        let p0 = this.basePosition;
-        let p1 = this.position;
+        let delta = this.position.subtract(this.basePosition);
+        MakeOrthogonalInPlace(delta, this.position);
+        if (delta.length() < this.radius) {
+            return;
+        }
+        let p0 = this.basePosition.clone();
+        let p1 = this.position.clone();
+        let dir = p0.subtract(p1).normalize();
+        dir = MakeOrthogonal(dir, p1);
+        p1.addInPlace(dir.scale(this.radius * 0.95));
         let count = Math.round(Vector3.Distance(p0, p1) / 0.5);
         let line = [p0];
         for (let n = 1; n < count; n++) {
@@ -149,7 +172,7 @@ export class City extends Mesh {
         }
         line.push(p1);
         
-        CreateTrailVertexData({ path: line, up: p0, radiusFunc: (t) => { return 0.04 * t + 0.01; } }).applyToMesh(this.line);
+        CreateTrailVertexData({ path: line, up: p0, radiusFunc: (t) => { return 0.03 * t + 0.01; } }).applyToMesh(this.line);
 
         this.links.forEach(link => link.updateMesh());
     }
@@ -178,12 +201,12 @@ export class City extends Mesh {
             
             this.infectionsMeshes.push(infectionMesh);
             let alpha = - Math.PI / 3 + Math.PI / 3 * n;
-            infectionMesh.position.x = (this._radius + 0.1) * Math.sin(alpha);
+            infectionMesh.position.x = (this.radius + 0.1) * Math.sin(alpha);
             infectionMesh.position.y = 0.1;
-            infectionMesh.position.z = (this._radius + 0.1) * Math.cos(alpha);
+            infectionMesh.position.z = (this.radius + 0.1) * Math.cos(alpha);
             infectionMesh.parent = this;
 
-            infectionMesh.material = QuickMaterial(Color3.White());
+            infectionMesh.material = QuickMaterial(Color3.White(), 0, 0.25);
             bottom.material = QuickMaterial(CityColor3s[this.cityColor]);
 
             let materialPic = QuickMaterial(Color3.White(), 0, 1);
@@ -213,6 +236,10 @@ export class City extends Mesh {
                 //otherCity.updateLine();
             }
         }
+        //if (this.cityId === CityID.Atlanta) {
+        //    this.position = Vector3.Lerp(this.position, this.basePosition, 0.01);
+        //    this.map.projection.constraintHoveredRef(this.position, this.rotationQuaternion);
+        //}
         return cumulativeCorrection;
     }
 

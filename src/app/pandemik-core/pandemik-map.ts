@@ -2,7 +2,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector.pure';
 import type { Quaternion } from '@babylonjs/core/Maths/math.vector.pure';
 import type { Nullable } from '@babylonjs/core/types';
 import { City } from './city';
-import { CityID, CityLinks, MapData } from './data';
+import { CityColor3s, CityID, CityLinks, MapData } from './data';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.pure';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.pure';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture.pure';
@@ -11,11 +11,12 @@ import { Axis } from '@babylonjs/core/Maths/math.axis';
 import { BlackColor, LandColor, WaterColor } from './constants';
 import { Mesh } from '@babylonjs/core/Meshes/mesh.pure';
 import { Pandemik } from './pandemik';
+import { QuickMaterial } from './tools';
 
 export abstract class MapProjection {
 
-    public cityDistance: number = 3;
-    public hoverDistance: number = 0.02;
+    public cityDistance: number = 2.5;
+    public hoverDistance: number = 0.5;
 
     public abstract projectToRef(lat: number, long: number, ref: Vector3): Vector3;
 
@@ -78,6 +79,7 @@ export class PandemikMap {
     public cities: City[] = [];
 
     public tokenMeshData: IMeshData[] | null = null;
+    public materials: StandardMaterial[] = [];
 
     constructor(public pandemik: Pandemik) {
         let zero = MeshBuilder.CreateSphere("base", { diameter: 0.2 });
@@ -127,7 +129,12 @@ export class PandemikMap {
     public async instantiate(): Promise<void> {
         this.tokenMeshData = await GetGLTFMeshDataArray("token.gltf", this.pandemik.scene!);
         this.tokenMeshData?.sort((a, b) => a.name.localeCompare(b.name));
-        console.log(this.tokenMeshData);
+
+        this.materials = [];
+        for (let n = 0; n < CityColor3s.length; n++) {
+            let mat = QuickMaterial(CityColor3s[n]);
+            this.materials.push(mat);
+        }
 
         for (let cityId = 0; cityId < CityID.LAST; cityId++) {
             const cityData = MapData.cities[cityId];
@@ -166,9 +173,9 @@ export class PandemikMap {
         if (!this.stabilized) {
             this.stability *= 0.5;
             for (let n = 0; n < this.cities.length; n++) {
-                this.stability += this.cities[n].stepUpdate(this.smoothness);
+                this.stability += this.cities[n].stepUpdate(100);
             }
-            this.smoothness = Math.max(2, this.smoothness - 1);
+            this.smoothness = Math.max(4, this.smoothness - 1);
             if (this.stability < 0.001) {
                 this.stabilized = true;
                 (this.base.material as StandardMaterial).diffuseColor.copyFromFloats(1, 1, 1);
