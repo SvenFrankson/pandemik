@@ -249,9 +249,9 @@ export class City extends Mesh {
         await infectionMesh.animatePosition(pos, 0);
         infectionMesh.rotation.y = Math.PI + alpha;
 
+        this.updateInfectionsMeshes();
         await infectionMesh.animateSize(0.35, 0.5, Easing.easeOutCubic);
 
-        this.updateInfectionsMeshes();
     }
 
     public stepUpdate(smoothness: number = 100): number {

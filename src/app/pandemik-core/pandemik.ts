@@ -13,6 +13,7 @@ import { HemisphericLight } from "@babylonjs/core";
 import { InfectionCard } from "./deck/infection-card";
 import { Deck } from "./deck/deck";
 import { CityID } from "./data";
+import { GameCamera } from "./game-camera";
 
 @Injectable({
 	providedIn: 'root',
@@ -36,7 +37,7 @@ export class Pandemik {
     public getScene(): Scene | null {
         return this.scene;
     }
-    public gameCamera: ArcRotateCamera | null = null;
+    public gameCamera: GameCamera | null = null;
     public ambientLight: HemisphericLight | null = null;
     public glowLayer: GlowLayer | null = null;
 
@@ -57,7 +58,7 @@ export class Pandemik {
         this.scene = new Scene(this.engine);
         this.scene.clearColor.set(0, 0, 0, 0);
 
-        this.gameCamera = new ArcRotateCamera("game-camera", - Math.PI / 2, Math.PI / 2, 30, Vector3.Zero(), this.scene);
+        this.gameCamera = new GameCamera(30, Vector3.Zero(), this.scene);
         this.gameCamera.wheelPrecision *= 2;
         this.gameCamera.attachControl(canvas, true);
 
@@ -80,24 +81,30 @@ export class Pandemik {
             for (let n = 0; n < 3; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
+                    let city = this.map!.cities[card.cityId];
+                    await this.gameCamera!.goTo(city.position, 20);
                     for (let i = 0; i < 3; i++) {
-                        await this.map!.cities[card.cityId].infect(card.diseaseColor);
+                        await city.infect(card.diseaseColor);
                     }
                 }
             }
             for (let n = 0; n < 3; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
+                    let city = this.map!.cities[card.cityId];
+                    await this.gameCamera!.goTo(city.position, 20);
                     for (let i = 0; i < 2; i++) {
-                        await this.map!.cities[card.cityId].infect(card.diseaseColor);
+                        await city.infect(card.diseaseColor);
                     }
                 }
             }
             for (let n = 0; n < 3; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
+                    let city = this.map!.cities[card.cityId];
+                    await this.gameCamera!.goTo(city.position, 20);
                     for (let i = 0; i < 1; i++) {
-                        await this.map!.cities[card.cityId].infect(card.diseaseColor);
+                        await city.infect(card.diseaseColor);
                     }
                 }
             }
