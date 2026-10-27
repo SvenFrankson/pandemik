@@ -17,6 +17,7 @@ import { CityID } from "./data";
 import { GameCamera } from "./game-camera";
 import { CityActionMenuConnector } from "./ui-connectors/city-action-menu-connector";
 import { City, CityPart } from "./city";
+import { GameMaster } from "./game-master";
 
 @Injectable({
 	providedIn: 'root',
@@ -51,6 +52,7 @@ export class Pandemik {
         return this.players.length > 0 ? this.players[0] : null;
     }
 
+    public gameMaster: GameMaster;
     public cityActionMenuConnector: CityActionMenuConnector;
 
     private _selectedCity: City | null = null;
@@ -65,11 +67,13 @@ export class Pandemik {
         this._selectedCity = city;
         if (this._selectedCity) {
             this._selectedCity.select();
+            this.gameCamera?.goTo(this._selectedCity.position);
         }
         this.cityActionMenuConnector.city = city;
     }
 
     constructor() {
+        this.gameMaster = new GameMaster(this);
         this.cityActionMenuConnector = new CityActionMenuConnector(this);
     }
 
