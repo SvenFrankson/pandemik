@@ -47,6 +47,9 @@ export class Pandemik {
     public map: Board | null = null;
     public infectionDeck: Deck<InfectionCard> | null = null;
     public players: Player[] = [];
+    public get currentPlayer(): Player | null {
+        return this.players.length > 0 ? this.players[0] : null;
+    }
 
     public cityActionMenuConnector: CityActionMenuConnector;
 
@@ -67,7 +70,7 @@ export class Pandemik {
     }
 
     constructor() {
-        this.cityActionMenuConnector = new CityActionMenuConnector();
+        this.cityActionMenuConnector = new CityActionMenuConnector(this);
     }
 
     public async initialize(canvas: HTMLCanvasElement): Promise<void> {

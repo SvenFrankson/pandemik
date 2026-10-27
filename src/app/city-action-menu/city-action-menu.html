@@ -1,8 +1,11 @@
 @if (connector && connector.shown()) {
     <div id="container" [style.left.px]="connector.screenX()" [style.top.px]="connector.screenY()">
-        <button>Go To</button>
-        <button>Fly To</button>
-        <button>Cure</button>
-        <button>Build</button>
+        <button (click)="connector.onGoTo()">GO TO</button>
+        <button>FLY TO</button>
+        <button (click)="connector.onCureDisease(0)">CURE BLUE</button>
+        <button (click)="connector.onCureDisease(1)">CURE YELLOW</button>
+        <button (click)="connector.onCureDisease(2)">CURE BLACK</button>
+        <button (click)="connector.onCureDisease(3)">CURE GREEN</button>
+        <button>BUILD</button>
     </div>
 }

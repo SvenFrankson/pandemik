@@ -1,12 +1,13 @@
 #container {
 	position: fixed;
+    transform: translateY(-50%);
     z-index: 1;
-    border: 1px solid black;
+    border: 1px solid white;
     border-radius: 4px;
     color: black;
 
     margin: 0;
-    padding: 0;
+    padding: 0px 5px;
     font-size: 12px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, serif;
     font-weight: 900;
@@ -16,4 +17,13 @@
 
 button {
     display: block;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, serif;
+    width: 140px;
+    height: 30px;
+    border: 1px solid rgb(0, 119, 255);
+    background-color: rgba(0, 30, 65, 0.8);
+    font-size: 16px;
+    font-weight: 100;
+    color: white;
+    margin: 5px 0;
 }

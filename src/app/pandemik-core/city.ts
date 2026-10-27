@@ -277,7 +277,39 @@ export class City extends Mesh {
 
         this.updateInfectionsMeshes();
         await infectionMesh.animateSize(0.35, 0.5, Easing.easeOutCubic);
+    }
 
+    public async cure(diseaseColor: CityColor): Promise<void> {
+        if (this.infections[diseaseColor]() > 0) {
+            this.infections[diseaseColor].set(this.infections[diseaseColor]() - 1);
+            for (let i = this.tokens.length - 1; i >= 0; i--) {
+                let token = this.tokens[i];
+                if (token instanceof InfectionToken) {
+                    if (token.diseaseColor === diseaseColor) {
+                        let token = this.tokens.splice(i, 1)[0];
+                        this.fixAllTokensPositions(1);
+                        await token.animateSize(0, 0.5, Easing.easeOutCubic);
+                        token.dispose();
+                        i = -1;
+                    }
+                }
+            }
+            this.updateInfectionsMeshes();
+        }
+    }
+
+    public async fixAllTokensPositions(duration: number): Promise<void> {
+        for (let i = 0; i < this.tokens.length; i++) {
+            let token = this.tokens[i];
+            let alpha = - Math.PI / 3.5 + Math.PI / 3.5 * i;
+            let pos = new Vector3(
+                (this.radius + 0.05) * Math.sin(alpha),
+                0.1,
+                (this.radius + 0.05) * Math.cos(alpha)
+            );
+            token.animatePosition(pos, duration);
+            token.rotation.y = Math.PI + alpha;
+        }
     }
 
     public stepUpdate(smoothness: number = 100): number {
