@@ -115,21 +115,22 @@ export class Pandemik {
             this.canvas?.addEventListener("pointerdown", this._pointerDown);
             this.canvas?.addEventListener("pointerup", this._pointerUp);
 
-            for (let n = 0; n < 3; n++) {
+            const draws = 1;
+            for (let n = 0; n < draws; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     let city = this.map!.cities[card.cityId];
                     await this.gameMaster.infect(city, card.diseaseColor, 3);
                 }
             }
-            for (let n = 0; n < 3; n++) {
+            for (let n = 0; n < draws; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     let city = this.map!.cities[card.cityId];
                     await this.gameMaster.infect(city, card.diseaseColor, 2);
                 }
             }
-            for (let n = 0; n < 3; n++) {
+            for (let n = 0; n < draws; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     let city = this.map!.cities[card.cityId];
@@ -138,10 +139,16 @@ export class Pandemik {
             }
 
             await this.gameCamera!.goTo(atlanta.position, 1, 25);
-            this.players.push(new Player(this, atlanta));
+            let player = new Player(this, atlanta);
+            this.players.push(player);
+            if (this.onPlayerAdded) {
+                this.onPlayerAdded(player);
+            }
             await atlanta.buildStation();
         });
     }
+
+    public onPlayerAdded: ((player: Player) => void) | null = null;
 
     public start() {
         this.scene!.onBeforeRenderObservable.removeCallback(this._update);

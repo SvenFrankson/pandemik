@@ -1,5 +1,5 @@
 import { Mesh } from "@babylonjs/core/Meshes/mesh.pure";
-import { CityColor3s, CityID, type CityColor } from "./data";
+import { CityColor3s, CityID, type GameColor } from "./data";
 import { Matrix, Quaternion } from "@babylonjs/core/Maths/math.vector.pure";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder.pure";
 import type { Scene } from "@babylonjs/core/scene";
@@ -124,7 +124,7 @@ export class City extends Mesh {
     public line: Nullable<Mesh> = null;
     public playerAnchor: TransformNode;
 
-    public cityColor: CityColor;
+    public cityColor: GameColor;
     public color: Color3;
 
     public links: CityLink[] = [];
@@ -161,7 +161,7 @@ export class City extends Mesh {
         return true;
     }
 
-    constructor(public board: Board, cityId: CityID, cityColor: CityColor, name: string, scene: Nullable<Scene>) {
+    constructor(public board: Board, cityId: CityID, cityColor: GameColor, name: string, scene: Nullable<Scene>) {
         super(name, scene);
         this.cityId = cityId;
         this.rotationQuaternion = Quaternion.Identity();
@@ -322,7 +322,7 @@ export class City extends Mesh {
         }
     }
 
-    public async infect(diseaseColor: CityColor): Promise<void> {
+    public async infect(diseaseColor: GameColor): Promise<void> {
         this.infections[diseaseColor].set(this.infections[diseaseColor]() + 1);
         
         let n = this.tokens.length;
@@ -342,7 +342,7 @@ export class City extends Mesh {
         await infectionMesh.animateSize(0.35, 0.5, Easing.easeOutCubic);
     }
 
-    public async cure(diseaseColor: CityColor): Promise<void> {
+    public async cure(diseaseColor: GameColor): Promise<void> {
         if (this.infections[diseaseColor]() > 0) {
             this.infections[diseaseColor].set(this.infections[diseaseColor]() - 1);
             for (let i = this.tokens.length - 1; i >= 0; i--) {

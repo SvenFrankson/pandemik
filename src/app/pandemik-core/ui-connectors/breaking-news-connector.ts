@@ -1,14 +1,16 @@
 import { signal } from "@angular/core";
 import { City } from "../city";
 import { Pandemik } from "../pandemik";
-import { CityColor } from "../data";
+import { GameColor } from "../data";
 import { GameMaster } from "../game-master";
 
 export class BreakingInfo {
 
+    city?: City;
     text: string = "";
 
-    constructor(text: string) {
+    constructor(text: string, city?: City) {
+        this.city = city;
         this.text = text;
     }
 }
@@ -26,6 +28,6 @@ export class BreakingNewsConnector {
     }
 
     addBreakingInfo(info: BreakingInfo): void {
-        this.breakingNews.update((current) => [...current, info]);
+        this.breakingNews.update((current) => [...current, info].slice(-10));
     }
 }

@@ -1,11 +1,18 @@
 import { BlueColor, YellowColor, BlackColor, GreenColor } from "./constants";
 
-export enum CityColor {
+export enum GameColor {
     Blue,
     Yellow,
     Black,
     Green
 }
+
+export const DiseaseNames = [
+    "Bluevirus",
+    "Yellowcoccus",
+    "Blackterium",
+    "Greenmonella"
+]
 
 export const CityColor3s = [
     BlueColor,
@@ -68,61 +75,61 @@ export enum CityID {
 
 export interface CityData {
     name: string;
-    color: CityColor;
+    color: GameColor;
     lat: number;
     long: number;
 }
 
 export var MapData = [<CityData>{}];
 
-MapData[CityID.SanFrancisco] = { name: "San Francisco", color: CityColor.Blue, lat: 37.7749, long: -122.4194 };
-MapData[CityID.Chicago] = { name: "Chicago", color: CityColor.Blue, lat: 41.8781, long: -87.6298 }
-MapData[CityID.Atlanta] = { name: "Atlanta", color: CityColor.Blue, lat: 33.7490, long: -84.3880 }
-MapData[CityID.Montreal] = { name: "Montreal", color: CityColor.Blue, lat: 45.5017, long: -73.5673 }
-MapData[CityID.Washington] = { name: "Washington", color: CityColor.Blue, lat: 38.9072, long: -77.0369 }
-MapData[CityID.NewYork] = { name: "New York", color: CityColor.Blue, lat: 40.7128, long: -74.0060 }
-MapData[CityID.Madrid] = { name: "Madrid", color: CityColor.Blue, lat: 40.4168, long: -3.7038 }
-MapData[CityID.London] = { name: "London", color: CityColor.Blue, lat: 51.5074, long: -0.1278 }
-MapData[CityID.Paris] = { name: "Paris", color: CityColor.Blue, lat: 48.8566, long: 2.3522 }
-MapData[CityID.Essen] = { name: "Essen", color: CityColor.Blue, lat: 51.4556, long: 7.0116 }
-MapData[CityID.Milan ] = { name: "Milan", color: CityColor.Blue, lat: 45.4642, long: 9.1900 }
-MapData[CityID.SaintPetersburg] = { name: "Saint Petersburg", color: CityColor.Blue, lat: 59.9343, long: 30.3351 }
-MapData[CityID.LosAngeles] = { name: "Los Angeles", color: CityColor.Yellow, lat: 34.0522, long: -118.2437 }
-MapData[CityID.MexicoCity] = { name: "Mexico City", color: CityColor.Yellow, lat: 19.4326, long: -99.1332 }
-MapData[CityID.Miami] = { name: "Miami", color: CityColor.Yellow, lat: 25.7617, long: -80.1918 }
-MapData[CityID.Bogota] = { name: "Bogotá", color: CityColor.Yellow, lat: 4.7110, long: -74.0721 }
-MapData[CityID.Lima] = { name: "Lima", color: CityColor.Yellow, lat: -12.0464, long: -77.0428 }
-MapData[CityID.Santiago] = { name: "Santiago", color: CityColor.Yellow, lat: -33.4489, long: -70.6693 }
-MapData[CityID.BuenosAires] = { name: "Buenos Aires", color: CityColor.Yellow, lat: -34.6037, long: -58.3816 }
-MapData[CityID.SaoPaulo] = { name: "Sao Paulo", color: CityColor.Yellow, lat: -23.5505, long: -46.6333 }
-MapData[CityID.Lagos] = { name: "Lagos", color: CityColor.Yellow, lat: 6.5244, long: 3.3792 }
-MapData[CityID.Kinshasa] = { name: "Kinshasa", color: CityColor.Yellow, lat: -4.4419, long: 15.2663 }
-MapData[CityID.Khartoum] = { name: "Khartoum", color: CityColor.Yellow, lat: 15.5007, long: 32.5599 }
-MapData[CityID.Johannesburg] = { name: "Johannesburg", color: CityColor.Yellow, lat: -26.2041, long: 28.0473 }
-MapData[CityID.Algiers] = { name: "Algiers", color: CityColor.Black, lat: 36.7538, long: 3.0588 }
-MapData[CityID.Cairo] = { name: "Cairo", color: CityColor.Black, lat: 30.0444, long: 31.2357 }
-MapData[CityID.Istanbul] = { name: "Istanbul", color: CityColor.Black, lat: 41.0082, long: 28.9784 }
-MapData[CityID.Moscow] = { name: "Moscow", color: CityColor.Black, lat: 55.7558, long: 37.6173 }
-MapData[CityID.Baghdad] = { name: "Baghdad", color: CityColor.Black, lat: 33.3152, long: 44.3661 }
-MapData[CityID.Riyadh] = { name: "Riyadh", color: CityColor.Black, lat: 24.7136, long: 46.6753 }
-MapData[CityID.Tehran] = { name: "Tehran", color: CityColor.Black, lat: 35.6892, long: 51.3890 }
-MapData[CityID.Karachi] = { name: "Karachi", color: CityColor.Black, lat: 24.8607, long: 67.0011 }
-MapData[CityID.Mumbai] = { name: "Mumbai", color: CityColor.Black, lat: 19.0760, long: 72.8777 }
-MapData[CityID.Delhi] = { name: "Delhi", color: CityColor.Black, lat: 28.6139, long: 77.2090 }
-MapData[CityID.Chennai] = { name: "Chennai", color: CityColor.Black, lat: 13.0827, long: 80.2707 }
-MapData[CityID.Calcutta] = { name: "Calcutta", color: CityColor.Black, lat: 22.5726, long: 88.3639 }
-MapData[CityID.Beijing] = { name: "Beijing", color: CityColor.Green, lat: 39.9042, long: 116.4074 }
-MapData[CityID.Seoul] = { name: "Seoul", color: CityColor.Green, lat: 37.5665, long: 126.9780 }
-MapData[CityID.Tokyo] = { name: "Tokyo", color: CityColor.Green, lat: 35.6895, long: 139.6917 }
-MapData[CityID.Shanghai] = { name: "Shanghai", color: CityColor.Green, lat: 31.2304, long: 121.4737 }
-MapData[CityID.HongKong] = { name: "Hong Kong", color: CityColor.Green, lat: 22.3193, long: 114.1694 }
-MapData[CityID.Bangkok] = { name: "Bangkok", color: CityColor.Green, lat: 13.7563, long: 100.5018 }
-MapData[CityID.Taipei] = { name: "Taipei", color: CityColor.Green, lat: 25.0330, long: 121.5654 }
-MapData[CityID.Osaka] = { name: "Osaka", color: CityColor.Green, lat: 34.6937, long: 135.5023 }
-MapData[CityID.Manila] = { name: "Manila", color: CityColor.Green, lat: 14.5995, long: 120.9842 }
-MapData[CityID.HoChiMinhCity] = { name: "Ho Chi Minh City", color: CityColor.Green, lat: 10.7769, long: 106.7009 }
-MapData[CityID.Jakarta] = { name: "Jakarta", color: CityColor.Green, lat: -6.2088, long: 106.8456 }
-MapData[CityID.Sydney] = { name: "Sydney", color: CityColor.Green, lat: -33.8688, long: 151.2093 }
+MapData[CityID.SanFrancisco] = { name: "San Francisco", color: GameColor.Blue, lat: 37.7749, long: -122.4194 };
+MapData[CityID.Chicago] = { name: "Chicago", color: GameColor.Blue, lat: 41.8781, long: -87.6298 }
+MapData[CityID.Atlanta] = { name: "Atlanta", color: GameColor.Blue, lat: 33.7490, long: -84.3880 }
+MapData[CityID.Montreal] = { name: "Montreal", color: GameColor.Blue, lat: 45.5017, long: -73.5673 }
+MapData[CityID.Washington] = { name: "Washington", color: GameColor.Blue, lat: 38.9072, long: -77.0369 }
+MapData[CityID.NewYork] = { name: "New York", color: GameColor.Blue, lat: 40.7128, long: -74.0060 }
+MapData[CityID.Madrid] = { name: "Madrid", color: GameColor.Blue, lat: 40.4168, long: -3.7038 }
+MapData[CityID.London] = { name: "London", color: GameColor.Blue, lat: 51.5074, long: -0.1278 }
+MapData[CityID.Paris] = { name: "Paris", color: GameColor.Blue, lat: 48.8566, long: 2.3522 }
+MapData[CityID.Essen] = { name: "Essen", color: GameColor.Blue, lat: 51.4556, long: 7.0116 }
+MapData[CityID.Milan ] = { name: "Milan", color: GameColor.Blue, lat: 45.4642, long: 9.1900 }
+MapData[CityID.SaintPetersburg] = { name: "Saint Petersburg", color: GameColor.Blue, lat: 59.9343, long: 30.3351 }
+MapData[CityID.LosAngeles] = { name: "Los Angeles", color: GameColor.Yellow, lat: 34.0522, long: -118.2437 }
+MapData[CityID.MexicoCity] = { name: "Mexico City", color: GameColor.Yellow, lat: 19.4326, long: -99.1332 }
+MapData[CityID.Miami] = { name: "Miami", color: GameColor.Yellow, lat: 25.7617, long: -80.1918 }
+MapData[CityID.Bogota] = { name: "Bogotá", color: GameColor.Yellow, lat: 4.7110, long: -74.0721 }
+MapData[CityID.Lima] = { name: "Lima", color: GameColor.Yellow, lat: -12.0464, long: -77.0428 }
+MapData[CityID.Santiago] = { name: "Santiago", color: GameColor.Yellow, lat: -33.4489, long: -70.6693 }
+MapData[CityID.BuenosAires] = { name: "Buenos Aires", color: GameColor.Yellow, lat: -34.6037, long: -58.3816 }
+MapData[CityID.SaoPaulo] = { name: "Sao Paulo", color: GameColor.Yellow, lat: -23.5505, long: -46.6333 }
+MapData[CityID.Lagos] = { name: "Lagos", color: GameColor.Yellow, lat: 6.5244, long: 3.3792 }
+MapData[CityID.Kinshasa] = { name: "Kinshasa", color: GameColor.Yellow, lat: -4.4419, long: 15.2663 }
+MapData[CityID.Khartoum] = { name: "Khartoum", color: GameColor.Yellow, lat: 15.5007, long: 32.5599 }
+MapData[CityID.Johannesburg] = { name: "Johannesburg", color: GameColor.Yellow, lat: -26.2041, long: 28.0473 }
+MapData[CityID.Algiers] = { name: "Algiers", color: GameColor.Black, lat: 36.7538, long: 3.0588 }
+MapData[CityID.Cairo] = { name: "Cairo", color: GameColor.Black, lat: 30.0444, long: 31.2357 }
+MapData[CityID.Istanbul] = { name: "Istanbul", color: GameColor.Black, lat: 41.0082, long: 28.9784 }
+MapData[CityID.Moscow] = { name: "Moscow", color: GameColor.Black, lat: 55.7558, long: 37.6173 }
+MapData[CityID.Baghdad] = { name: "Baghdad", color: GameColor.Black, lat: 33.3152, long: 44.3661 }
+MapData[CityID.Riyadh] = { name: "Riyadh", color: GameColor.Black, lat: 24.7136, long: 46.6753 }
+MapData[CityID.Tehran] = { name: "Tehran", color: GameColor.Black, lat: 35.6892, long: 51.3890 }
+MapData[CityID.Karachi] = { name: "Karachi", color: GameColor.Black, lat: 24.8607, long: 67.0011 }
+MapData[CityID.Mumbai] = { name: "Mumbai", color: GameColor.Black, lat: 19.0760, long: 72.8777 }
+MapData[CityID.Delhi] = { name: "Delhi", color: GameColor.Black, lat: 28.6139, long: 77.2090 }
+MapData[CityID.Chennai] = { name: "Chennai", color: GameColor.Black, lat: 13.0827, long: 80.2707 }
+MapData[CityID.Calcutta] = { name: "Calcutta", color: GameColor.Black, lat: 22.5726, long: 88.3639 }
+MapData[CityID.Beijing] = { name: "Beijing", color: GameColor.Green, lat: 39.9042, long: 116.4074 }
+MapData[CityID.Seoul] = { name: "Seoul", color: GameColor.Green, lat: 37.5665, long: 126.9780 }
+MapData[CityID.Tokyo] = { name: "Tokyo", color: GameColor.Green, lat: 35.6895, long: 139.6917 }
+MapData[CityID.Shanghai] = { name: "Shanghai", color: GameColor.Green, lat: 31.2304, long: 121.4737 }
+MapData[CityID.HongKong] = { name: "Hong Kong", color: GameColor.Green, lat: 22.3193, long: 114.1694 }
+MapData[CityID.Bangkok] = { name: "Bangkok", color: GameColor.Green, lat: 13.7563, long: 100.5018 }
+MapData[CityID.Taipei] = { name: "Taipei", color: GameColor.Green, lat: 25.0330, long: 121.5654 }
+MapData[CityID.Osaka] = { name: "Osaka", color: GameColor.Green, lat: 34.6937, long: 135.5023 }
+MapData[CityID.Manila] = { name: "Manila", color: GameColor.Green, lat: 14.5995, long: 120.9842 }
+MapData[CityID.HoChiMinhCity] = { name: "Ho Chi Minh City", color: GameColor.Green, lat: 10.7769, long: 106.7009 }
+MapData[CityID.Jakarta] = { name: "Jakarta", color: GameColor.Green, lat: -6.2088, long: 106.8456 }
+MapData[CityID.Sydney] = { name: "Sydney", color: GameColor.Green, lat: -33.8688, long: 151.2093 }
 
 export interface CityLinkData {
     city1: CityID;

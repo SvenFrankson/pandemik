@@ -1,7 +1,7 @@
 import { signal } from "@angular/core";
 import { City } from "../city";
 import { Pandemik } from "../pandemik";
-import { CityColor } from "../data";
+import { GameColor } from "../data";
 import { GameMaster } from "../game-master";
 
 export class CityActionMenuConnector {
@@ -47,10 +47,10 @@ export class CityActionMenuConnector {
 
             this.canGoTo.set(this.gameMaster.canMoveTo(this.pandemik.currentPlayer, this._city));
             this.goToCost.set(this.gameMaster.moveToCost(this.pandemik.currentPlayer, this._city));
-            this.canCureDisease[CityColor.Blue].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, CityColor.Blue));
-            this.canCureDisease[CityColor.Yellow].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, CityColor.Yellow));
-            this.canCureDisease[CityColor.Black].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, CityColor.Black));
-            this.canCureDisease[CityColor.Green].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, CityColor.Green));
+            this.canCureDisease[GameColor.Blue].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, GameColor.Blue));
+            this.canCureDisease[GameColor.Yellow].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, GameColor.Yellow));
+            this.canCureDisease[GameColor.Black].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, GameColor.Black));
+            this.canCureDisease[GameColor.Green].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, GameColor.Green));
             this.canBuildResearchStation.set(this.gameMaster.canBuildStation(this.pandemik.currentPlayer, this._city));
         }
         else {
@@ -68,7 +68,7 @@ export class CityActionMenuConnector {
         this.update();
     }
 
-    async onCureDisease(diseaseColor: CityColor): Promise<void> {
+    async onCureDisease(diseaseColor: GameColor): Promise<void> {
         //this.shown.set(false);
         if (this._city) {
             await this.gameMaster.doCureDisease(this.pandemik.currentPlayer!, this._city, diseaseColor);

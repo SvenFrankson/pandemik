@@ -1,7 +1,7 @@
 import { Pandemik } from "./pandemik";
 import { Player } from "./player";
 import { City } from "./city";
-import { CityColor } from "./data";
+import { DiseaseNames, GameColor } from "./data";
 import { BreakingInfo } from "./ui-connectors/breaking-news-connector";
 
 export class GameMaster {;
@@ -12,7 +12,7 @@ export class GameMaster {;
 
     public canMoveTo(player: Player, destination: City): boolean {
         let dist = player.currentCity?.distanceTo[destination.cityId];
-        return dist > 0 && dist <= 4;
+        return dist > 0 && dist <= player.availableAPs();
     }
 
     public getPathTo(player: Player, destination: City): City[] {
@@ -22,8 +22,8 @@ export class GameMaster {;
         while (!found && currentCity) {
             let bestDist = Infinity;
             let closestCity = null;
-            for (const link of currentCity.links) {
-                const otherCity = link.other(currentCity);
+            for (const cityLink of currentCity.links) {
+                const otherCity = cityLink.other(currentCity);
                 if (otherCity) {
                     const dist = otherCity.distanceTo[destination.cityId];
                     if (dist < bestDist) {
@@ -63,6 +63,7 @@ export class GameMaster {;
                 return false;
             }
             for (const city of path) {
+                player.consumeAP(1);
                 await player.goTo(city, undefined, city != destination);
             }
             return true;
@@ -70,16 +71,19 @@ export class GameMaster {;
         return false;
     }
 
-    public canCureDisease(player: Player, city: City, diseaseColor: CityColor): boolean {
-        if (player.currentCity === city) {
-            if (city.infections[diseaseColor]() > 0)
-                return true;
+    public canCureDisease(player: Player, city: City, diseaseColor: GameColor): boolean {
+        if (player.availableAPs() >= 1) {
+            if (player.currentCity === city) {
+                if (city.infections[diseaseColor]() > 0)
+                    return true;
+            }
         }
         return false;
     }
 
-    public async doCureDisease(player: Player, city: City, diseaseColor: CityColor): Promise<boolean> {
+    public async doCureDisease(player: Player, city: City, diseaseColor: GameColor): Promise<boolean> {
         if (this.canCureDisease(player, city, diseaseColor)) {
+            player.consumeAP(1);
             await city.cure(diseaseColor);
             return true;
         }
@@ -87,9 +91,11 @@ export class GameMaster {;
     }
 
     public canBuildStation(player: Player, city: City): boolean {
-        if (player.currentCity === city) {
-            if (!city.hasStation) {
-                return true;
+        if (player.availableAPs() >= 1) {
+            if (player.currentCity === city) {
+                if (!city.hasStation) {
+                    return true;
+                }
             }
         }
         return false;
@@ -97,13 +103,17 @@ export class GameMaster {;
 
     public async doBuildStation(player: Player, city: City): Promise<boolean> {
         if (this.canBuildStation(player, city)) {
+            this.pandemik.breakingNewsConnector.addBreakingInfo(
+                new BreakingInfo("Research station built.", city)
+            )
+            player.consumeAP(1);
             await city.buildStation();
             return true;
         }
         return false;
     }
 
-    public async infect(city: City, diseaseColor: CityColor, count: number): Promise<void> {
+    public async infect(city: City, diseaseColor: GameColor, count: number): Promise<void> {
         await this.pandemik.gameCamera!.goTo(city.position, 1, 20, 5);
         let promises = [];
         for (let i = 0; i < count; i++) {
@@ -111,16 +121,16 @@ export class GameMaster {;
         }
         let text = "";
         if (count === 1) {
-            text = "Infection in " + city.name + ".";
+            text = "A new " + DiseaseNames[diseaseColor].toLocaleUpperCase() + " infection.";
         }
         else if (count === 2) {
-            text = "Many cases in " + city.name + " !";
+            text = "Multiple " + DiseaseNames[diseaseColor].toLocaleUpperCase() + " cases.";
         }
         else if (count >= 3) {
-            text = "Major outbreak in " + city.name + " !";
+            text = "Major " + DiseaseNames[diseaseColor].toLocaleUpperCase() + " outbreak.";
         }
         this.pandemik.breakingNewsConnector.addBreakingInfo(
-            new BreakingInfo(text)
+            new BreakingInfo(text, city)
         )
         await Promise.all(promises);
     }

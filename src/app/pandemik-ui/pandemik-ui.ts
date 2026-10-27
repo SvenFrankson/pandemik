@@ -5,12 +5,13 @@ import { CityInfection } from '../city-infection/city-infection';
 import { City } from '../pandemik-core/city';
 import { CityActionMenu } from '../city-action-menu/city-action-menu';
 import { BreakingNews } from '../breaking-news/breaking-news';
+import { PlayerInfo } from '../player-info/player-info';
 
 @Component({
   selector: 'app-pandemik-ui',
   templateUrl: './pandemik-ui.html',
   styleUrls: ['./pandemik-ui.css'],
-  imports: [CityNametag, CityInfection, CityActionMenu, BreakingNews],
+  imports: [CityNametag, CityInfection, CityActionMenu, BreakingNews, PlayerInfo],
 })
 export class PandemikUi {
 
@@ -18,6 +19,7 @@ export class PandemikUi {
 
 	@ViewChild(CityActionMenu) cityActionMenu!: CityActionMenu;
 	@ViewChild(BreakingNews) breakingNews!: BreakingNews;
+	@ViewChild(PlayerInfo) playerInfo!: PlayerInfo;
 	public cities = signal<City[]>([]);
 
 	constructor() {
@@ -26,6 +28,9 @@ export class PandemikUi {
 
 	ngOnInit() {
 		this.pandemik = new Pandemik(document.querySelector("#game-canvas") as HTMLCanvasElement);
+		this.pandemik.onPlayerAdded = (player) => {
+			this.playerInfo.player.set(player);
+		};
 		this.pandemik.initialize().then(() => {
 			this.pandemik!.start();
 			this.cities.set(this.pandemik!.map?.cities ?? []);

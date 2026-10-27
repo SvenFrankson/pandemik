@@ -7,10 +7,12 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector.pure";
 import { City } from "./city";
 import { MakeOutline } from "./tools";
 import { Color3 } from "@babylonjs/core/Maths/math.color.pure";
+import { signal } from "@angular/core";
 
 export class Player extends Mesh {
 
     public currentCity: City;
+    public availableAPs = signal<number>(4);
     public animatePosition = AnimationFactory.EmptyVector3Callback;
 
     constructor(public pandemik: Pandemik, city: City) {
@@ -80,5 +82,13 @@ export class Player extends Mesh {
             await this.animatePosition(destination, duration / 8);
             link.unlit();
         }
+    }
+
+    public consumeAP(amount: number = 1): void {
+        this.availableAPs.set(this.availableAPs() - amount);
+    }
+
+    public setAvailableAPs(amount: number): void {
+        this.availableAPs.set(amount);
     }
 }

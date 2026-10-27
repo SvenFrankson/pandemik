@@ -3,7 +3,7 @@ import { City } from "./city";
 import { MakeOutline } from "./tools";
 import { Color3 } from "@babylonjs/core/Maths/math.color.pure";
 import { Board } from "./board";
-import { CityColor } from "./data";
+import { GameColor } from "./data";
 import { AnimationFactory, Easing, GetGLTFMeshDataArray } from "babylonjs-tiaratumgames-tools";
 import { CityToken } from "./city-token";
 

@@ -1,9 +1,9 @@
-import { CityColor, CityID, MapData } from '../data';
+import { GameColor, CityID, MapData } from '../data';
 import { Card } from './deck';
 
 export class InfectionCard extends Card {
 
-    public diseaseColor: CityColor;
+    public diseaseColor: GameColor;
 
     constructor(public cityId: CityID) {
         super(MapData[cityId].name);

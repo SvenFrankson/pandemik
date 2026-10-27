@@ -80,7 +80,6 @@ export class GameCamera extends ArcRotateCamera {
     private _radiusOrigin: number = 20;
     private _radiusDestination: number = 20;
     private _radiusUpdate = (f: number | undefined) => {
-        console.log("tac " + f);
         if (f === undefined) return;
         let h = Math.sin(f * Math.PI) * this._height;
         this.radius = this._radiusOrigin + (this._radiusDestination - this._radiusOrigin) * f + h;

@@ -3,13 +3,13 @@ import { City } from "./city";
 import { MakeOutline } from "./tools";
 import { Color3 } from "@babylonjs/core/Maths/math.color.pure";
 import { Board } from "./board";
-import { CityColor } from "./data";
+import { GameColor } from "./data";
 import { AnimationFactory, Easing } from "babylonjs-tiaratumgames-tools";
 import { CityToken } from "./city-token";
 
 export class InfectionToken extends CityToken {
 
-    constructor(city: City, public diseaseColor: CityColor) {
+    constructor(city: City, public diseaseColor: GameColor) {
         super(city);
         this.parent = city;
         this.size = 0;

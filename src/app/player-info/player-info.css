@@ -1,0 +1,36 @@
+.avatar {
+    display: inline-block;
+    margin: 0px 5px;
+    width: 20px;
+    height: 20px;
+    background-color: gray;
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+.name {
+    display: inline-block;
+    margin: 0px 5px;
+    width: 100px;
+    height: 20px;
+    line-height: 20px;
+    font-weight: bold;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, serif;
+    vertical-align: middle;
+}
+
+.ap-icon {
+    display: inline-block;
+    margin: 0px 2px;
+    height: 18px;
+    width: 18px;
+    border: 1px solid white;
+    background-color: rgb(36, 36, 36);
+    border-radius: 5px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.ap-icon.available {
+    background-color: rgb(0, 255, 149);
+}
