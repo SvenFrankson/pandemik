@@ -107,7 +107,11 @@ export class Pandemik {
         this.infectionDeck.shuffle();
 
         this.map.onceStabilized(async () => {
-            this.players.push(new Player(this, this.map!.cities[CityID.Atlanta]));
+            let atlanta = this.map!.cities[CityID.Atlanta];
+
+            await this.gameCamera!.goTo(atlanta.position, 1, 20);
+            this.players.push(new Player(this, atlanta));
+            await atlanta.buildStation();
 
             this.canvas?.addEventListener("pointerdown", this._pointerDown);
             this.canvas?.addEventListener("pointerup", this._pointerUp);

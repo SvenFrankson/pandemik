@@ -40,8 +40,8 @@ export class CityActionMenuConnector {
         if (this._city != null && this.pandemik.currentPlayer) {
             this.shown.set(true);
 
-            this.screenX.set(0);
-            this.screenY.set(0);
+            this.screenX.set(this._city.screenEastX());
+            this.screenY.set(this._city.screenEastY());
             this.screenX = this._city.screenEastX;
             this.screenY = this._city.screenEastY;
 
@@ -51,6 +51,7 @@ export class CityActionMenuConnector {
             this.canCureDisease[CityColor.Yellow].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, CityColor.Yellow));
             this.canCureDisease[CityColor.Black].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, CityColor.Black));
             this.canCureDisease[CityColor.Green].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, CityColor.Green));
+            this.canBuildResearchStation.set(this.gameMaster.canBuildStation(this.pandemik.currentPlayer, this._city));
         }
         else {
             this.shown.set(false);
@@ -71,6 +72,14 @@ export class CityActionMenuConnector {
         //this.shown.set(false);
         if (this._city) {
             await this.gameMaster.doCureDisease(this.pandemik.currentPlayer!, this._city, diseaseColor);
+        }
+        this.update();
+    }
+
+    async onBuildResearchStation(): Promise<void> {
+        //this.shown.set(false);
+        if (this._city) {
+            await this.gameMaster.doBuildStation(this.pandemik.currentPlayer!, this._city);
         }
         this.update();
     }

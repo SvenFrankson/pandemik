@@ -42,4 +42,21 @@ export class GameMaster {
         }
         return false;
     }
+
+    public canBuildStation(player: Player, city: City): boolean {
+        if (player.currentCity === city) {
+            if (!city.hasStation) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public async doBuildStation(player: Player, city: City): Promise<boolean> {
+        if (this.canBuildStation(player, city)) {
+            await city.buildStation();
+            return true;
+        }
+        return false;
+    }
 }

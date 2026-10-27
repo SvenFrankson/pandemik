@@ -15,16 +15,31 @@ import { signal } from "@angular/core";
 import { Texture } from "@babylonjs/core/Materials/Textures/texture.pure";
 import { InfectionToken } from "./infection-token";
 import { CityToken } from "./city-token";
+import { StationToken } from "./station-token";
+
+export enum CityLinkType {
+    Base,
+    Station
+}
 
 export class CityLink extends Mesh {
 
     public get map(): Board {
-        return this.cityA.map;
+        return this.cityA.board;
     }
 
-    constructor(public cityA: City, public cityB: City) {
+    public cityLinkType: CityLinkType;
+
+    constructor(public cityA: City, public cityB: City, cityLinkType: CityLinkType = CityLinkType.Base) {
         super(cityA.name + "-" + cityB.name, cityA.getScene());
-        this.material = this.cityA.map.frameMaterial;
+        this.cityLinkType = cityLinkType;
+        if (cityLinkType === CityLinkType.Base) {
+            this.material = this.cityA.board.frameMaterial;
+        }
+        else if (cityLinkType === CityLinkType.Station) {
+            this.material = this.cityA.board.plasticMaterials[4];
+        }
+        console.log(`Created city link between ${cityA.name} and ${cityB.name} of type ${cityLinkType}`);
     }
 
     public other(city: City): City | null {
@@ -50,11 +65,20 @@ export class CityLink extends Mesh {
             let pt = p0.scale(1 - f).addInPlace(p1.scale(f));
             this.map.projection.constraintHoveredRef(pt);
 
+            if (this.cityLinkType === CityLinkType.Station) {
+                let h = Math.sin(f * Math.PI) * 2;
+                pt.addInPlace(pt.clone().normalize().scale(h));
+            }
+
             line.push(pt);
         }
         line.push(p1);
         
-        CreateWireVertexData({ path: line, radiusFunc: (t) => { return 0.025; } }).applyToMesh(this);
+        let radius = 0.025;
+        if (this.cityLinkType === CityLinkType.Station) {
+            radius = 0.025;
+        }
+        CreateWireVertexData({ path: line, radiusFunc: (t) => { return radius; } }).applyToMesh(this);
     }
 }
 
@@ -92,6 +116,8 @@ export class City extends Mesh {
         signal<number>(0)
     ];
     public tokens: CityToken[] = [];
+    public hasStation = false;
+    public station: Nullable<StationToken> = null;
     
 	public screenNorthX = signal<number>(0);
 	public screenNorthY = signal<number>(0);
@@ -101,20 +127,20 @@ export class City extends Mesh {
 	public screenSouthY = signal<number>(0);
 	public opacity = signal<number>(0);
 
-    public static Connect(cityA: City, cityB: City): CityLink {
+    public static Connect(cityA: City, cityB: City, cityLinkType: CityLinkType = CityLinkType.Base): boolean {
         let link = cityA.getLink(cityB);
         if (link) {
-            return link;
+            return false;
         }
-        link = new CityLink(cityA, cityB);
+        link = new CityLink(cityA, cityB, cityLinkType);
         cityA.links.push(link);
         cityA.distanceTo[cityB.cityId] = 1;
         cityB.links.push(link);
         cityB.distanceTo[cityA.cityId] = 1;
-        return link;
+        return true;
     }
 
-    constructor(public map: Board, cityId: CityID, cityColor: CityColor, name: string, scene: Nullable<Scene>) {
+    constructor(public board: Board, cityId: CityID, cityColor: CityColor, name: string, scene: Nullable<Scene>) {
         super(name, scene);
         this.cityId = cityId;
         this.rotationQuaternion = Quaternion.Identity();
@@ -122,25 +148,25 @@ export class City extends Mesh {
         this.color = CityColor3s[cityColor];
         
         this.pin = MeshBuilder.CreateSphere("pin-" + name, { diameter: 0.05 }, this.getScene());
-        this.pin.material = this.map.plasticMaterials[this.cityColor];
+        this.pin.material = this.board.plasticMaterials[this.cityColor];
         
         this.frame = new CityPart("city-frame", this.getScene(), this);
         this.frame.scaling.copyFromFloats(1, 1, 1).scaleInPlace(2 * this.radius);
         this.frame.parent = this;
-        this.map.tokenMeshData![1].vertexData.applyToMesh(this.frame);
-        this.frame.material = this.map.frameMaterial;
+        this.board.tokenMeshData![1].vertexData.applyToMesh(this.frame);
+        this.frame.material = this.board.frameMaterial;
 
         this.bottom = new CityPart("city-bottom", this.getScene(), this);
         this.bottom.material = QuickMaterial(this.color);
         this.bottom.visibility = 0.5;
         this.bottom.parent = this.frame;
-        this.map.tokenMeshData![2].vertexData.applyToMesh(this.bottom);
+        this.board.tokenMeshData![2].vertexData.applyToMesh(this.bottom);
 
         this.picture = new CityPart("city-pic", this.getScene(), this);
-        this.picture.material = this.map.cityMaterial;
+        this.picture.material = this.board.cityMaterial;
         this.picture.visibility = 0;
         this.picture.parent = this.frame;
-        this.map.tokenMeshData![3].vertexData.applyToMesh(this.picture);
+        this.board.tokenMeshData![3].vertexData.applyToMesh(this.picture);
 
         for (let i = 0; i < CityID.LAST; i++) {
             this.distanceTo[i] = Infinity;
@@ -197,11 +223,11 @@ export class City extends Mesh {
     }
 
     public updatePosition() {
-        this.map.projection.projectToRef(this.lat, this.long, this.basePosition);
+        this.board.projection.projectToRef(this.lat, this.long, this.basePosition);
         this.pin!.position.copyFrom(this.basePosition);
 
         this.position.copyFrom(this.basePosition);        
-        this.map.projection.constraintHoveredRef(this.position, this.rotationQuaternion);
+        this.board.projection.constraintHoveredRef(this.position, this.rotationQuaternion);
     }
 
     public updateLine(): void {
@@ -225,9 +251,9 @@ export class City extends Mesh {
                 let f = n / count;
                 let pt = p0.scale(1 - f).addInPlace(p1.scale(f));
                 let pt0 = pt.clone();
-                this.map.projection.constraintRef(pt0);
+                this.board.projection.constraintRef(pt0);
                 let pt1 = pt.clone();
-                this.map.projection.constraintHoveredRef(pt1);
+                this.board.projection.constraintHoveredRef(pt1);
                 pt = pt0.scale(1 - f).addInPlace(pt1.scale(f));
 
                 line.push(pt);
@@ -258,11 +284,11 @@ export class City extends Mesh {
             index = Math.min(2, index);
             //this.frame!.material = this.map.alertFrameMaterials[index];
             //this.frame!.material = this.map.darkFrameMaterial;
-            this.picture!.material = this.map.alertCityMaterials[index];
+            this.picture!.material = this.board.alertCityMaterials[index];
         }
         else {
             //this.frame!.material = this.map.frameMaterial;
-            this.picture!.material = this.map.cityMaterial;
+            this.picture!.material = this.board.cityMaterial;
         }
     }
 
@@ -305,6 +331,21 @@ export class City extends Mesh {
         }
     }
 
+    public async buildStation(): Promise<void> {
+        if (!this.hasStation) {
+            this.hasStation = true;
+            this.station = new StationToken(this);
+            let pos = new Vector3(
+                this.radius + 0.2,
+                0.1,
+                0
+            );
+            await this.station.animatePosition(pos, 0);
+            await this.station.animateSize(0.35, 0.5, Easing.easeOutCubic);
+            this.board.connectAllStation();
+        }
+    }
+
     public async fixAllTokensPositions(duration: number): Promise<void> {
         for (let i = 0; i < this.tokens.length; i++) {
             let token = this.tokens[i];
@@ -321,19 +362,19 @@ export class City extends Mesh {
 
     public stepUpdate(smoothness: number = 100): number {
         let cumulativeCorrection = 0;
-        for (const otherCity of this.map.cities) {
+        for (const otherCity of this.board.cities) {
             if (otherCity === this) continue;
             const distanceSquared = Vector3.DistanceSquared(this.position, otherCity.position);
-            if (distanceSquared < this.map.projection.cityDistance * this.map.projection.cityDistance) {
+            if (distanceSquared < this.board.projection.cityDistance * this.board.projection.cityDistance) {
                 const direction = this.position.subtract(otherCity.position).normalize();
-                const correction = (this.map.projection.cityDistance * this.map.projection.cityDistance - distanceSquared) / 2 / smoothness;
+                const correction = (this.board.projection.cityDistance * this.board.projection.cityDistance - distanceSquared) / 2 / smoothness;
                 this.position.addInPlace(direction.scale(correction));
-                this.map.projection.constraintHoveredRef(this.position, this.rotationQuaternion);
+                this.board.projection.constraintHoveredRef(this.position, this.rotationQuaternion);
                 //this.updateLine();
                 cumulativeCorrection += correction;
 
                 otherCity.position.addInPlace(direction.scale(-correction));
-                this.map.projection.constraintHoveredRef(otherCity.position, otherCity.rotationQuaternion);
+                this.board.projection.constraintHoveredRef(otherCity.position, otherCity.rotationQuaternion);
                 //otherCity.updateLine();
             }
         }

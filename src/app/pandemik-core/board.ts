@@ -1,7 +1,7 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.pure';
 import type { Quaternion } from '@babylonjs/core/Maths/math.vector.pure';
 import type { Nullable } from '@babylonjs/core/types';
-import { City } from './city';
+import { City, CityLinkType } from './city';
 import { CityColor3s, CityID, CityLinks, MapData } from './data';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.pure';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.pure';
@@ -221,6 +221,7 @@ export class Board {
         for (let n = 0; n < CityColor3s.length; n++) {
             this.plasticMaterials[n] = this._makePlasticPBR("", CityColor3s[n], this.environmentTexture);
         }
+        this.plasticMaterials.push(this._makePlasticPBR("", Color3.White(), this.environmentTexture))
 
         for (let cityId = 0; cityId < CityID.LAST; cityId++) {
             const cityData = MapData[cityId];
@@ -246,16 +247,36 @@ export class Board {
             }
         }
 
+        this.recomputeDistances();
+
+        for (const city of this.cities) {
+            city.updatePosition();
+        }
+    }
+
+    public connectAllStation(): void {
+        let updated = false;
+        const citiesWithStation = this.cities.filter(city => city.hasStation);
+        for (let i = 0; i < citiesWithStation.length; i++) {
+            for (let j = i + 1; j < citiesWithStation.length; j++) {
+                updated = City.Connect(citiesWithStation[i], citiesWithStation[j], CityLinkType.Station) || updated;
+            }
+        }
+        if (updated) {
+            this.recomputeDistances();
+            for (let n = 0; n < this.cities.length; n++) {
+                this.cities[n].updateLine();
+            }
+        }
+    }
+
+    public recomputeDistances(): void {
         let updated = true;
         while (updated) {
             updated = false;
             for (const city of this.cities) {
                 updated = updated || city.shareDistanceMapWithConnected();
             }
-        }
-
-        for (const city of this.cities) {
-            city.updatePosition();
         }
     }
 

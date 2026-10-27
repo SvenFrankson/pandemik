@@ -16,7 +16,7 @@ export class CityToken extends Mesh {
     }
 
     public get map(): Board {
-        return this.city.map;
+        return this.city.board;
     }
 
     public animatePosition = AnimationFactory.EmptyVector3Callback;

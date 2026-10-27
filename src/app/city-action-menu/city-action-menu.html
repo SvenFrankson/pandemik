@@ -19,7 +19,7 @@
             <button (click)="connector.onCureDisease(3)">CURE GREEN <span class="cost">(1 AP)</span></button>
         }
         @if (connector.canBuildResearchStation()) {
-            <button>BUILD</button>
+            <button (click)="connector.onBuildResearchStation()">BUILD</button>
         }
     </div>
 }
