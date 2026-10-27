@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Scene } from "@babylonjs/core/scene.pure";
 import { Player } from "./player";
+import { BreakingNewsConnector } from "./ui-connectors/breaking-news-connector";
 import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
 import { Board } from "./board";
 import type { AudioEngineV2 } from "@babylonjs/core/AudioV2/abstractAudio/audioEngineV2";
@@ -53,6 +54,7 @@ export class Pandemik {
 
     public gameMaster: GameMaster;
     public cityActionMenuConnector: CityActionMenuConnector;
+    public breakingNewsConnector: BreakingNewsConnector;
 
     private _selectedCity: City | null = null;
     public get selectedCity(): City | null {
@@ -93,6 +95,7 @@ export class Pandemik {
 
         this.gameMaster = new GameMaster(this);
         this.cityActionMenuConnector = new CityActionMenuConnector(this);
+        this.breakingNewsConnector = new BreakingNewsConnector(this);
         this.sharedMaterials = new SharedMaterials(this);
     }
 
@@ -116,36 +119,21 @@ export class Pandemik {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     let city = this.map!.cities[card.cityId];
-                    await this.gameCamera!.goTo(city.position, 1, 20, 5);
-                    let promises = [];
-                    for (let i = 0; i < 3; i++) {
-                        promises.push(city.infect(card.diseaseColor));
-                    }
-                    await Promise.all(promises);
+                    await this.gameMaster.infect(city, card.diseaseColor, 3);
                 }
             }
             for (let n = 0; n < 3; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     let city = this.map!.cities[card.cityId];
-                    await this.gameCamera!.goTo(city.position, 1, 20, 5);
-                    let promises = [];
-                    for (let i = 0; i < 2; i++) {
-                        promises.push(city.infect(card.diseaseColor));
-                    }
-                    await Promise.all(promises);
+                    await this.gameMaster.infect(city, card.diseaseColor, 2);
                 }
             }
             for (let n = 0; n < 3; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     let city = this.map!.cities[card.cityId];
-                    await this.gameCamera!.goTo(city.position, 1, 20, 5);
-                    let promises = [];
-                    for (let i = 0; i < 1; i++) {
-                        promises.push(city.infect(card.diseaseColor));
-                    }
-                    await Promise.all(promises);
+                    await this.gameMaster.infect(city, card.diseaseColor, 1);
                 }
             }
 

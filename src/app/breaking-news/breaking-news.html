@@ -1,0 +1,8 @@
+@if (connector != null) {
+    <div id="#container">
+        <h3>Breaking News</h3>
+        @for(info of connector.breakingNews(); track info) {
+            <p>{{ info.text }}</p>
+        }
+    </div>
+}

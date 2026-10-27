@@ -2,8 +2,9 @@ import { Pandemik } from "./pandemik";
 import { Player } from "./player";
 import { City } from "./city";
 import { CityColor } from "./data";
+import { BreakingInfo } from "./ui-connectors/breaking-news-connector";
 
-export class GameMaster {
+export class GameMaster {;
 
     constructor(public pandemik: Pandemik) {
 
@@ -100,5 +101,27 @@ export class GameMaster {
             return true;
         }
         return false;
+    }
+
+    public async infect(city: City, diseaseColor: CityColor, count: number): Promise<void> {
+        await this.pandemik.gameCamera!.goTo(city.position, 1, 20, 5);
+        let promises = [];
+        for (let i = 0; i < count; i++) {
+            promises.push(city.infect(diseaseColor));
+        }
+        let text = "";
+        if (count === 1) {
+            text = "Infection in " + city.name + ".";
+        }
+        else if (count === 2) {
+            text = "Many cases in " + city.name + " !";
+        }
+        else if (count >= 3) {
+            text = "Major outbreak in " + city.name + " !";
+        }
+        this.pandemik.breakingNewsConnector.addBreakingInfo(
+            new BreakingInfo(text)
+        )
+        await Promise.all(promises);
     }
 }
