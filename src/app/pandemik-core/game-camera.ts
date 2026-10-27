@@ -14,16 +14,16 @@ export class GameCamera extends ArcRotateCamera {
         this.animateRadius = AnimationFactory.CreateNumber(this, this, "radius");
     }
 
-    public async goTo(target: Vector3, radius?: number, height: number = 0): Promise<void> {
+    public async goTo(target: Vector3, duration: number = 1, radius?: number, height: number = 0): Promise<void> {
         const alpha = - AngleFromToAround(Axis.X, target, Axis.Y);
         const beta = Angle(Axis.Y, target);
 
         if (radius !== undefined && isFinite(radius)) {
             const rMax = Math.max(this.radius, radius) + height;
-            this.animateRadius(rMax, 0.5, Easing.easeInOutSine).then(() => this.animateRadius(radius, 0.5, Easing.easeInOutSine));
+            this.animateRadius(rMax, duration / 2, Easing.easeInOutSine).then(() => this.animateRadius(radius, duration / 2, Easing.easeInOutSine));
         }
 
-        await this.animateAlphaBeta([alpha, beta], 1);
+        await this.animateAlphaBeta([alpha, beta], duration);
     }
 }
 

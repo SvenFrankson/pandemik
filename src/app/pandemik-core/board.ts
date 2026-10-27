@@ -246,6 +246,14 @@ export class Board {
             }
         }
 
+        let updated = true;
+        while (updated) {
+            updated = false;
+            for (const city of this.cities) {
+                updated = updated || city.shareDistanceMapWithConnected();
+            }
+        }
+
         for (const city of this.cities) {
             city.updatePosition();
         }

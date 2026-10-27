@@ -25,6 +25,7 @@ export class CityActionMenuConnector {
 
     shown = signal<boolean>(false);
     canGoTo = signal<boolean>(false);
+    goToCost = signal<number>(1);
     canFlyTo = signal<boolean>(false);
     canCureDisease = [signal<boolean>(false), signal<boolean>(false), signal<boolean>(false), signal<boolean>(false)];
     canBuildResearchStation = signal<boolean>(false);
@@ -45,6 +46,7 @@ export class CityActionMenuConnector {
             this.screenY = this._city.screenEastY;
 
             this.canGoTo.set(this.gameMaster.canMoveTo(this.pandemik.currentPlayer, this._city));
+            this.goToCost.set(this.gameMaster.moveToCost(this.pandemik.currentPlayer, this._city));
             this.canCureDisease[CityColor.Blue].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, CityColor.Blue));
             this.canCureDisease[CityColor.Yellow].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, CityColor.Yellow));
             this.canCureDisease[CityColor.Black].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, CityColor.Black));
@@ -57,17 +59,19 @@ export class CityActionMenuConnector {
         }
     }
 
-    onGoTo(): void {
-        this.shown.set(false);
+    async onGoTo(): Promise<void> {
+        //this.shown.set(false);
         if (this._city) {
-            this.gameMaster.doMove(this.pandemik.currentPlayer!, this._city);
+            await this.gameMaster.doMove(this.pandemik.currentPlayer!, this._city);
         }
+        this.update();
     }
 
-    onCureDisease(diseaseColor: CityColor): void {
-        this.shown.set(false);
+    async onCureDisease(diseaseColor: CityColor): Promise<void> {
+        //this.shown.set(false);
         if (this._city) {
-            this.gameMaster.doCureDisease(this.pandemik.currentPlayer!, this._city, diseaseColor);
+            await this.gameMaster.doCureDisease(this.pandemik.currentPlayer!, this._city, diseaseColor);
         }
+        this.update();
     }
 }

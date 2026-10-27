@@ -67,7 +67,7 @@ export class Pandemik {
         this._selectedCity = city;
         if (this._selectedCity) {
             this._selectedCity.select();
-            this.gameCamera?.goTo(this._selectedCity.position);
+            this.gameCamera?.goTo(this._selectedCity.position, 0.5);
         }
         this.cityActionMenuConnector.city = city;
     }

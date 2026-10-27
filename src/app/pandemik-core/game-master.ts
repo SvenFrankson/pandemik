@@ -10,7 +10,13 @@ export class GameMaster {
     }
 
     public canMoveTo(player: Player, destination: City): boolean {
-        return player.currentCity?.getLink(destination) != null;
+        let dist = player.currentCity?.distanceTo[destination.cityId];
+        return dist > 0 && dist <= 4;
+    }
+
+    public moveToCost(player: Player, destination: City): number {
+        let dist = player.currentCity?.distanceTo[destination.cityId];
+        return dist ?? 0;
     }
 
     public async doMove(player: Player, destination: City): Promise<boolean> {

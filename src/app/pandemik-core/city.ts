@@ -83,6 +83,7 @@ export class City extends Mesh {
     public color: Color3;
 
     public links: CityLink[] = [];
+    public distanceTo: number[] = [];
 
     public infections = [
         signal<number>(0),
@@ -107,8 +108,9 @@ export class City extends Mesh {
         }
         link = new CityLink(cityA, cityB);
         cityA.links.push(link);
+        cityA.distanceTo[cityB.cityId] = 1;
         cityB.links.push(link);
-        
+        cityB.distanceTo[cityA.cityId] = 1;
         return link;
     }
 
@@ -139,6 +141,11 @@ export class City extends Mesh {
         this.picture.visibility = 0;
         this.picture.parent = this.frame;
         this.map.tokenMeshData![3].vertexData.applyToMesh(this.picture);
+
+        for (let i = 0; i < CityID.LAST; i++) {
+            this.distanceTo[i] = Infinity;
+        }
+        this.distanceTo[this.cityId] = 0;
     }
 
     public select(): void {
@@ -344,5 +351,28 @@ export class City extends Mesh {
             }
         }
         return null;
+    }
+
+    public shareDistanceMapWithConnected(): boolean {
+        let updated = false;
+        for (const link of this.links) {
+            const otherCity = link.other(this);
+            if (otherCity) {
+                updated = updated || this.shareDistanceMap(otherCity);
+            }
+        }
+        return updated;
+    }
+
+    public shareDistanceMap(otherCity: City): boolean {
+        let updated = false;
+        for (let i = 0; i < CityID.LAST; i++) {
+            const newDistance = Math.min(this.distanceTo[i], otherCity.distanceTo[i] + 1);
+            if (newDistance < this.distanceTo[i]) {
+                this.distanceTo[i] = newDistance;
+                updated = true;
+            }
+        }
+        return updated;
     }
 }
