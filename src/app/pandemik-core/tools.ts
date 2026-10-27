@@ -12,10 +12,19 @@ export function QuickMaterial(color: Color3, specularIntensity: number = 0, emis
     return material;
 }
 
-export function MakeOutline(mesh: Mesh, color: Color3, width: number = 0.02) {
-    mesh.renderOutline = true;
-    mesh.outlineColor = color;
-    mesh.outlineWidth = width;
+export function MakeOutline(mesh: Mesh | null, color: Color3, width: number = 0.02) {
+    if (mesh) {
+        mesh.renderOutline = true;
+        mesh.outlineColor = color;
+        mesh.outlineWidth = width;
+    }
+    return mesh;
+}
+
+export function RemoveOutline(mesh: Mesh | null) {
+    if (mesh) {
+        mesh.renderOutline = false;
+    }
     return mesh;
 }
 

@@ -7,7 +7,7 @@ import type { Nullable } from "@babylonjs/core/types";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector.pure";
 import { Board } from "./board";
 import { CreateSphereVertexData } from "@babylonjs/core/Meshes/Builders/sphereBuilder.pure";
-import { MakeOrthogonal, MakeOrthogonalInPlace, MakeOutline, QuickMaterial } from "./tools";
+import { MakeOrthogonal, MakeOrthogonalInPlace, MakeOutline, QuickMaterial, RemoveOutline } from "./tools";
 import { Color3 } from "@babylonjs/core/Maths/math.color.pure";
 import { Angle, CreateBeveledBox, CreateBeveledCylinder, CreateBeveledCylinderVertexData, CreateTrailVertexData, CreateWireVertexData, Easing, GetGLTFMeshDataArray } from "babylonjs-tiaratumgames-tools";
 import { RedColor, GreyColor } from "./constants";
@@ -58,6 +58,12 @@ export class CityLink extends Mesh {
     }
 }
 
+export class CityPart extends Mesh {
+    constructor(name: string, scene: Nullable<Scene>, public city: City) {
+        super(name, scene);
+    }
+}
+
 export class City extends Mesh {
 
     public radius: number = 0.5;
@@ -68,9 +74,9 @@ export class City extends Mesh {
     public basePosition: Vector3 = new Vector3(0, 0, 0);
 
     public pin: Nullable<Mesh> = null;
-    public frame: Nullable<Mesh> = null;
-    public bottom: Nullable<Mesh> = null;
-    public picture: Nullable<Mesh> = null;
+    public frame: Nullable<CityPart> = null;
+    public bottom: Nullable<CityPart> = null;
+    public picture: Nullable<CityPart> = null;
     public line: Nullable<Mesh> = null;
 
     public cityColor: CityColor;
@@ -88,6 +94,8 @@ export class City extends Mesh {
     
 	public screenNorthX = signal<number>(0);
 	public screenNorthY = signal<number>(0);
+	public screenEastX = signal<number>(0);
+	public screenEastY = signal<number>(0);
 	public screenSouthX = signal<number>(0);
 	public screenSouthY = signal<number>(0);
 	public opacity = signal<number>(0);
@@ -114,23 +122,31 @@ export class City extends Mesh {
         this.pin = MeshBuilder.CreateSphere("pin-" + name, { diameter: 0.05 }, this.getScene());
         this.pin.material = this.map.plasticMaterials[this.cityColor];
         
-        this.frame = new Mesh("frame", this.getScene());
+        this.frame = new CityPart("city-frame", this.getScene(), this);
         this.frame.scaling.copyFromFloats(1, 1, 1).scaleInPlace(2 * this.radius);
         this.frame.parent = this;
         this.map.tokenMeshData![1].vertexData.applyToMesh(this.frame);
         this.frame.material = this.map.frameMaterial;
 
-        this.bottom = new Mesh("bottom", this.getScene());
+        this.bottom = new CityPart("city-bottom", this.getScene(), this);
         this.bottom.material = QuickMaterial(this.color);
         this.bottom.visibility = 0.5;
         this.bottom.parent = this.frame;
         this.map.tokenMeshData![2].vertexData.applyToMesh(this.bottom);
 
-        this.picture = new Mesh("pic", this.getScene());
+        this.picture = new CityPart("city-pic", this.getScene(), this);
         this.picture.material = this.map.cityMaterial;
         this.picture.visibility = 0;
         this.picture.parent = this.frame;
         this.map.tokenMeshData![3].vertexData.applyToMesh(this.picture);
+    }
+
+    public select(): void {
+        MakeOutline(this.frame, Color3.White());
+    }
+
+    public unselect(): void {
+        RemoveOutline(this.frame);
     }
 
     public update(): void {
@@ -150,6 +166,16 @@ export class City extends Mesh {
             );
             this.screenNorthX.set(screenP.x * this._scene.getEngine().getRenderWidth() / window.devicePixelRatio);
             this.screenNorthY.set(screenP.y * this._scene.getEngine().getRenderHeight() / window.devicePixelRatio);
+            
+            p = Vector3.TransformCoordinates(new Vector3(this.radius + 0.05, 0, 0), this.getWorldMatrix());
+            screenP = Vector3.Project(
+                p,
+                Matrix.Identity(),
+                this._scene.getTransformMatrix(),
+                this._scene.activeCamera?.viewport!
+            );
+            this.screenEastX.set(screenP.x * this._scene.getEngine().getRenderWidth() / window.devicePixelRatio);
+            this.screenEastY.set(screenP.y * this._scene.getEngine().getRenderHeight() / window.devicePixelRatio);
 
             p = Vector3.TransformCoordinates(new Vector3(0, 0, - this.radius - 0.05), this.getWorldMatrix());
             screenP = Vector3.Project(

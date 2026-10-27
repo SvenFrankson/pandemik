@@ -1,0 +1,19 @@
+#container {
+	position: fixed;
+    z-index: 1;
+    border: 1px solid black;
+    border-radius: 4px;
+    color: black;
+
+    margin: 0;
+    padding: 0;
+    font-size: 12px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, serif;
+    font-weight: 900;
+
+    user-select: none;
+}
+
+button {
+    display: block;
+}

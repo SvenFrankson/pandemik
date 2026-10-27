@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Scene } from "@babylonjs/core/scene.pure";
+import { Player } from "./player";
 import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
 import { Board } from "./board";
 import type { AudioEngineV2 } from "@babylonjs/core/AudioV2/abstractAudio/audioEngineV2";
@@ -9,11 +10,13 @@ import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight.pure";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector.pure";
 import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera.pure";
 import { Engine } from "@babylonjs/core/Engines/engine.pure";
-import { HemisphericLight } from "@babylonjs/core";
+import { HemisphericLight, Matrix } from "@babylonjs/core";
 import { InfectionCard } from "./deck/infection-card";
 import { Deck } from "./deck/deck";
 import { CityID } from "./data";
 import { GameCamera } from "./game-camera";
+import { CityActionMenuConnector } from "./ui-connectors/city-action-menu-connector";
+import { City, CityPart } from "./city";
 
 @Injectable({
 	providedIn: 'root',
@@ -43,9 +46,28 @@ export class Pandemik {
 
     public map: Board | null = null;
     public infectionDeck: Deck<InfectionCard> | null = null;
+    public players: Player[] = [];
+
+    public cityActionMenuConnector: CityActionMenuConnector;
+
+    private _selectedCity: City | null = null;
+    public get selectedCity(): City | null {
+        return this._selectedCity;
+    }
+    public set selectedCity(city: City | null) {
+        console.log("Selected city changed to:", city);
+        if (this._selectedCity) {
+            this._selectedCity.unselect();
+        }
+        this._selectedCity = city;
+        if (this._selectedCity) {
+            this._selectedCity.select();
+        }
+        this.cityActionMenuConnector.city = city;
+    }
 
     constructor() {
-        
+        this.cityActionMenuConnector = new CityActionMenuConnector();
     }
 
     public async initialize(canvas: HTMLCanvasElement): Promise<void> {
@@ -78,11 +100,16 @@ export class Pandemik {
         this.infectionDeck.shuffle();
 
         this.map.onceStabilized(async () => {
+            this.players.push(new Player(this, this.map!.cities[CityID.Atlanta]));
+
+            this.canvas?.addEventListener("pointerdown", this._pointerDown);
+            this.canvas?.addEventListener("pointerup", this._pointerUp);
+
             for (let n = 0; n < 3; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     let city = this.map!.cities[card.cityId];
-                    await this.gameCamera!.goTo(city.position, 20);
+                    //await this.gameCamera!.goTo(city.position, 20);
                     for (let i = 0; i < 3; i++) {
                         await city.infect(card.diseaseColor);
                     }
@@ -92,7 +119,7 @@ export class Pandemik {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     let city = this.map!.cities[card.cityId];
-                    await this.gameCamera!.goTo(city.position, 20);
+                    //await this.gameCamera!.goTo(city.position, 20);
                     for (let i = 0; i < 2; i++) {
                         await city.infect(card.diseaseColor);
                     }
@@ -102,7 +129,7 @@ export class Pandemik {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     let city = this.map!.cities[card.cityId];
-                    await this.gameCamera!.goTo(city.position, 20);
+                    //await this.gameCamera!.goTo(city.position, 20);
                     for (let i = 0; i < 1; i++) {
                         await city.infect(card.diseaseColor);
                     }
@@ -127,5 +154,50 @@ export class Pandemik {
                 this.map.update();
             }
         }
+    }
+
+    private _pointerDownX: number = -1;
+    private _pointerDownY: number = -1;
+    private _pointerDown = (evt: PointerEvent) => {
+        // Handle pointer down event
+        this._pointerDownX = evt.clientX;
+        this._pointerDownY = evt.clientY;
+    }
+
+    private _pointerUp = (evt: PointerEvent) => {
+        // Handle pointer up event
+        const dx = evt.clientX - this._pointerDownX;
+        const dy = evt.clientY - this._pointerDownY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        let selectedCity: City | null = null;
+        if (distance < 5) {
+            let pickingRay = this.scene!.createPickingRay(
+                this.scene!.pointerX,
+                this.scene!.pointerY,
+                Matrix.Identity(),
+                this.gameCamera,
+                false
+            );
+            pickingRay.direction.normalize();
+            
+            let pick = this.scene!.pickWithRay(
+                pickingRay,
+                (mesh) => {
+                    if (mesh instanceof CityPart) {
+                        return true;
+                    }
+                    return false;
+                }
+            );
+            console.log(pick);
+            if (pick && pick.pickedMesh) {
+                let cityPart = pick.pickedMesh as CityPart;
+                let city = cityPart.city;
+                selectedCity = city;
+            }
+        }
+        this._pointerDownX = -1;
+        this._pointerDownY = -1;
+        this.selectedCity = selectedCity;
     }
 }
