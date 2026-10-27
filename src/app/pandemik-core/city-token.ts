@@ -15,7 +15,7 @@ export class CityToken extends Mesh {
         this.scaling.copyFromFloats(value, value, value);
     }
 
-    public get map(): Board {
+    public get board(): Board {
         return this.city.board;
     }
 

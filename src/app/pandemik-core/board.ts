@@ -83,92 +83,8 @@ export class Board {
     public cities: City[] = [];
 
     public tokenMeshData: IMeshData[] | null = null;
-    public environmentTexture: CubeTexture;
-    public frameMaterial: Material;
-    public alertFrameMaterials: PBRMetallicRoughnessMaterial[] = [];
-    public darkFrameMaterial: Material;
-    public infectionMaterial: Material;
-    public infectionMaterials: Material[] = [];
-    public cityMaterial: Material;
-    public alertCityMaterials: Material[] = [];
-    public plasticMaterials: Material[] = [];
-
-    private _makePlasticPBR(name: string, color: Color3, envTexture: CubeTexture): Material {
-        let plastic = new PBRMetallicRoughnessMaterial(name, this.pandemik.scene!);
-        plastic.baseColor = color;
-        plastic.roughness = 1;
-        plastic.environmentTexture = envTexture;
-
-        return plastic;
-    }
-
-    private _makeMetalPBR(name: string, color: Color3, envTexture: CubeTexture): Material {
-        let metalMaterial = new PBRMetallicRoughnessMaterial(name, this.pandemik.scene!);
-        metalMaterial.baseColor = color;
-        metalMaterial.metallic = 0.85;
-        metalMaterial.roughness = 0.15;
-        metalMaterial.environmentTexture = envTexture;
-
-        return metalMaterial;
-    }
 
     constructor(public pandemik: Pandemik) {
-        this.environmentTexture = CubeTexture.CreateFromPrefilteredData("environmentSpecular.env", this.pandemik.scene!);
-
-        let steelMaterialPBR = new PBRMetallicRoughnessMaterial("steel-pbr", this.pandemik.scene!);
-        steelMaterialPBR.baseColor = new Color3(0.5, 0.75, 1.0);
-        steelMaterialPBR.metallic = 1.0;
-        steelMaterialPBR.roughness = 0.15;
-        steelMaterialPBR.environmentTexture = this.environmentTexture;
-        this.frameMaterial = steelMaterialPBR;
-        
-        let alert1FrameMaterialPBR = this._makeMetalPBR("alert-1", Color3.FromHexString("#ccc127"), this.environmentTexture) as PBRMetallicRoughnessMaterial;
-        //alert1FrameMaterialPBR.emissiveColor = Color3.White().scale(0.05);
-        this.alertFrameMaterials.push(alert1FrameMaterialPBR);
-        
-        let alert2FrameMaterialPBR = this._makeMetalPBR("alert-2", Color3.FromHexString("#c77a21"), this.environmentTexture) as PBRMetallicRoughnessMaterial;
-        //alert2FrameMaterialPBR.emissiveColor = Color3.White().scale(0.05);
-        this.alertFrameMaterials.push(alert2FrameMaterialPBR);
-        
-        let alert3FrameMaterialPBR = this._makeMetalPBR("alert-3", Color3.FromHexString("#c52828"), this.environmentTexture) as PBRMetallicRoughnessMaterial;
-        //alert3FrameMaterialPBR.emissiveColor = Color3.White().scale(0.05);
-        this.alertFrameMaterials.push(alert3FrameMaterialPBR);
-
-        let darkSteelMaterialPBR = new PBRMetallicRoughnessMaterial("dark-steel-pbr", this.pandemik.scene!);
-        darkSteelMaterialPBR.baseColor = new Color3(0.5, 0.75, 1.0).scale(0.3);
-        darkSteelMaterialPBR.metallic = 0.7;
-        darkSteelMaterialPBR.roughness = 0.3;
-        darkSteelMaterialPBR.environmentTexture = this.environmentTexture;
-        this.darkFrameMaterial = darkSteelMaterialPBR;
-
-        let infectionMaterial = QuickMaterial(Color3.White(), 0, Color3.White().scale(0.5));
-        infectionMaterial.diffuseTexture = new Texture("virus.png", this.pandemik.scene!, undefined, false);
-        infectionMaterial.diffuseTexture.hasAlpha = true;
-        infectionMaterial.useAlphaFromDiffuseTexture = true;
-        this.infectionMaterial = infectionMaterial;
-
-        for (let i = 0; i <= 3; i++) {   
-            let mat = QuickMaterial(CityColor3s[i], 0, CityColor3s[i].scale(0.5));
-            mat.diffuseTexture = new Texture("virus.png", this.pandemik.scene!, undefined, false);
-            mat.diffuseTexture.hasAlpha = true;
-            mat.useAlphaFromDiffuseTexture = true;
-            this.infectionMaterials.push(mat);
-        }
-
-        let cityMaterial = QuickMaterial(Color3.White(), 0, Color3.Red());
-        cityMaterial.diffuseTexture = new Texture("biohazard.png", this.pandemik.scene!, undefined, false);
-        cityMaterial.diffuseTexture.hasAlpha = true;
-        cityMaterial.useAlphaFromDiffuseTexture = true;
-        this.cityMaterial = cityMaterial;
-
-        for (let i = 0; i < 3; i++) {
-            let alertCityMaterial = QuickMaterial(Color3.White(), 0, Color3.Red().scale((i + 1) / 3).scale(0.5));
-            alertCityMaterial.diffuseTexture = new Texture("biohazard.png", this.pandemik.scene!, undefined, false);
-            alertCityMaterial.diffuseTexture.hasAlpha = true;
-            alertCityMaterial.useAlphaFromDiffuseTexture = true;
-            this.alertCityMaterials.push(alertCityMaterial);
-        }
-        
         let zero = MeshBuilder.CreateSphere("base", { diameter: 0.2 });
         zero.position.z = - 1;
         this.projection.constraintRef(zero.position);
@@ -216,12 +132,6 @@ export class Board {
     public async instantiate(): Promise<void> {
         this.tokenMeshData = await GetGLTFMeshDataArray("token.gltf", this.pandemik.scene!);
         this.tokenMeshData?.sort((a, b) => a.name.localeCompare(b.name));
-
-        this.plasticMaterials = [];
-        for (let n = 0; n < CityColor3s.length; n++) {
-            this.plasticMaterials[n] = this._makePlasticPBR("", CityColor3s[n], this.environmentTexture);
-        }
-        this.plasticMaterials.push(this._makePlasticPBR("", Color3.White(), this.environmentTexture))
 
         for (let cityId = 0; cityId < CityID.LAST; cityId++) {
             const cityData = MapData[cityId];

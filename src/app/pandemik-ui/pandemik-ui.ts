@@ -13,20 +13,21 @@ import { CityActionMenu } from '../city-action-menu/city-action-menu';
 })
 export class PandemikUi {
 
+	private pandemik: Pandemik | null = null;
+
 	@ViewChild(CityActionMenu) cityActionMenu!: CityActionMenu;
 	public cities = signal<City[]>([]);
 
-	constructor(private pandemik: Pandemik) {
+	constructor() {
 
 	}
 
 	ngOnInit() {
-		if (this.pandemik) {
-			this.pandemik.initialize(document.querySelector("#game-canvas") as HTMLCanvasElement).then(() => {
-				this.pandemik.start();
-				this.cities.set(this.pandemik.map?.cities ?? []);
-				this.cityActionMenu.connector = this.pandemik.cityActionMenuConnector;
-			});
-		}
+		this.pandemik = new Pandemik(document.querySelector("#game-canvas") as HTMLCanvasElement);
+		this.pandemik.initialize().then(() => {
+			this.pandemik!.start();
+			this.cities.set(this.pandemik!.map?.cities ?? []);
+			this.cityActionMenu.connector = this.pandemik!.cityActionMenuConnector;
+		});
 	}
 }

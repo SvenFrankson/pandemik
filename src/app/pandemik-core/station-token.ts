@@ -21,6 +21,6 @@ export class StationToken extends CityToken {
         });
         
         MakeOutline(this, Color3.Black());
-        this.material = this.map.plasticMaterials[4];
+        this.material = this.board.pandemik.sharedMaterials.plasticMaterials[4];
     }
 }

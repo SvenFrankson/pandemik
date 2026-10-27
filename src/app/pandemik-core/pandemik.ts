@@ -18,16 +18,14 @@ import { GameCamera } from "./game-camera";
 import { CityActionMenuConnector } from "./ui-connectors/city-action-menu-connector";
 import { City, CityPart } from "./city";
 import { GameMaster } from "./game-master";
+import { SharedMaterials } from "./materials";
 
-@Injectable({
-	providedIn: 'root',
-})
 export class Pandemik {
 
     public DEBUG_MODE: boolean = false;
 
-    public canvas: HTMLCanvasElement | null = null;
-    public engine: Engine | null = null;
+    public canvas: HTMLCanvasElement;
+    public engine: Engine;
     public audioEngine: AudioEngineV2 | null = null;
     public get audioVolume(): number {
         return this.audioEngine ? this.audioEngine.volume : 0;
@@ -37,13 +35,14 @@ export class Pandemik {
             this.audioEngine.setVolume(v);
         }
     }
-    public scene: Scene | null = null;
+    public scene: Scene;
     public getScene(): Scene | null {
         return this.scene;
     }
-    public gameCamera: GameCamera | null = null;
-    public ambientLight: HemisphericLight | null = null;
-    public glowLayer: GlowLayer | null = null;
+    public gameCamera: GameCamera;
+    public ambientLight: HemisphericLight;
+    public glowLayer: GlowLayer;
+    public sharedMaterials: SharedMaterials;
 
     public map: Board | null = null;
     public infectionDeck: Deck<InfectionCard> | null = null;
@@ -72,12 +71,7 @@ export class Pandemik {
         this.cityActionMenuConnector.city = city;
     }
 
-    constructor() {
-        this.gameMaster = new GameMaster(this);
-        this.cityActionMenuConnector = new CityActionMenuConnector(this);
-    }
-
-    public async initialize(canvas: HTMLCanvasElement): Promise<void> {
+    constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         this.engine = new Engine(canvas, true, undefined, true);
         (async () => {
@@ -97,6 +91,12 @@ export class Pandemik {
 
         this.glowLayer = new GlowLayer("glow-layer", this.scene);
 
+        this.gameMaster = new GameMaster(this);
+        this.cityActionMenuConnector = new CityActionMenuConnector(this);
+        this.sharedMaterials = new SharedMaterials(this);
+    }
+
+    public async initialize(): Promise<void> {
         this.map = new Board(this);
         await this.map.instantiate();
 
@@ -109,10 +109,6 @@ export class Pandemik {
         this.map.onceStabilized(async () => {
             let atlanta = this.map!.cities[CityID.Atlanta];
 
-            await this.gameCamera!.goTo(atlanta.position, 1, 20);
-            this.players.push(new Player(this, atlanta));
-            await atlanta.buildStation();
-
             this.canvas?.addEventListener("pointerdown", this._pointerDown);
             this.canvas?.addEventListener("pointerup", this._pointerUp);
 
@@ -120,32 +116,42 @@ export class Pandemik {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     let city = this.map!.cities[card.cityId];
-                    //await this.gameCamera!.goTo(city.position, 20);
+                    await this.gameCamera!.goTo(city.position, 1, 20, 5);
+                    let promises = [];
                     for (let i = 0; i < 3; i++) {
-                        await city.infect(card.diseaseColor);
+                        promises.push(city.infect(card.diseaseColor));
                     }
+                    await Promise.all(promises);
                 }
             }
             for (let n = 0; n < 3; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     let city = this.map!.cities[card.cityId];
-                    //await this.gameCamera!.goTo(city.position, 20);
+                    await this.gameCamera!.goTo(city.position, 1, 20, 5);
+                    let promises = [];
                     for (let i = 0; i < 2; i++) {
-                        await city.infect(card.diseaseColor);
+                        promises.push(city.infect(card.diseaseColor));
                     }
+                    await Promise.all(promises);
                 }
             }
             for (let n = 0; n < 3; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     let city = this.map!.cities[card.cityId];
-                    //await this.gameCamera!.goTo(city.position, 20);
+                    await this.gameCamera!.goTo(city.position, 1, 20, 5);
+                    let promises = [];
                     for (let i = 0; i < 1; i++) {
-                        await city.infect(card.diseaseColor);
+                        promises.push(city.infect(card.diseaseColor));
                     }
+                    await Promise.all(promises);
                 }
             }
+
+            await this.gameCamera!.goTo(atlanta.position, 1, 25);
+            this.players.push(new Player(this, atlanta));
+            await atlanta.buildStation();
         });
     }
 

@@ -16,6 +16,7 @@ import { Texture } from "@babylonjs/core/Materials/Textures/texture.pure";
 import { InfectionToken } from "./infection-token";
 import { CityToken } from "./city-token";
 import { StationToken } from "./station-token";
+import { TransformNode } from "@babylonjs/core/Meshes/transformNode.pure";
 
 export enum CityLinkType {
     Base,
@@ -29,17 +30,36 @@ export class CityLink extends Mesh {
     }
 
     public cityLinkType: CityLinkType;
+    public path: Vector3[] = [];
 
     constructor(public cityA: City, public cityB: City, cityLinkType: CityLinkType = CityLinkType.Base) {
         super(cityA.name + "-" + cityB.name, cityA.getScene());
         this.cityLinkType = cityLinkType;
         if (cityLinkType === CityLinkType.Base) {
-            this.material = this.cityA.board.frameMaterial;
+            this.material = this.cityA.board.pandemik.sharedMaterials.frameMaterial;
         }
         else if (cityLinkType === CityLinkType.Station) {
-            this.material = this.cityA.board.plasticMaterials[4];
+            this.material = this.cityA.board.pandemik.sharedMaterials.plasticMaterials[4];
         }
         console.log(`Created city link between ${cityA.name} and ${cityB.name} of type ${cityLinkType}`);
+    }
+
+    public highlight(): void {
+        if (this.cityLinkType === CityLinkType.Base) {
+            this.material = this.cityA.board.pandemik.sharedMaterials.highlightFrameMaterial;
+        }
+        else if (this.cityLinkType === CityLinkType.Station) {
+            this.material = this.cityA.board.pandemik.sharedMaterials.plasticMaterials[4];
+        }
+    }
+
+    public unlit(): void {
+        if (this.cityLinkType === CityLinkType.Base) {
+            this.material = this.cityA.board.pandemik.sharedMaterials.frameMaterial;
+        }
+        else if (this.cityLinkType === CityLinkType.Station) {
+            this.material = this.cityA.board.pandemik.sharedMaterials.plasticMaterials[4];
+        }
     }
 
     public other(city: City): City | null {
@@ -59,7 +79,7 @@ export class CityLink extends Mesh {
         let dir1 = MakeOrthogonal(dir, p1).normalize();
         p1.subtractInPlace(dir1.scale(this.cityB.radius * 0.95));
 
-        let line = [p0];
+        this.path = [p0];
         for (let n = 1; n < 30; n++) {
             let f = n / 30;
             let pt = p0.scale(1 - f).addInPlace(p1.scale(f));
@@ -70,15 +90,15 @@ export class CityLink extends Mesh {
                 pt.addInPlace(pt.clone().normalize().scale(h));
             }
 
-            line.push(pt);
+            this.path.push(pt);
         }
-        line.push(p1);
+        this.path.push(p1);
         
         let radius = 0.025;
         if (this.cityLinkType === CityLinkType.Station) {
             radius = 0.025;
         }
-        CreateWireVertexData({ path: line, radiusFunc: (t) => { return radius; } }).applyToMesh(this);
+        CreateWireVertexData({ path: this.path, radiusFunc: (t) => { return radius; } }).applyToMesh(this);
     }
 }
 
@@ -97,11 +117,12 @@ export class City extends Mesh {
     public long: number = 0;
     public basePosition: Vector3 = new Vector3(0, 0, 0);
 
-    public pin: Nullable<Mesh> = null;
-    public frame: Nullable<CityPart> = null;
-    public bottom: Nullable<CityPart> = null;
-    public picture: Nullable<CityPart> = null;
+    public pin: Mesh;
+    public frame: CityPart;
+    public bottom: CityPart;
+    public picture: CityPart;
     public line: Nullable<Mesh> = null;
+    public playerAnchor: TransformNode;
 
     public cityColor: CityColor;
     public color: Color3;
@@ -148,13 +169,13 @@ export class City extends Mesh {
         this.color = CityColor3s[cityColor];
         
         this.pin = MeshBuilder.CreateSphere("pin-" + name, { diameter: 0.05 }, this.getScene());
-        this.pin.material = this.board.plasticMaterials[this.cityColor];
+        this.pin.material = this.board.pandemik.sharedMaterials.plasticMaterials[this.cityColor];
         
         this.frame = new CityPart("city-frame", this.getScene(), this);
         this.frame.scaling.copyFromFloats(1, 1, 1).scaleInPlace(2 * this.radius);
         this.frame.parent = this;
         this.board.tokenMeshData![1].vertexData.applyToMesh(this.frame);
-        this.frame.material = this.board.frameMaterial;
+        this.frame.material = this.board.pandemik.sharedMaterials.frameMaterial;
 
         this.bottom = new CityPart("city-bottom", this.getScene(), this);
         this.bottom.material = QuickMaterial(this.color);
@@ -163,10 +184,19 @@ export class City extends Mesh {
         this.board.tokenMeshData![2].vertexData.applyToMesh(this.bottom);
 
         this.picture = new CityPart("city-pic", this.getScene(), this);
-        this.picture.material = this.board.cityMaterial;
+        this.picture.material = this.board.pandemik.sharedMaterials.cityMaterial;
         this.picture.visibility = 0;
         this.picture.parent = this.frame;
         this.board.tokenMeshData![3].vertexData.applyToMesh(this.picture);
+
+        this.playerAnchor = new TransformNode("player-anchor", this.getScene());
+        this.playerAnchor.parent = this;
+        let alpha = - 3 * Math.PI / 4;
+        this.playerAnchor.position.copyFromFloats(
+            (this.radius - 0.1) * Math.sin(alpha),
+            0.1,
+            (this.radius - 0.1) * Math.cos(alpha)
+        );
 
         for (let i = 0; i < CityID.LAST; i++) {
             this.distanceTo[i] = Infinity;
@@ -175,11 +205,11 @@ export class City extends Mesh {
     }
 
     public select(): void {
-        MakeOutline(this.frame, Color3.White());
+        this.frame.material = this.board.pandemik.sharedMaterials.highlightFrameMaterial;
     }
 
     public unselect(): void {
-        RemoveOutline(this.frame);
+        this.frame.material = this.board.pandemik.sharedMaterials.frameMaterial;
     }
 
     public update(): void {
@@ -284,11 +314,11 @@ export class City extends Mesh {
             index = Math.min(2, index);
             //this.frame!.material = this.map.alertFrameMaterials[index];
             //this.frame!.material = this.map.darkFrameMaterial;
-            this.picture!.material = this.board.alertCityMaterials[index];
+            this.picture!.material = this.board.pandemik.sharedMaterials.alertCityMaterials[index];
         }
         else {
             //this.frame!.material = this.map.frameMaterial;
-            this.picture!.material = this.board.cityMaterial;
+            this.picture!.material = this.board.pandemik.sharedMaterials.cityMaterial;
         }
     }
 
