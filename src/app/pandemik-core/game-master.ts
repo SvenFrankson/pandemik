@@ -3,11 +3,24 @@ import { Player } from "./player";
 import { City } from "./city";
 import { DiseaseNames, GameColor } from "./data";
 import { BreakingInfo } from "./ui-connectors/breaking-news-connector";
+import { NextFrame } from "babylonjs-tiaratumgames-tools";
+import { signal } from "@angular/core";
 
 export class GameMaster {;
 
-    constructor(public pandemik: Pandemik) {
+    private __working: boolean = false;
+    private get _working() {
+        return this.__working;
+    }
+    private set _working(value: boolean) {
+        this.__working = value;
+        this.canPressDone.set(!value);
+    }
 
+    canPressDone = signal<boolean>(false);
+
+    constructor(public pandemik: Pandemik) {
+        this._working = false;
     }
 
     public canMoveTo(player: Player, destination: City): boolean {
@@ -52,6 +65,10 @@ export class GameMaster {;
     }
 
     public async doMove(player: Player, destination: City): Promise<boolean> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
         if (this.canMoveTo(player, destination)) {
             const path = this.getPathTo(player, destination);
             if (path.length === 0) {
@@ -66,8 +83,10 @@ export class GameMaster {;
                 player.consumeAP(1);
                 await player.goTo(city, undefined, city != destination);
             }
+            this._working = false;
             return true;
         }
+        this._working = false;
         return false;
     }
 
@@ -82,11 +101,17 @@ export class GameMaster {;
     }
 
     public async doCureDisease(player: Player, city: City, diseaseColor: GameColor): Promise<boolean> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
         if (this.canCureDisease(player, city, diseaseColor)) {
             player.consumeAP(1);
             await city.cure(diseaseColor);
+            this._working = false;
             return true;
         }
+        this._working = false;
         return false;
     }
 
@@ -102,19 +127,25 @@ export class GameMaster {;
     }
 
     public async doBuildStation(player: Player, city: City): Promise<boolean> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
         if (this.canBuildStation(player, city)) {
             this.pandemik.breakingNewsConnector.addBreakingInfo(
                 new BreakingInfo("Research station built.", city)
             )
             player.consumeAP(1);
             await city.buildStation();
+            this._working = false;
             return true;
         }
+        this._working = false;
         return false;
     }
 
     public async infect(city: City, diseaseColor: GameColor, count: number): Promise<void> {
-        await this.pandemik.gameCamera!.goTo(city.position, 1, 20, 5);
+        await this.pandemik.gameCamera.goTo(city.position, 1, 20, 5);
         let promises = [];
         for (let i = 0; i < count; i++) {
             promises.push(city.infect(diseaseColor));
@@ -133,5 +164,25 @@ export class GameMaster {;
             new BreakingInfo(text, city)
         )
         await Promise.all(promises);
+    }
+
+    public async onDone(): Promise<void> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
+        const draws = 2;
+        for (let n = 0; n < draws; n++) {
+            let card = this.pandemik.infectionDeck!.drawCard();
+            if (card) {
+                let city = this.pandemik.map!.cities[card.cityId];
+                await this.pandemik.gameMaster.infect(city, card.diseaseColor, 1);
+            }
+        }
+        if (this.pandemik.currentPlayer!) {
+            this.pandemik.currentPlayer.setAvailableAPs(4);
+            await this.pandemik.gameCamera.goTo(this.pandemik.currentPlayer.currentCity.position, 1, 25);
+        }
+        this._working = false;
     }
 }

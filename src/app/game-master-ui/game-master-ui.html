@@ -1,0 +1,3 @@
+@if (gameMaster != null) {
+    <button id="done-button" [class.disabled]="!gameMaster.canPressDone()" (click)="gameMaster.onDone()">DONE</button>
+}

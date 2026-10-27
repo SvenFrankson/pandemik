@@ -201,11 +201,12 @@ export class Pandemik {
                     return false;
                 }
             );
-            console.log(pick);
             if (pick && pick.pickedMesh) {
                 let cityPart = pick.pickedMesh as CityPart;
                 let city = cityPart.city;
-                selectedCity = city;
+                if (city.opacity() > 0) {
+                    selectedCity = city;
+                }
             }
         }
         this._pointerDownX = -1;

@@ -3,7 +3,6 @@ import { Color3 } from "@babylonjs/core/Maths/math.color.pure";
 import { Mesh } from "@babylonjs/core/Meshes/mesh.pure";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector.pure";
 
-
 export function QuickMaterial(color: Color3, specularIntensity: number = 0, emissiveColor: Color3 = Color3.Black()) {
     const material = new StandardMaterial("quickMaterial");
     material.diffuseColor = color;
