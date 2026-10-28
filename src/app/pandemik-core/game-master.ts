@@ -6,6 +6,16 @@ import { BreakingInfo } from "./ui-connectors/breaking-news-connector";
 import { NextFrame } from "babylonjs-tiaratumgames-tools";
 import { signal } from "@angular/core";
 import { PlayerCard } from "./deck/deck";
+import { CityCard } from "./deck/city-card";
+
+export enum CanDoStatus {
+    OK = 0,
+    NOT_ENOUGH_AP,
+    NO_AND_FUCK_YOU,
+    NOT_IN_CURRENT_CITY,
+    NO_REQUIRED_CARD,
+    NO_INFECTION,
+}
 
 export class GameMaster {;
 
@@ -91,14 +101,20 @@ export class GameMaster {;
         return false;
     }
 
-    public canCureDisease(player: Player, city: City, diseaseColor: GameColor): boolean {
-        if (player.availableAPs() >= 1) {
-            if (player.currentCity === city) {
-                if (city.infections[diseaseColor]() > 0)
-                    return true;
-            }
+    public canCureDisease(player: Player, city: City, diseaseColor: GameColor): CanDoStatus {
+        if (city.infections[diseaseColor]() < 1) {
+            return CanDoStatus.NO_INFECTION;
         }
-        return false;
+
+        if (player.currentCity != city) {
+            return CanDoStatus.NOT_IN_CURRENT_CITY;
+        }
+
+        if (player.availableAPs() < 1) {
+            return CanDoStatus.NOT_ENOUGH_AP;
+        }
+        
+        return CanDoStatus.OK;
     }
 
     public async doCureDisease(player: Player, city: City, diseaseColor: GameColor): Promise<boolean> {
@@ -106,7 +122,7 @@ export class GameMaster {;
             await NextFrame();
         }
         this._working = true;
-        if (this.canCureDisease(player, city, diseaseColor)) {
+        if (this.canCureDisease(player, city, diseaseColor) === CanDoStatus.OK) {
             player.consumeAP(1);
             await city.cure(diseaseColor);
             this._working = false;
@@ -116,15 +132,27 @@ export class GameMaster {;
         return false;
     }
 
-    public canBuildStation(player: Player, city: City): boolean {
-        if (player.availableAPs() >= 1) {
-            if (player.currentCity === city) {
-                if (!city.hasStation) {
-                    return true;
-                }
-            }
+    public canBuildStation(player: Player, city: City): CanDoStatus {
+        if (city.hasStation) {
+            return CanDoStatus.NO_AND_FUCK_YOU;
         }
-        return false;
+
+        const playerCard = player.playerCards().find(card => {
+            return card instanceof CityCard && card.cityId === city.cityId;
+        });
+        if (!playerCard) {
+            return CanDoStatus.NO_REQUIRED_CARD;
+        }
+
+        if (player.currentCity !== city) {
+            return CanDoStatus.NOT_IN_CURRENT_CITY;
+        }
+
+        if (player.availableAPs() < 1) {
+            return CanDoStatus.NOT_ENOUGH_AP;
+        }
+
+        return CanDoStatus.OK;
     }
 
     public async doBuildStation(player: Player, city: City): Promise<boolean> {
@@ -132,7 +160,7 @@ export class GameMaster {;
             await NextFrame();
         }
         this._working = true;
-        if (this.canBuildStation(player, city)) {
+        if (this.canBuildStation(player, city) === CanDoStatus.OK) {
             this.pandemik.breakingNewsConnector.addBreakingInfo(
                 new BreakingInfo("Research station built.", city)
             )
