@@ -21,6 +21,7 @@ import { CityActionMenuConnector } from "./ui-connectors/city-action-menu-connec
 import { City, CityPart } from "./city";
 import { GameMaster } from "./game-master";
 import { SharedMaterials } from "./materials";
+import { EpidemyCard } from "./deck/epidemic-card";
 
 export class Pandemik {
 
@@ -48,6 +49,7 @@ export class Pandemik {
 
     public map: Board | null = null;
     public infectionDeck: Deck<InfectionCard> | null = null;
+    public infectionDiscardPile: Deck<InfectionCard> | null = null;
     public playerDeck: Deck<PlayerCard> | null = null;
     public players: Player[] = [];
     public get currentPlayer(): Player | null {
@@ -110,6 +112,7 @@ export class Pandemik {
             this.infectionDeck.addCard(new InfectionCard(cityId));
         }
         this.infectionDeck.shuffle();
+        this.infectionDiscardPile = new Deck<InfectionCard>();
 
         this.playerDeck = new Deck<PlayerCard>();
         for (let cityId = 0; cityId < CityID.LAST; cityId++) {
@@ -127,6 +130,7 @@ export class Pandemik {
             for (let n = 0; n < draws; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
+                    this.infectionDiscardPile!.addCard(card);
                     let city = this.map!.cities[card.cityId];
                     await this.gameMaster.infect(city, card.diseaseColor, 3);
                 }
@@ -134,6 +138,7 @@ export class Pandemik {
             for (let n = 0; n < draws; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
+                    this.infectionDiscardPile!.addCard(card);
                     let city = this.map!.cities[card.cityId];
                     await this.gameMaster.infect(city, card.diseaseColor, 2);
                 }
@@ -141,6 +146,7 @@ export class Pandemik {
             for (let n = 0; n < draws; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
+                    this.infectionDiscardPile!.addCard(card);
                     let city = this.map!.cities[card.cityId];
                     await this.gameMaster.infect(city, card.diseaseColor, 1);
                 }
@@ -155,6 +161,13 @@ export class Pandemik {
             for (let n = 0; n < 4; n++) {
                 await this.gameMaster.doDrawPlayerCard(player);
             }
+            this.playerDeck!.addCard(new EpidemyCard());
+            this.playerDeck!.addCard(new EpidemyCard());
+            this.playerDeck!.addCard(new EpidemyCard());
+            this.playerDeck!.addCard(new EpidemyCard());
+            this.playerDeck!.addCard(new EpidemyCard());
+            this.playerDeck!.addCard(new EpidemyCard());
+            this.playerDeck!.shuffle();
             await atlanta.buildStation();
         });
     }

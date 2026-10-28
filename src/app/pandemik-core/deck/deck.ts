@@ -20,6 +20,9 @@ export class PlayerCard extends Card {
 export class Deck<T extends Card> {
 
     public cards: T[] = [];
+    public get count(): number {
+        return this.cards.length;
+    }
 
     constructor() {
         this.cards = [];
@@ -31,6 +34,10 @@ export class Deck<T extends Card> {
 
     public drawCard(): T | undefined {
         return this.cards.pop();
+    }
+
+    public drawBottomCard(): T | undefined {
+        return this.cards.shift();
     }
 
     public shuffle(): void {

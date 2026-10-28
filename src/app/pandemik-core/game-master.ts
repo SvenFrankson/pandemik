@@ -7,6 +7,7 @@ import { NextFrame } from "babylonjs-tiaratumgames-tools";
 import { signal } from "@angular/core";
 import { PlayerCard } from "./deck/deck";
 import { CityCard } from "./deck/city-card";
+import { EpidemyCard as EpidemicCard } from "./deck/epidemic-card";
 
 export enum CanDoStatus {
     OK = 0,
@@ -201,13 +202,39 @@ export class GameMaster {;
         }
         this._working = true;
         let card = this.pandemik.playerDeck!.drawCard();
-        if (card) {
-            player.addPlayerCard(card);
+        if (card instanceof CityCard) {
+            if (player.playerCards().length < 7) {
+                player.addPlayerCard(card);
+            }
+            this._working = false;
+            return card;
+        }
+        else if (card instanceof EpidemicCard) {
+            await this.doEpidemic();
             this._working = false;
             return card;
         }
         this._working = false;
         return null;
+    }
+
+    public async doEpidemic(): Promise<void> {
+        this.pandemik.breakingNewsConnector.addBreakingInfo(
+            new BreakingInfo("Epidemic !!!")
+        )
+        let infectionCard = this.pandemik.infectionDeck!.drawBottomCard();
+        if (infectionCard) {
+            this.pandemik.infectionDiscardPile!.addCard(infectionCard);
+            let city = this.pandemik.map!.cities[infectionCard.cityId];
+            await this.pandemik.gameMaster.infect(city, infectionCard.diseaseColor, 3);
+        }
+        this.pandemik.infectionDiscardPile!.shuffle();
+        while (this.pandemik.infectionDiscardPile!.count > 0) {
+            let card = this.pandemik.infectionDiscardPile!.drawBottomCard();
+            if (card) {
+                this.pandemik.infectionDeck!.addCard(card);
+            }
+        }
     }
 
     public async onDone(): Promise<void> {
@@ -221,6 +248,7 @@ export class GameMaster {;
         for (let n = 0; n < draws; n++) {
             let card = this.pandemik.infectionDeck!.drawCard();
             if (card) {
+                this.pandemik.infectionDiscardPile!.addCard(card);
                 let city = this.pandemik.map!.cities[card.cityId];
                 await this.pandemik.gameMaster.infect(city, card.diseaseColor, 1);
             }
