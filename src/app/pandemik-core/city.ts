@@ -340,7 +340,28 @@ export class City extends Mesh {
         infectionMesh.rotation.y = Math.PI + alpha;
 
         this.updateInfectionsMeshes();
-        await infectionMesh.animateSize(0.35, 0.5, Easing.easeOutCubic);
+        await infectionMesh.animateSize(0.4, 0.5, Easing.easeOutCubic);
+    }
+
+    public async outbreakAnimate(diseaseColor: GameColor): Promise<void> {
+        let infectionMeshes: InfectionToken[] = [];
+        let promises: Promise<void>[] = [];
+        for (const link of this.links) {
+            let infectionMesh = new InfectionToken(this, diseaseColor);
+            infectionMesh.parent = null;
+
+            let path = link.path;
+            if (link.cityB === this) {
+                path = path.slice().reverse();
+            }
+            infectionMeshes.push(infectionMesh);
+            promises.push(infectionMesh.popAndVanish(0.4, 1, 0.8));
+            promises.push(infectionMesh.followPath(path, 1, Easing.easeInCubic));
+        }
+        await Promise.all(promises);
+        for (const infectionMesh of infectionMeshes) {
+            infectionMesh.dispose();
+        }
     }
 
     public async cure(diseaseColor: GameColor): Promise<void> {

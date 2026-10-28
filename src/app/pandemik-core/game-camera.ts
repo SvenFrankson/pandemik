@@ -73,7 +73,7 @@ export class GameCamera extends ArcRotateCamera {
 
     constructor(radius: number, target: Vector3, scene: any) {
         super("gameCamera", - Math.PI / 2, Math.PI / 3, radius, target, scene);
-        this.animateAlphaBeta = PDMKCreateNumbers(this, this, ["alpha", "beta"], this._radiusUpdate, [true, true], XTremeEasing);
+        this.animateAlphaBeta = PDMKCreateNumbers(this, this, ["alpha", "beta"], this._radiusUpdate, [true, true], Easing.easeOutCubic);
     }
 
     private _height: number = 0;
@@ -91,13 +91,13 @@ export class GameCamera extends ArcRotateCamera {
 
         this._radiusOrigin = this.radius;
         this._radiusDestination = this.radius;
-        this._height = height;
+        this._height = Math.min(height, Vector3.Distance(this.position, target.clone().normalize().scale(this.radius)));
         if (radius !== undefined && isFinite(radius)) {
             this._radiusDestination = radius;
         }
 
-        this.animateAlphaBeta([alpha, beta], 3 * duration);
-        await new Promise(resolve => setTimeout(resolve, duration * 1000));
+        await this.animateAlphaBeta([alpha, beta], duration);
+        //await new Promise(resolve => setTimeout(resolve, duration * 1000));
     }
 }
 

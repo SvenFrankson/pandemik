@@ -5,6 +5,7 @@ import { PBRMetallicRoughnessMaterial } from '@babylonjs/core/Materials/PBR/pbrM
 import { Color3, Texture } from "@babylonjs/core";
 import { CityColor3s } from "./data";
 import { QuickMaterial } from "./tools";
+import { RedColor } from "./constants";
 
 export class SharedMaterials {
 
@@ -18,6 +19,12 @@ export class SharedMaterials {
     public cityMaterial: Material;
     public alertCityMaterials: Material[] = [];
     public plasticMaterials: Material[] = [];
+    public get whitePlasticMaterial(): Material {
+        return this.plasticMaterials[4];
+    }
+    public get redPlasticMaterial(): Material {
+        return this.plasticMaterials[5];
+    }
 
     constructor(public pandemik: Pandemik) {
         this.environmentTexture = CubeTexture.CreateFromPrefilteredData("environmentSpecular.env", this.pandemik.scene!);
@@ -73,7 +80,8 @@ export class SharedMaterials {
         for (let n = 0; n < CityColor3s.length; n++) {
             this.plasticMaterials[n] = this._makePlasticPBR("", CityColor3s[n], this.environmentTexture);
         }
-        this.plasticMaterials.push(this._makePlasticPBR("", Color3.White(), this.environmentTexture))
+        this.plasticMaterials.push(this._makePlasticPBR("", Color3.White(), this.environmentTexture));
+        this.plasticMaterials.push(this._makePlasticPBR("", RedColor, this.environmentTexture));
     }
 
     private _makeMetalPBR(name: string, color: Color3, envTexture: CubeTexture): Material {

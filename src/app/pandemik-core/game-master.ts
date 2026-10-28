@@ -174,7 +174,7 @@ export class GameMaster {;
         return false;
     }
 
-    public async infect(city: City, diseaseColor: GameColor, count: number, skipCam: boolean = false): Promise<void> {
+    public async infect(city: City, diseaseColor: GameColor, count: number, skipCam: boolean = false, fromOutbreak: boolean = false): Promise<void> {
         let text = "";
         if (count === 1) {
             text = "A new " + DiseaseNames[diseaseColor].toLocaleUpperCase() + " infection.";
@@ -189,7 +189,7 @@ export class GameMaster {;
             new BreakingInfo(text, city)
         )
         if (!skipCam) {
-            await this.pandemik.gameCamera.goTo(city.position, 1, 20, 5);
+            await this.pandemik.gameCamera.goTo(city.position, 1, 20, 4);
         }
 
         let currentInfection = city.infections[diseaseColor]();
@@ -201,11 +201,12 @@ export class GameMaster {;
             await Promise.all(promises);
         }
         else {
-            await this.pandemik.gameCamera.goTo(city.position, 1, 30, 5);
+            await this.pandemik.gameCamera.goTo(city.position, 1, 30);
             this.pandemik.breakingNewsConnector.addBreakingInfo(
                 new BreakingInfo("Outbreak in " + city.name + ". Situation out of control.", city)
             )
             city.outbreaking = true;
+            await city.outbreakAnimate(diseaseColor);
             count = 3 - currentInfection;
             let promises = [];
             for (let i = 0; i < count; i++) {
