@@ -28,6 +28,6 @@ export class BreakingNewsConnector {
     }
 
     addBreakingInfo(info: BreakingInfo): void {
-        this.breakingNews.update((current) => [...current, info].slice(-10));
+        this.breakingNews.update((current) => [...current, info].slice(-1000));
     }
 }

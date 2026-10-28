@@ -136,6 +136,7 @@ export class City extends Mesh {
         signal<number>(0),
         signal<number>(0)
     ];
+    public outbreaking: boolean = false;
     public tokens: CityToken[] = [];
     public hasStation = false;
     public station: Nullable<StationToken> = null;
