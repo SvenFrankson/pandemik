@@ -16,6 +16,7 @@
 }
 
 button {
+    position: relative;
     display: block;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, serif;
     width: 240px;
@@ -28,12 +29,27 @@ button {
     margin: 5px 0;
 }
 
+.icon {
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    font-size: 23px;
+}
+
+.label {
+    position: absolute;
+    top: 5px;
+    left: 50px;
+    font-size: 16px;
+}
+
 .cost {
-    display: inline-block;
-    margin: 0px 5px;
+    position: absolute;
+    bottom: 2px;
+    right: 5px;
     font-size: 14px;
     font-weight: 900;
-    color: lime;
+    color: rgb(0, 255, 149);
 }
 
 button.disabled .cost {

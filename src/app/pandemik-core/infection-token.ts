@@ -15,14 +15,14 @@ export class InfectionToken extends CityToken {
         this.size = 0;
 
         MakeOutline(this, Color3.White());
-        this.board.tokenMeshData![7].vertexData.applyToMesh(this);
+        this.board.tokenMeshData[7]?.vertexData.applyToMesh(this);
 
         let bottom = new Mesh("pic", this.getScene());
-        this.board.tokenMeshData![8].vertexData.applyToMesh(bottom);
+        this.board.tokenMeshData[8]?.vertexData.applyToMesh(bottom);
         bottom.parent = this;
 
         let pic = new Mesh("pic", this.getScene());
-        this.board.tokenMeshData![9].vertexData.applyToMesh(pic);
+        this.board.tokenMeshData[9]?.vertexData.applyToMesh(pic);
         pic.parent = this;
 
         this.material = this.board.pandemik.sharedMaterials.plasticMaterials[this.diseaseColor];

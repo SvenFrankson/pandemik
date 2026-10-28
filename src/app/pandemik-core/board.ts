@@ -82,7 +82,7 @@ export class Board {
     public base: Mesh;
     public cities: City[] = [];
 
-    public tokenMeshData: IMeshData[] | null = null;
+    public tokenMeshData: IMeshData[] = [];
 
     constructor(public pandemik: Pandemik) {
         let zero = MeshBuilder.CreateSphere("base", { diameter: 0.2 });
@@ -130,8 +130,10 @@ export class Board {
     }
 
     public async instantiate(): Promise<void> {
-        this.tokenMeshData = await GetGLTFMeshDataArray("token.gltf", this.pandemik.scene!);
+        this.tokenMeshData = await GetGLTFMeshDataArray("token.gltf", this.pandemik.scene!) ?? [];
         this.tokenMeshData?.sort((a, b) => a.name.localeCompare(b.name));
+
+        console.log("Token mesh data:", this.tokenMeshData);
 
         for (let cityId = 0; cityId < CityID.LAST; cityId++) {
             const cityData = MapData[cityId];

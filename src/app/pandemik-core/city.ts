@@ -174,20 +174,20 @@ export class City extends Mesh {
         this.frame = new CityPart("city-frame", this.getScene(), this);
         this.frame.scaling.copyFromFloats(1, 1, 1).scaleInPlace(2 * this.radius);
         this.frame.parent = this;
-        this.board.tokenMeshData![1].vertexData.applyToMesh(this.frame);
+        this.board.tokenMeshData[1]?.vertexData.applyToMesh(this.frame);
         this.frame.material = this.board.pandemik.sharedMaterials.frameMaterial;
 
         this.bottom = new CityPart("city-bottom", this.getScene(), this);
         this.bottom.material = QuickMaterial(this.color);
         this.bottom.visibility = 0.5;
         this.bottom.parent = this.frame;
-        this.board.tokenMeshData![2].vertexData.applyToMesh(this.bottom);
+        this.board.tokenMeshData[2]?.vertexData.applyToMesh(this.bottom);
 
         this.picture = new CityPart("city-pic", this.getScene(), this);
         this.picture.material = this.board.pandemik.sharedMaterials.cityMaterial;
         this.picture.visibility = 0;
         this.picture.parent = this.frame;
-        this.board.tokenMeshData![3].vertexData.applyToMesh(this.picture);
+        this.board.tokenMeshData[3]?.vertexData.applyToMesh(this.picture);
 
         this.playerAnchor = new TransformNode("player-anchor", this.getScene());
         this.playerAnchor.parent = this;
