@@ -9,7 +9,7 @@ import { City } from '../pandemik-core/city';
 		UpperCasePipe
 	],
 	templateUrl: './city-action-menu.html',
-	styleUrl: './city-action-menu.css',
+	styleUrls: ['../app.css', './city-action-menu.css'],
 })
 export class CityActionMenu {
 

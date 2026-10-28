@@ -13,8 +13,3 @@
     font-weight: 500;
     color: white;
 }
-
-#done-button.disabled {
-    opacity: 0.5;
-    pointer-events: none;
-}

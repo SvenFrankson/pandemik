@@ -1,22 +1,42 @@
 @if (connector && connector.shown()) {
     <div id="container" [style.left.px]="connector.screenX()" [style.top.px]="connector.screenY()">
-        @if (connector.canGoTo()) {
-            <button (click)="connector.onGoTo()">GO TO <span class="cost">({{ connector.goToCost() }} AP)</span></button>
+        @if (connector.goToCost() > 0) {
+            <button (click)="connector.onGoTo()" [class.disabled]="!connector.canGoTo()">
+                GO TO 
+                @if (connector.canGoTo()) {
+                    <span class="cost">({{ connector.goToCost() }} AP)</span>
+                }
+                @else {
+                    <span class="cost">0 AP</span>
+                }
+            </button>
         }
         @if (connector.canFlyTo()) {
             <button>FLY TO</button>
         }
-        @if (connector.canCureDisease[0]()) {
-            <button (click)="connector.onCureDisease(0)">CURE BLUE <span class="cost">(1 AP)</span></button>
+        @if (connector.canCureDisease[0]() === 1) {
+            <button class="disabled">CURE BLUEVIRUS <span class="cost">0 AP</span></button>
         }
-        @if (connector.canCureDisease[1]()) {
-            <button (click)="connector.onCureDisease(1)">CURE YELLOW <span class="cost">(1 AP)</span></button>
+        @if (connector.canCureDisease[0]() === 2) {
+            <button (click)="connector.onCureDisease(0)">CURE BLUEVIRUS <span class="cost">(1 AP)</span></button>
         }
-        @if (connector.canCureDisease[2]()) {
-            <button (click)="connector.onCureDisease(2)">CURE BLACK <span class="cost">(1 AP)</span></button>
+        @if (connector.canCureDisease[1]() === 1) {
+            <button class="disabled">CURE YELLOWCOCCUS <span class="cost">0 AP</span></button>
         }
-        @if (connector.canCureDisease[3]()) {
-            <button (click)="connector.onCureDisease(3)">CURE GREEN <span class="cost">(1 AP)</span></button>
+        @if (connector.canCureDisease[1]() === 2) {
+            <button (click)="connector.onCureDisease(1)">CURE YELLOWCOCCUS <span class="cost">(1 AP)</span></button>
+        }
+        @if (connector.canCureDisease[2]() === 1) {
+            <button class="disabled">CURE BLACKTERIUM <span class="cost">0 AP</span></button>
+        }
+        @if (connector.canCureDisease[2]() === 2) {
+            <button (click)="connector.onCureDisease(2)">CURE BLACKTERIUM <span class="cost">(1 AP)</span></button>
+        }
+        @if (connector.canCureDisease[3]() === 1) {
+            <button class="disabled">CURE GREENMONELLA <span class="cost">0 AP</span></button>
+        }
+        @if (connector.canCureDisease[3]() === 2) {
+            <button (click)="connector.onCureDisease(3)">CURE GREENMONELLA <span class="cost">(1 AP)</span></button>
         }
         @if (connector.canBuildResearchStation()) {
             <button (click)="connector.onBuildResearchStation()">BUILD</button>

@@ -7,6 +7,8 @@ export enum GameColor {
     Green
 }
 
+export const GameColors = [GameColor.Blue, GameColor.Yellow, GameColor.Black, GameColor.Green];
+
 export const DiseaseNames = [
     "Bluevirus",
     "Yellowcoccus",

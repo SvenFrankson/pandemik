@@ -1,7 +1,7 @@
 import { signal } from "@angular/core";
 import { City } from "../city";
 import { Pandemik } from "../pandemik";
-import { GameColor } from "../data";
+import { GameColor, GameColors } from "../data";
 import { GameMaster } from "../game-master";
 
 export class CityActionMenuConnector {
@@ -27,7 +27,7 @@ export class CityActionMenuConnector {
     canGoTo = signal<boolean>(false);
     goToCost = signal<number>(1);
     canFlyTo = signal<boolean>(false);
-    canCureDisease = [signal<boolean>(false), signal<boolean>(false), signal<boolean>(false), signal<boolean>(false)];
+    canCureDisease = [signal<number>(0), signal<number>(0), signal<number>(0), signal<number>(0)];
     canBuildResearchStation = signal<boolean>(false);
     screenX = signal<number>(0);
     screenY = signal<number>(0);
@@ -47,10 +47,16 @@ export class CityActionMenuConnector {
 
             this.canGoTo.set(this.gameMaster.canMoveTo(this.pandemik.currentPlayer, this._city));
             this.goToCost.set(this.gameMaster.moveToCost(this.pandemik.currentPlayer, this._city));
-            this.canCureDisease[GameColor.Blue].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, GameColor.Blue));
-            this.canCureDisease[GameColor.Yellow].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, GameColor.Yellow));
-            this.canCureDisease[GameColor.Black].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, GameColor.Black));
-            this.canCureDisease[GameColor.Green].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, GameColor.Green));
+            for (const c of GameColors) {
+                let can = 0;
+                if (this._city.infections[c]() > 0 && this.pandemik.currentPlayer.currentCity === this._city) {
+                    can = 1;
+                }
+                if (this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, c)) {
+                    can = 2;
+                }
+                this.canCureDisease[c].set(can);
+            }
             this.canBuildResearchStation.set(this.gameMaster.canBuildStation(this.pandemik.currentPlayer, this._city));
         }
         else {

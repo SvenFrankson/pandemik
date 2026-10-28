@@ -5,7 +5,7 @@ import { GameMaster } from '../pandemik-core/game-master';
 	selector: 'app-game-master-ui',
 	imports: [],
 	templateUrl: './game-master-ui.html',
-	styleUrl: './game-master-ui.css',
+	styleUrls: ['../app.css', './game-master-ui.css'],
 })
 export class GameMasterUi {
 
