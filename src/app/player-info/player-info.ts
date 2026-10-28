@@ -8,7 +8,7 @@ import { Player } from '../pandemik-core/player';
 		UpperCasePipe
 	],
 	templateUrl: './player-info.html',
-	styleUrl: './player-info.css',
+	styleUrls: ['../app.css', './player-info.css'],
 })
 export class PlayerInfo {
 

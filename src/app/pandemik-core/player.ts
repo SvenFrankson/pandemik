@@ -8,11 +8,14 @@ import { City } from "./city";
 import { MakeOutline } from "./tools";
 import { Color3 } from "@babylonjs/core/Maths/math.color.pure";
 import { signal } from "@angular/core";
+import { PlayerCard } from "./deck/deck";
 
 export class Player extends Mesh {
 
     public currentCity: City;
     public availableAPs = signal<number>(4);
+    public playerCards = signal<PlayerCard[]>([]); 
+
     public animatePosition = AnimationFactory.EmptyVector3Callback;
 
     constructor(public pandemik: Pandemik, city: City) {
@@ -90,5 +93,15 @@ export class Player extends Mesh {
 
     public setAvailableAPs(amount: number): void {
         this.availableAPs.set(amount);
+    }
+
+    public addPlayerCard(card: PlayerCard): PlayerCard {
+        this.playerCards.set([...this.playerCards(), card]);
+        return card;
+    }
+
+    public removePlayerCard(card: PlayerCard): PlayerCard {
+        this.playerCards.set(this.playerCards().filter(c => c !== card));
+        return card;
     }
 }

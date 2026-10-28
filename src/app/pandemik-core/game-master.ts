@@ -5,6 +5,7 @@ import { DiseaseNames, GameColor } from "./data";
 import { BreakingInfo } from "./ui-connectors/breaking-news-connector";
 import { NextFrame } from "babylonjs-tiaratumgames-tools";
 import { signal } from "@angular/core";
+import { PlayerCard } from "./deck/deck";
 
 export class GameMaster {;
 
@@ -166,10 +167,27 @@ export class GameMaster {;
         await Promise.all(promises);
     }
 
+    public async doDrawPlayerCard(player: Player): Promise<PlayerCard | null> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
+        let card = this.pandemik.playerDeck!.drawCard();
+        if (card) {
+            player.addPlayerCard(card);
+            this._working = false;
+            return card;
+        }
+        this._working = false;
+        return null;
+    }
+
     public async onDone(): Promise<void> {
         while (this._working) {
             await NextFrame();
         }
+        await this.doDrawPlayerCard(this.pandemik.currentPlayer!);
+        await this.doDrawPlayerCard(this.pandemik.currentPlayer!);
         this._working = true;
         const draws = 2;
         for (let n = 0; n < draws; n++) {

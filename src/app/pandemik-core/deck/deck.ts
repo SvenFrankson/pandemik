@@ -1,7 +1,19 @@
+import { GameColor } from "../data";
+
 export class Card {
 
     constructor(public name: string) {
     
+    }
+}
+
+export class PlayerCard extends Card {
+
+    public color: GameColor | null = null;
+    
+    constructor(name: string, color: GameColor | null = null) {
+        super(name);
+        this.color = color;
     }
 }
 

@@ -34,3 +34,35 @@
 .ap-icon.available {
     background-color: rgb(0, 255, 149);
 }
+
+.player-card {
+    display: inline-block;
+    width: 100px;
+    height: 30px;
+    margin: 0px 2px;
+    padding: 2px 5px;
+
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, serif;
+    font-weight: 500;
+    color: white;
+    -webkit-text-stroke: 1px black;
+    paint-order: stroke fill;
+
+    background-color: rgb(161, 6, 175);
+    border: 1px solid white;
+    border-radius: 5px;
+    vertical-align: middle;
+}
+
+.player-card.color-0 {
+    background-color: var(--blue-color);
+}
+.player-card.color-1 {
+    background-color: var(--yellow-color);
+}
+.player-card.color-2 {
+    background-color: var(--black-color);
+}
+.player-card.color-3 {
+    background-color: var(--green-color);
+}

@@ -13,7 +13,8 @@ import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera.pure";
 import { Engine } from "@babylonjs/core/Engines/engine.pure";
 import { HemisphericLight, Matrix } from "@babylonjs/core";
 import { InfectionCard } from "./deck/infection-card";
-import { Deck } from "./deck/deck";
+import { CityCard } from "./deck/city-card";
+import { Deck, PlayerCard } from "./deck/deck";
 import { CityID } from "./data";
 import { GameCamera } from "./game-camera";
 import { CityActionMenuConnector } from "./ui-connectors/city-action-menu-connector";
@@ -47,6 +48,7 @@ export class Pandemik {
 
     public map: Board | null = null;
     public infectionDeck: Deck<InfectionCard> | null = null;
+    public playerDeck: Deck<PlayerCard> | null = null;
     public players: Player[] = [];
     public get currentPlayer(): Player | null {
         return this.players.length > 0 ? this.players[0] : null;
@@ -109,6 +111,12 @@ export class Pandemik {
         }
         this.infectionDeck.shuffle();
 
+        this.playerDeck = new Deck<PlayerCard>();
+        for (let cityId = 0; cityId < CityID.LAST; cityId++) {
+            this.playerDeck.addCard(new CityCard(cityId));
+        }
+        this.playerDeck.shuffle();
+
         this.map.onceStabilized(async () => {
             let atlanta = this.map!.cities[CityID.Atlanta];
 
@@ -143,6 +151,9 @@ export class Pandemik {
             this.players.push(player);
             if (this.onPlayerAdded) {
                 this.onPlayerAdded(player);
+            }
+            for (let n = 0; n < 4; n++) {
+                await this.gameMaster.doDrawPlayerCard(player);
             }
             await atlanta.buildStation();
         });

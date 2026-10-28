@@ -1,5 +1,13 @@
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
+:root {
+	--red-color: #D64933;
+	--yellow-color: #d6ce33;
+	--blue-color: #335cd6;
+	--black-color: #2B303A;
+	--green-color: #0C7C59;
+}
+
 body {
 	background-image: url('../public/360_F_258329401_MCy6WUBkklTARuBbYRwENqDYE9ssYrZk.jpg');
     background-size: cover;
