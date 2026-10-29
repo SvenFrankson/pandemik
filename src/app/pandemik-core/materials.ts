@@ -4,7 +4,7 @@ import type { Material } from '@babylonjs/core/Materials/material.pure';
 import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture.pure';
 import { PBRMetallicRoughnessMaterial } from '@babylonjs/core/Materials/PBR/pbrMetallicRoughnessMaterial.pure';
 import { Color3, Texture } from "@babylonjs/core";
-import { CityColor3s, CityID } from "./data";
+import { GameColor3s } from "./data";
 import { QuickMaterial } from "./tools";
 import { RedColor } from "./constants";
 
@@ -18,7 +18,7 @@ export class SharedMaterials {
     public infectionMaterial: Material;
     public infectionMaterials: Material[] = [];
     public cityMaterial: Material;
-    public cityMaterials: Material[] = [];
+    //public cityMaterials: Material[] = [];
     public alertCityMaterials: Material[] = [];
     public plasticMaterials: Material[] = [];
     public get whitePlasticMaterial(): Material {
@@ -57,7 +57,7 @@ export class SharedMaterials {
         this.infectionMaterial = infectionMaterial;
 
         for (let i = 0; i <= 3; i++) {   
-            let mat = QuickMaterial(CityColor3s[i], 0, CityColor3s[i].scale(0.5));
+            let mat = QuickMaterial(GameColor3s[i], 0, GameColor3s[i].scale(0.5));
             mat.diffuseTexture = new Texture("virus.png", this.pandemik.scene!, undefined, false);
             mat.diffuseTexture.hasAlpha = true;
             mat.useAlphaFromDiffuseTexture = true;
@@ -122,13 +122,14 @@ export class SharedMaterials {
         }
         
         this.plasticMaterials = [];
-        for (let n = 0; n < CityColor3s.length; n++) {
-            this.plasticMaterials[n] = this._makePlasticPBR("", CityColor3s[n], this.environmentTexture);
+        for (let n = 0; n < GameColor3s.length; n++) {
+            this.plasticMaterials[n] = this._makePlasticPBR("", GameColor3s[n], this.environmentTexture);
         }
         this.plasticMaterials.push(this._makePlasticPBR("", Color3.White(), this.environmentTexture));
         this.plasticMaterials.push(this._makePlasticPBR("", RedColor, this.environmentTexture));
     }
 
+    /*
     private _loadCityMaterial(cityId: CityID): Material {
         let name = CityID[cityId].toLocaleLowerCase();
         name = name.split('').filter(c => c >= 'a' && c <= 'z').join('');
@@ -141,6 +142,7 @@ export class SharedMaterials {
         this.cityMaterials[cityId] = material;
         return material;
     }
+    */
 
     private _makeMetalPBR(name: string, color: Color3, envTexture: CubeTexture): Material {
         let metalMaterial = new PBRMetallicRoughnessMaterial(name, this.pandemik.scene!);

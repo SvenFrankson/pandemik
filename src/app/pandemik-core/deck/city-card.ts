@@ -1,9 +1,9 @@
-import { GameColor, CityID, MapData } from '../data';
+import { GameColor, CityDataList, CityDataById } from '../data';
 import { Card, PlayerCard } from './deck';
 
 export class CityCard extends PlayerCard {
 
-    constructor(public cityId: CityID) {
-        super(MapData[cityId].name, MapData[cityId].color);
+    constructor(public cityId: string) {
+        super(CityDataById(cityId).name, CityDataById(cityId).color);
     }
 }

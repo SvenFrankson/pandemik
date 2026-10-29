@@ -15,7 +15,7 @@ import { HemisphericLight, Matrix } from "@babylonjs/core";
 import { InfectionCard } from "./deck/infection-card";
 import { CityCard } from "./deck/city-card";
 import { Deck, PlayerCard } from "./deck/deck";
-import { CityID, DiseaseNames } from "./data";
+import { CityDataList, CityIdToIndex, DiseaseNames } from "./data";
 import { GameCamera } from "./game-camera";
 import { CityActionMenuConnector } from "./ui-connectors/city-action-menu-connector";
 import { City, CityPart } from "./city";
@@ -112,20 +112,20 @@ export class Pandemik {
         await this.map.instantiate();
 
         this.infectionDeck = new Deck<InfectionCard>();
-        for (let cityId = 0; cityId < CityID.LAST; cityId++) {
-            this.infectionDeck.addCard(new InfectionCard(cityId));
+        for (let cityId = 0; cityId < CityDataList.length; cityId++) {
+            this.infectionDeck.addCard(new InfectionCard(CityDataList[cityId].id));
         }
         this.infectionDeck.shuffle();
         this.infectionDiscardPile = new Deck<InfectionCard>();
 
         this.playerDeck = new Deck<PlayerCard>();
-        for (let cityId = 0; cityId < CityID.LAST; cityId++) {
-            this.playerDeck.addCard(new CityCard(cityId));
+        for (let cityId = 0; cityId < CityDataList.length; cityId++) {
+            this.playerDeck.addCard(new CityCard(CityDataList[cityId].id));
         }
         this.playerDeck.shuffle();
 
         this.map.onceStabilized(async () => {
-            let atlanta = this.map!.cities[CityID.Atlanta];
+            let atlanta = this.map!.cities[CityIdToIndex("Atlanta")];
 
             this.canvas?.addEventListener("pointerdown", this._pointerDown);
             this.canvas?.addEventListener("pointerup", this._pointerUp);
@@ -135,33 +135,48 @@ export class Pandemik {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     this.infectionDiscardPile!.addCard(card);
-                    let city = this.map!.cities[card.cityId];
-                    this.breakingNewsConnector.addBreakingInfo(
-                        new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2)
-                    )
-                    await this.gameMaster.infect(city, card.diseaseColor, 3);
+                    let city = this.map!.getCityById(card.cityId);
+                    if (city) {
+                        this.breakingNewsConnector.addBreakingInfo(
+                            new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2)
+                        )
+                        await this.gameMaster.infect(city, card.diseaseColor, 3);
+                    }
+                    else {
+                        console.error(`City with ID ${card.cityId} not found`);
+                    }
                 }
             }
             for (let n = 0; n < draws; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     this.infectionDiscardPile!.addCard(card);
-                    let city = this.map!.cities[card.cityId];
-                    this.breakingNewsConnector.addBreakingInfo(
-                        new BreakingInfo("Multiple " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infections. +2", city, 1)
-                    )
-                    await this.gameMaster.infect(city, card.diseaseColor, 2);
+                    let city = this.map!.getCityById(card.cityId);
+                    if (city) {
+                        this.breakingNewsConnector.addBreakingInfo(
+                            new BreakingInfo("Multiple " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infections. +2", city, 1)
+                        )
+                        await this.gameMaster.infect(city, card.diseaseColor, 2);
+                    }
+                    else {
+                        console.error(`City with ID ${card.cityId} not found`);
+                    }
                 }
             }
             for (let n = 0; n < draws; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     this.infectionDiscardPile!.addCard(card);
-                    let city = this.map!.cities[card.cityId];
-                    this.breakingNewsConnector.addBreakingInfo(
-                        new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city, 0)
-                    )
-                    await this.gameMaster.infect(city, card.diseaseColor, 1);
+                    let city = this.map!.getCityById(card.cityId);
+                    if (city) {
+                        this.breakingNewsConnector.addBreakingInfo(
+                            new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city, 0)
+                        )
+                        await this.gameMaster.infect(city, card.diseaseColor, 1);
+                    }
+                    else {
+                        console.error(`City with ID ${card.cityId} not found`);
+                    }
                 }
             }
 

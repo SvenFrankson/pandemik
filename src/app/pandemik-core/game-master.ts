@@ -1,7 +1,7 @@
 import { Pandemik } from "./pandemik";
 import { Player } from "./player";
 import { City } from "./city";
-import { DiseaseNames, GameColor } from "./data";
+import { CityIdToIndex, DiseaseNames, GameColor } from "./data";
 import { BreakingInfo } from "./ui-connectors/breaking-news-connector";
 import { NextFrame } from "babylonjs-tiaratumgames-tools";
 import { signal } from "@angular/core";
@@ -37,7 +37,7 @@ export class GameMaster {;
     }
 
     public canMoveTo(player: Player, destination: City): boolean {
-        let dist = player.currentCity?.distanceTo[destination.cityId];
+        let dist = player.currentCity?.distanceTo[CityIdToIndex(destination.cityId)];
         return dist > 0 && dist <= player.availableAPs();
     }
 
@@ -51,7 +51,7 @@ export class GameMaster {;
             for (const cityLink of currentCity.links) {
                 const otherCity = cityLink.other(currentCity);
                 if (otherCity) {
-                    const dist = otherCity.distanceTo[destination.cityId];
+                    const dist = otherCity.distanceTo[CityIdToIndex(destination.cityId)];
                     if (dist < bestDist) {
                         bestDist = dist;
                         closestCity = otherCity;
@@ -73,7 +73,7 @@ export class GameMaster {;
     }
 
     public moveToCost(player: Player, destination: City): number {
-        let dist = player.currentCity?.distanceTo[destination.cityId];
+        let dist = player.currentCity?.distanceTo[CityIdToIndex(destination.cityId)];
         return dist ?? 0;
     }
 
@@ -104,7 +104,7 @@ export class GameMaster {;
     }
 
     public canFlyTo(player: Player, destination: City): CanDoStatus {
-        let dist = player.currentCity?.distanceTo[destination.cityId];
+        let dist = player.currentCity?.distanceTo[CityIdToIndex(destination.cityId)];
         if (dist <= 1) {
             return CanDoStatus.NO_NEED;
         }
@@ -146,7 +146,7 @@ export class GameMaster {;
     }
 
     public canCharterFlyTo(player: Player, destination: City): CanDoStatus {
-        let dist = player.currentCity?.distanceTo[destination.cityId];
+        let dist = player.currentCity?.distanceTo[CityIdToIndex(destination.cityId)];
         if (dist <= 1) {
             return CanDoStatus.NO_NEED;
         }
@@ -355,13 +355,18 @@ export class GameMaster {;
         let infectionCard = this.pandemik.infectionDeck!.drawBottomCard();
         if (infectionCard) {
             this.pandemik.infectionDiscardPile!.addCard(infectionCard);
-            let city = this.pandemik.map!.cities[infectionCard.cityId];
-            this.pandemik.breakingNewsConnector.addBreakingInfo(
-                new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2)
-            )
-            await this.pandemik.gameMaster.infect(city, infectionCard.diseaseColor, 3);
-            for (const city of this.pandemik.map!.cities) {
-                city.outbreaking = false;
+            let city = this.pandemik.map!.getCityById(infectionCard.cityId);
+            if (city) {
+                this.pandemik.breakingNewsConnector.addBreakingInfo(
+                    new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2)
+                )
+                await this.pandemik.gameMaster.infect(city, infectionCard.diseaseColor, 3);
+                for (const city of this.pandemik.map!.cities) {
+                    city.outbreaking = false;
+                }
+            }
+            else {
+                console.warn(`City not found for infection card: ${infectionCard.cityId}`);
             }
         }
         this.pandemik.infectionDiscardPile!.shuffle();
@@ -386,13 +391,18 @@ export class GameMaster {;
             let card = this.pandemik.infectionDeck!.drawCard();
             if (card) {
                 this.pandemik.infectionDiscardPile!.addCard(card);
-                let city = this.pandemik.map!.cities[card.cityId];
-                this.pandemik.breakingNewsConnector.addBreakingInfo(
-                    new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city)
-                )
-                await this.pandemik.gameMaster.infect(city, card.diseaseColor, 1);
-                for (const city of this.pandemik.map!.cities) {
-                    city.outbreaking = false;
+                let city = this.pandemik.map!.getCityById(card.cityId);
+                if (city) {
+                    this.pandemik.breakingNewsConnector.addBreakingInfo(
+                        new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city)
+                    )
+                    await this.pandemik.gameMaster.infect(city, card.diseaseColor, 1);
+                    for (const city of this.pandemik.map!.cities) {
+                        city.outbreaking = false;
+                    }
+                }
+                else {
+                    console.warn(`City not found for infection card: ${card.cityId}`);
                 }
             }
         }

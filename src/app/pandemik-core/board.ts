@@ -2,7 +2,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector.pure';
 import type { Quaternion } from '@babylonjs/core/Maths/math.vector.pure';
 import type { Nullable } from '@babylonjs/core/types';
 import { City, CityLinkType } from './city';
-import { CityColor3s, CityID, CityLinks, MapData } from './data';
+import { GameColor3s, CityLinkDataList, CityDataList, CityIdToIndex } from './data';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.pure';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.pure';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture.pure';
@@ -81,6 +81,10 @@ export class Board {
 
     public base: Mesh;
     public cities: City[] = [];
+    public getCityById(cityId: string): City | null {
+        const index = CityIdToIndex(cityId);
+        return index >= 0 && index < this.cities.length ? this.cities[index] : null;
+    }
 
     public tokenMeshData: IMeshData[] = [];
 
@@ -135,31 +139,25 @@ export class Board {
 
         console.log("Token mesh data:", this.tokenMeshData);
 
-        for (let cityId = 0; cityId < CityID.LAST; cityId++) {
-            const cityData = MapData[cityId];
-            if (cityData) {
-                const city = new City(this, cityId, cityData.color, cityData.name, null);
-                city.lat = cityData.lat;
-                city.long = cityData.long;
-                city.updatePosition();
-                if (cityData.posZero) {
-                    city.position.copyFromFloats(cityData.posZero[0], cityData.posZero[1], cityData.posZero[2]);
-                }
-                this.cities.push(city);
+        for (const cityData of CityDataList) {
+            const city = new City(this, cityData.id, cityData.color, cityData.name, null);
+            city.lat = cityData.lat;
+            city.long = cityData.long;
+            city.updatePosition();
+            if (cityData.posZero) {
+                city.position.copyFromFloats(cityData.posZero[0], cityData.posZero[1], cityData.posZero[2]);
             }
-            else {
-                console.warn(`City data not found for cityId: ${cityId}`);
-            }
+            this.cities.push(city);
         }
 
-        for (const link of CityLinks.links) {
-            let city1 = this.cities.find(c => c.cityId === link.city1);
-            let city2 = this.cities.find(c => c.cityId === link.city2);
+        for (const link of CityLinkDataList) {
+            let city1 = this.getCityById(link.cityId1);
+            let city2 = this.getCityById(link.cityId2);
             if (city1 && city2) {
                 City.Connect(city1, city2);
             }
             else {
-                console.warn(`City link not found: ${link.city1} - ${link.city2}`);
+                console.warn(`City link not found: ${link.cityId1} - ${link.cityId2}`);
             }
         }
 

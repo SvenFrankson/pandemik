@@ -1,5 +1,5 @@
 import { Mesh } from "@babylonjs/core/Meshes/mesh.pure";
-import { CityColor3s, CityID, type GameColor } from "./data";
+import { CityDataList, CityIdToIndex, GameColor3s, type GameColor } from "./data";
 import { Matrix, Quaternion } from "@babylonjs/core/Maths/math.vector.pure";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder.pure";
 import type { Scene } from "@babylonjs/core/scene";
@@ -129,7 +129,7 @@ export class City extends Mesh {
 
     public radius: number = 0.5;
 
-    public cityId: CityID;
+    public cityId: string;
     public lat: number = 0;
     public long: number = 0;
     public basePosition: Vector3 = new Vector3(0, 0, 0);
@@ -182,18 +182,18 @@ export class City extends Mesh {
         }
         link = new CityLink(cityA, cityB, cityLinkType);
         cityA.links.push(link);
-        cityA.distanceTo[cityB.cityId] = 1;
+        cityA.distanceTo[CityIdToIndex(cityB.cityId)] = 1;
         cityB.links.push(link);
-        cityB.distanceTo[cityA.cityId] = 1;
+        cityB.distanceTo[CityIdToIndex(cityA.cityId)] = 1;
         return true;
     }
 
-    constructor(public board: Board, cityId: CityID, cityColor: GameColor, name: string, scene: Nullable<Scene>) {
+    constructor(public board: Board, cityId: string, cityColor: GameColor, name: string, scene: Nullable<Scene>) {
         super(name, scene);
         this.cityId = cityId;
         this.rotationQuaternion = Quaternion.Identity();
         this.cityColor = cityColor;
-        this.color = CityColor3s[cityColor];
+        this.color = GameColor3s[cityColor];
         
         this.pin = MeshBuilder.CreateSphere("pin-" + name, { diameter: 0.05 }, this.getScene());
         this.pin.material = this.board.pandemik.sharedMaterials.plasticMaterials[this.cityColor];
@@ -217,10 +217,12 @@ export class City extends Mesh {
         this.picture.rotation.y = Math.PI;
         this.board.tokenMeshData[3]?.vertexData.applyToMesh(this.picture);
 
+        /*
         if (this.board.pandemik.sharedMaterials.cityMaterials[this.cityId]) {
             this.picture.material = this.board.pandemik.sharedMaterials.cityMaterials[this.cityId];
             this.picture.visibility = 0.5;
         }
+        */
         
         this.infectionPicture = new CityPart("city-pic", this.getScene(), this);
         this.infectionPicture.material = this.board.pandemik.sharedMaterials.cityMaterial;
@@ -263,10 +265,10 @@ export class City extends Mesh {
             this.playerAnchors.push(playerAnchor);
         }
 
-        for (let i = 0; i < CityID.LAST; i++) {
+        for (let i = 0; i < CityDataList.length; i++) {
             this.distanceTo[i] = Infinity;
         }
-        this.distanceTo[this.cityId] = 0;
+        this.distanceTo[CityIdToIndex(this.cityId)] = 0;
     }
 
     public select(): void {
@@ -522,7 +524,7 @@ export class City extends Mesh {
 
     public shareDistanceMap(otherCity: City): boolean {
         let updated = false;
-        for (let i = 0; i < CityID.LAST; i++) {
+        for (let i = 0; i < CityDataList.length; i++) {
             const newDistance = Math.min(this.distanceTo[i], otherCity.distanceTo[i] + 1);
             if (newDistance < this.distanceTo[i]) {
                 this.distanceTo[i] = newDistance;

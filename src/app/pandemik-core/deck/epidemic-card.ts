@@ -1,4 +1,4 @@
-import { GameColor, CityID, MapData } from '../data';
+import { GameColor, CityDataList } from '../data';
 import { Card, PlayerCard } from './deck';
 
 export class EpidemyCard extends PlayerCard {
