@@ -1,9 +1,10 @@
 import { Pandemik } from "./pandemik";
-import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture.pure';
+import { City } from "./city";
 import type { Material } from '@babylonjs/core/Materials/material.pure';
+import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture.pure';
 import { PBRMetallicRoughnessMaterial } from '@babylonjs/core/Materials/PBR/pbrMetallicRoughnessMaterial.pure';
 import { Color3, Texture } from "@babylonjs/core";
-import { CityColor3s } from "./data";
+import { CityColor3s, CityID } from "./data";
 import { QuickMaterial } from "./tools";
 import { RedColor } from "./constants";
 
@@ -17,6 +18,7 @@ export class SharedMaterials {
     public infectionMaterial: Material;
     public infectionMaterials: Material[] = [];
     public cityMaterial: Material;
+    public cityMaterials: Material[] = [];
     public alertCityMaterials: Material[] = [];
     public plasticMaterials: Material[] = [];
     public get whitePlasticMaterial(): Material {
@@ -62,11 +64,20 @@ export class SharedMaterials {
             this.infectionMaterials.push(mat);
         }
 
-        let cityMaterial = QuickMaterial(Color3.White(), 0, Color3.Red());
-        cityMaterial.diffuseTexture = new Texture("biohazard.png", this.pandemik.scene!, undefined, false);
-        cityMaterial.diffuseTexture.hasAlpha = true;
-        cityMaterial.useAlphaFromDiffuseTexture = true;
+        let cityMaterial = QuickMaterial(Color3.White());
+        cityMaterial.alpha = 0;
         this.cityMaterial = cityMaterial;
+
+        this._loadCityMaterial(CityID.London);
+        this._loadCityMaterial(CityID.Essen);
+        this._loadCityMaterial(CityID.Milano);
+        this._loadCityMaterial(CityID.Paris);
+        this._loadCityMaterial(CityID.Madrid);
+        this._loadCityMaterial(CityID.Montreal);
+        this._loadCityMaterial(CityID.NewYork);
+        this._loadCityMaterial(CityID.Washington);
+        this._loadCityMaterial(CityID.Atlanta);
+        this._loadCityMaterial(CityID.Chicago);
 
         for (let i = 0; i < 3; i++) {
             let alertCityMaterial = QuickMaterial(Color3.White(), 0, Color3.Red().scale((i + 1) / 3).scale(0.5));
@@ -82,6 +93,19 @@ export class SharedMaterials {
         }
         this.plasticMaterials.push(this._makePlasticPBR("", Color3.White(), this.environmentTexture));
         this.plasticMaterials.push(this._makePlasticPBR("", RedColor, this.environmentTexture));
+    }
+
+    private _loadCityMaterial(cityId: CityID): Material {
+        let name = CityID[cityId].toLocaleLowerCase();
+        name = name.split('').filter(c => c >= 'a' && c <= 'z').join('');
+        let material = QuickMaterial(Color3.White(), 0.2);
+        material.diffuseTexture = new Texture(name + ".png", this.pandemik.scene!);
+        material.diffuseTexture.hasAlpha = true;
+        material.useAlphaFromDiffuseTexture = true;
+        material.emissiveTexture = material.diffuseTexture;
+        material.emissiveColor = new Color3(0.2, 0.2, 0.2);
+        this.cityMaterials[cityId] = material;
+        return material;
     }
 
     private _makeMetalPBR(name: string, color: Color3, envTexture: CubeTexture): Material {

@@ -174,20 +174,7 @@ export class GameMaster {;
         return false;
     }
 
-    public async infect(city: City, diseaseColor: GameColor, count: number, skipCam: boolean = false, fromOutbreak: boolean = false): Promise<void> {
-        let text = "";
-        if (count === 1) {
-            text = "A new " + DiseaseNames[diseaseColor].toLocaleUpperCase() + " infection.";
-        }
-        else if (count === 2) {
-            text = "Multiple " + DiseaseNames[diseaseColor].toLocaleUpperCase() + " cases.";
-        }
-        else if (count >= 3) {
-            text = "Major " + DiseaseNames[diseaseColor].toLocaleUpperCase() + " crisis.";
-        }
-        this.pandemik.breakingNewsConnector.addBreakingInfo(
-            new BreakingInfo(text, city)
-        )
+    public async infect(city: City, diseaseColor: GameColor, count: number, skipCam: boolean = false): Promise<void> {
         if (!skipCam) {
             await this.pandemik.gameCamera.goTo(city.position, 1, 20, 4);
         }
@@ -216,12 +203,17 @@ export class GameMaster {;
                 await Promise.all(promises);
             }
             promises = [];
+            let text = "It spreads to ";
             for (const link of city.links) {
                 const otherCity = link.other(city);
                 if (otherCity && !otherCity.outbreaking) {
                     promises.push(this.infect(otherCity, diseaseColor, 1, true));
+                    text += otherCity.name + ", ";
                 }
             }
+            this.pandemik.breakingNewsConnector.addBreakingInfo(
+                new BreakingInfo(text.slice(0, -2) + ". +1", city)
+            )
             if (promises.length > 0) {
                 await Promise.all(promises);
             }
@@ -251,13 +243,13 @@ export class GameMaster {;
     }
 
     public async doEpidemic(): Promise<void> {
-        this.pandemik.breakingNewsConnector.addBreakingInfo(
-            new BreakingInfo("Epidemic !!!")
-        )
         let infectionCard = this.pandemik.infectionDeck!.drawBottomCard();
         if (infectionCard) {
             this.pandemik.infectionDiscardPile!.addCard(infectionCard);
             let city = this.pandemik.map!.cities[infectionCard.cityId];
+            this.pandemik.breakingNewsConnector.addBreakingInfo(
+                new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city)
+            )
             await this.pandemik.gameMaster.infect(city, infectionCard.diseaseColor, 3);
             for (const city of this.pandemik.map!.cities) {
                 city.outbreaking = false;
@@ -285,6 +277,9 @@ export class GameMaster {;
             if (card) {
                 this.pandemik.infectionDiscardPile!.addCard(card);
                 let city = this.pandemik.map!.cities[card.cityId];
+                this.pandemik.breakingNewsConnector.addBreakingInfo(
+                    new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city)
+                )
                 await this.pandemik.gameMaster.infect(city, card.diseaseColor, 1);
                 for (const city of this.pandemik.map!.cities) {
                     city.outbreaking = false;

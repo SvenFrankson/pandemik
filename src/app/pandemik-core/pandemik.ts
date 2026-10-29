@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Scene } from "@babylonjs/core/scene.pure";
 import { Player } from "./player";
-import { BreakingNewsConnector } from "./ui-connectors/breaking-news-connector";
+import { BreakingInfo, BreakingNewsConnector } from "./ui-connectors/breaking-news-connector";
 import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
 import { Board } from "./board";
 import type { AudioEngineV2 } from "@babylonjs/core/AudioV2/abstractAudio/audioEngineV2";
@@ -15,7 +15,7 @@ import { HemisphericLight, Matrix } from "@babylonjs/core";
 import { InfectionCard } from "./deck/infection-card";
 import { CityCard } from "./deck/city-card";
 import { Deck, PlayerCard } from "./deck/deck";
-import { CityID } from "./data";
+import { CityID, DiseaseNames } from "./data";
 import { GameCamera } from "./game-camera";
 import { CityActionMenuConnector } from "./ui-connectors/city-action-menu-connector";
 import { City, CityPart } from "./city";
@@ -132,6 +132,9 @@ export class Pandemik {
                 if (card) {
                     this.infectionDiscardPile!.addCard(card);
                     let city = this.map!.cities[card.cityId];
+                    this.breakingNewsConnector.addBreakingInfo(
+                        new BreakingInfo("Major " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " crisis. +3", city)
+                    )
                     await this.gameMaster.infect(city, card.diseaseColor, 3);
                 }
             }
@@ -140,6 +143,9 @@ export class Pandemik {
                 if (card) {
                     this.infectionDiscardPile!.addCard(card);
                     let city = this.map!.cities[card.cityId];
+                    this.breakingNewsConnector.addBreakingInfo(
+                        new BreakingInfo("Multiple " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " cases. +2", city)
+                    )
                     await this.gameMaster.infect(city, card.diseaseColor, 2);
                 }
             }
@@ -148,6 +154,9 @@ export class Pandemik {
                 if (card) {
                     this.infectionDiscardPile!.addCard(card);
                     let city = this.map!.cities[card.cityId];
+                    this.breakingNewsConnector.addBreakingInfo(
+                        new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city)
+                    )
                     await this.gameMaster.infect(city, card.diseaseColor, 1);
                 }
             }

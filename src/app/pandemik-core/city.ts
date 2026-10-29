@@ -10,7 +10,7 @@ import { CreateSphereVertexData } from "@babylonjs/core/Meshes/Builders/sphereBu
 import { MakeOrthogonal, MakeOrthogonalInPlace, MakeOutline, QuickMaterial, RemoveOutline } from "./tools";
 import { Color3 } from "@babylonjs/core/Maths/math.color.pure";
 import { Angle, CreateBeveledBox, CreateBeveledCylinder, CreateBeveledCylinderVertexData, CreateTrailVertexData, CreateWireVertexData, Easing, GetGLTFMeshDataArray } from "babylonjs-tiaratumgames-tools";
-import { RedColor, GreyColor } from "./constants";
+import { RedColor, GreyColor, TimeFactor } from "./constants";
 import { signal } from "@angular/core";
 import { Texture } from "@babylonjs/core/Materials/Textures/texture.pure";
 import { InfectionToken } from "./infection-token";
@@ -188,7 +188,13 @@ export class City extends Mesh {
         this.picture.material = this.board.pandemik.sharedMaterials.cityMaterial;
         this.picture.visibility = 0;
         this.picture.parent = this.frame;
+        this.picture.rotation.y = Math.PI;
         this.board.tokenMeshData[3]?.vertexData.applyToMesh(this.picture);
+
+        if (this.board.pandemik.sharedMaterials.cityMaterials[this.cityId]) {
+            this.picture.material = this.board.pandemik.sharedMaterials.cityMaterials[this.cityId];
+            this.picture.visibility = 0.5;
+        }
 
         this.playerAnchor = new TransformNode("player-anchor", this.getScene());
         this.playerAnchor.parent = this;
@@ -340,7 +346,7 @@ export class City extends Mesh {
         infectionMesh.rotation.y = Math.PI + alpha;
 
         this.updateInfectionsMeshes();
-        await infectionMesh.animateSize(0.4, 0.5, Easing.easeOutCubic);
+        await infectionMesh.animateSize(0.4, 0.5 * TimeFactor, Easing.easeOutCubic);
     }
 
     public async outbreakAnimate(diseaseColor: GameColor): Promise<void> {

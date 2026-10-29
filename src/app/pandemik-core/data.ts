@@ -34,7 +34,7 @@ export enum CityID {
     London,
     Paris,
     Essen,
-    Milan,
+    Milano,
     SaintPetersburg,
     LosAngeles,
     MexicoCity,
@@ -94,7 +94,7 @@ MapData[CityID.Madrid] = { name: "Madrid", color: GameColor.Blue, lat: 40.4168, 
 MapData[CityID.London] = { name: "London", color: GameColor.Blue, lat: 51.5074, long: -0.1278 }
 MapData[CityID.Paris] = { name: "Paris", color: GameColor.Blue, lat: 48.8566, long: 2.3522 }
 MapData[CityID.Essen] = { name: "Essen", color: GameColor.Blue, lat: 51.4556, long: 7.0116 }
-MapData[CityID.Milan ] = { name: "Milan", color: GameColor.Blue, lat: 45.4642, long: 9.1900 }
+MapData[CityID.Milano ] = { name: "Milan", color: GameColor.Blue, lat: 45.4642, long: 9.1900 }
 MapData[CityID.SaintPetersburg] = { name: "Saint Petersburg", color: GameColor.Blue, lat: 59.9343, long: 30.3351 }
 MapData[CityID.LosAngeles] = { name: "Los Angeles", color: GameColor.Yellow, lat: 34.0522, long: -118.2437 }
 MapData[CityID.MexicoCity] = { name: "Mexico City", color: GameColor.Yellow, lat: 19.4326, long: -99.1332 }
@@ -174,13 +174,13 @@ CityLinks.links.push({ city1: CityID.London, city2: CityID.Paris });
 CityLinks.links.push({ city1: CityID.London, city2: CityID.Essen });
 
 CityLinks.links.push({ city1: CityID.Paris, city2: CityID.Essen });
-CityLinks.links.push({ city1: CityID.Paris, city2: CityID.Milan });
+CityLinks.links.push({ city1: CityID.Paris, city2: CityID.Milano });
 CityLinks.links.push({ city1: CityID.Paris, city2: CityID.Algiers });
 
-CityLinks.links.push({ city1: CityID.Essen, city2: CityID.Milan });
+CityLinks.links.push({ city1: CityID.Essen, city2: CityID.Milano });
 CityLinks.links.push({ city1: CityID.Essen, city2: CityID.SaintPetersburg });
 
-CityLinks.links.push({ city1: CityID.Milan, city2: CityID.Istanbul });
+CityLinks.links.push({ city1: CityID.Milano, city2: CityID.Istanbul });
 
 CityLinks.links.push({ city1: CityID.SaintPetersburg, city2: CityID.Istanbul });
 CityLinks.links.push({ city1: CityID.SaintPetersburg, city2: CityID.Moscow });

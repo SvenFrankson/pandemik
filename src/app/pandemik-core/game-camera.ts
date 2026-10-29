@@ -3,6 +3,7 @@ import { Axis } from "@babylonjs/core/Maths/math.axis";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector.pure";
 import { Scene } from "@babylonjs/core/scene.pure";
 import { Angle, AngleFromToAround, AnimationFactory, Easing, LerpAngle } from "babylonjs-tiaratumgames-tools";
+import { TimeFactor } from "./constants";
 
 interface ISceneObject {
     getScene: () => Scene;
@@ -86,6 +87,7 @@ export class GameCamera extends ArcRotateCamera {
     }
 
     public async goTo(target: Vector3, duration: number = 1, radius?: number, height: number = 0): Promise<void> {
+        duration *= TimeFactor;
         const alpha = - AngleFromToAround(Axis.X, target, Axis.Y);
         const beta = Angle(Axis.Y, target);
 
