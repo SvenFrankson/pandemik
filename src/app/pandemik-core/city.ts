@@ -229,7 +229,7 @@ export class City extends Mesh {
         this.infectionPicture.rotation.y = Math.PI;
         this.board.tokenMeshData[3]?.vertexData.applyToMesh(this.infectionPicture);
 
-        for (let n = 0; n < 8; n++) {
+        for (let n = 0; n < 2; n++) {
             let playerAnchor = new PlayerAnchor("player-anchor", this.getScene(), this);
             playerAnchor.parent = this;
             let alpha = - 2 * Math.PI / 3 - n * Math.PI / 3;
@@ -237,6 +237,28 @@ export class City extends Mesh {
                 (this.radius - 0.1) * Math.sin(alpha),
                 0.1,
                 (this.radius - 0.1) * Math.cos(alpha)
+            );
+            this.playerAnchors.push(playerAnchor);
+        }
+        for (let n = 0; n < 3; n++) {
+            let playerAnchor = new PlayerAnchor("player-anchor", this.getScene(), this);
+            playerAnchor.parent = this;
+            let alpha = - 5 * Math.PI / 6 - n * Math.PI / 6;
+            playerAnchor.position.copyFromFloats(
+                (this.radius + 0.3) * Math.sin(alpha),
+                0.1,
+                (this.radius + 0.3) * Math.cos(alpha)
+            );
+            this.playerAnchors.push(playerAnchor);
+        }
+        for (let n = 0; n < 2; n++) {
+            let playerAnchor = new PlayerAnchor("player-anchor", this.getScene(), this);
+            playerAnchor.parent = this;
+            let alpha = - 4 * Math.PI / 6 + n * Math.PI / 6;
+            playerAnchor.position.copyFromFloats(
+                (this.radius + 0.3) * Math.sin(alpha),
+                0.1,
+                (this.radius + 0.3) * Math.cos(alpha)
             );
             this.playerAnchors.push(playerAnchor);
         }

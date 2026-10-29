@@ -164,7 +164,7 @@ export class Pandemik {
             }
 
             await this.gameCamera!.goTo(atlanta.position, 1, 25);
-            for (let pIndex = 0; pIndex < 2; pIndex++) {
+            for (let pIndex = 0; pIndex < 7; pIndex++) {
                 let PlayerRole = RandomAvailableRole(this);
                 let player = new PlayerRole(this, atlanta);
                 this.players.push(player);
