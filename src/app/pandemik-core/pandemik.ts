@@ -26,6 +26,7 @@ import { EpidemyCard } from "./deck/epidemic-card";
 export class Pandemik {
 
     public DEBUG_MODE: boolean = false;
+    public static DEV_INSTANCE: Pandemik | null = null;
 
     public canvas: HTMLCanvasElement;
     public engine: Engine;
@@ -80,6 +81,7 @@ export class Pandemik {
     }
 
     constructor(canvas: HTMLCanvasElement) {
+        Pandemik.DEV_INSTANCE = this;
         this.canvas = canvas;
         this.engine = new Engine(canvas, true, undefined, true);
         (async () => {
@@ -164,7 +166,7 @@ export class Pandemik {
             }
 
             await this.gameCamera!.goTo(atlanta.position, 1, 25);
-            for (let pIndex = 0; pIndex < 7; pIndex++) {
+            for (let pIndex = 0; pIndex < 2; pIndex++) {
                 let PlayerRole = RandomAvailableRole(this);
                 let player = new PlayerRole(this, atlanta);
                 this.players.push(player);

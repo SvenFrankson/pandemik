@@ -141,6 +141,10 @@ export class Board {
                 const city = new City(this, cityId, cityData.color, cityData.name, null);
                 city.lat = cityData.lat;
                 city.long = cityData.long;
+                city.updatePosition();
+                if (cityData.posZero) {
+                    city.position.copyFromFloats(cityData.posZero[0], cityData.posZero[1], cityData.posZero[2]);
+                }
                 this.cities.push(city);
             }
             else {
@@ -160,10 +164,6 @@ export class Board {
         }
 
         this.recomputeDistances();
-
-        for (const city of this.cities) {
-            city.updatePosition();
-        }
     }
 
     public connectAllStation(): void {

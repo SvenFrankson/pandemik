@@ -1,4 +1,5 @@
 import { BlueColor, YellowColor, BlackColor, GreenColor } from "./constants";
+import { Pandemik } from "./pandemik";
 
 export enum GameColor {
     Blue,
@@ -80,6 +81,7 @@ export interface CityData {
     color: GameColor;
     lat: number;
     long: number;
+    posZero?: [number, number, number];
 }
 
 export var MapData = [<CityData>{}];
@@ -132,6 +134,67 @@ MapData[CityID.Manila] = { name: "Manila", color: GameColor.Green, lat: 14.5995,
 MapData[CityID.HoChiMinhCity] = { name: "Ho Chi Minh City", color: GameColor.Green, lat: 10.7769, long: 106.7009 }
 MapData[CityID.Jakarta] = { name: "Jakarta", color: GameColor.Green, lat: -6.2088, long: 106.8456 }
 MapData[CityID.Sydney] = { name: "Sydney", color: GameColor.Green, lat: -33.8688, long: 151.2093 }
+
+MapData[CityID.SanFrancisco].posZero = [-6.397, 6.867, 4.708];
+MapData[CityID.Chicago].posZero = [-7.463, 7.382, 0.216];
+MapData[CityID.Atlanta].posZero = [-9.025, 5.351, 0.422];
+MapData[CityID.Montreal].posZero = [-6.300, 8.195, -1.845];
+MapData[CityID.Washington].posZero = [-8.297, 6.171, -1.825];
+MapData[CityID.NewYork].posZero = [-7.016, 6.778, -3.884];
+MapData[CityID.Madrid].posZero = [-1.948, 6.076, -8.339];
+MapData[CityID.London].posZero = [-1.282, 8.931, -5.371];
+MapData[CityID.Paris].posZero = [-0.295, 7.598, -7.242];
+MapData[CityID.Essen].posZero = [1.572, 8.569, -5.860];
+MapData[CityID.Milano].posZero = [1.992, 6.752, -7.790];
+MapData[CityID.SaintPetersburg].posZero = [2.194, 9.593, -3.661];
+MapData[CityID.LosAngeles].posZero = [-8.182, 5.368, 3.805];
+MapData[CityID.MexicoCity].posZero = [-9.815, 3.334, 1.670];
+MapData[CityID.Miami].posZero = [-9.520, 3.989, -1.925];
+MapData[CityID.Bogota].posZero = [-10.063, 0.862, -2.872];
+MapData[CityID.Lima].posZero = [-10.007, -2.191, -2.302];
+MapData[CityID.Santiago].posZero = [-8.394, -5.740, -2.616];
+MapData[CityID.BuenosAires].posZero = [-7.184, -5.974, -4.791];
+MapData[CityID.SaoPaulo].posZero = [-6.997, -4.195, -6.609];
+MapData[CityID.Lagos].posZero = [0.615, 1.193, -10.414];
+MapData[CityID.Kinshasa].posZero = [2.756, -0.813, -10.099];
+MapData[CityID.Khartoum].posZero = [5.475, 2.722, -8.536];
+MapData[CityID.Johannesburg].posZero = [4.430, -4.636, -8.314];
+MapData[CityID.Algiers].posZero = [0.370, 5.322, -9.044];
+MapData[CityID.Cairo].posZero = [4.360, 4.931, -8.181];
+MapData[CityID.Istanbul].posZero = [4.072, 7.192, -6.477];
+MapData[CityID.Moscow].posZero = [4.332, 8.509, -4.369];
+MapData[CityID.Baghdad].posZero = [6.057, 5.673, -6.432];
+MapData[CityID.Riyadh].posZero = [7.374, 3.554, -6.576];
+MapData[CityID.Tehran].posZero = [6.869, 6.681, -4.293];
+MapData[CityID.Karachi].posZero = [8.287, 4.626, -4.491];
+MapData[CityID.Mumbai].posZero = [9.576, 3.030, -3.061];
+MapData[CityID.Delhi].posZero = [8.620, 5.576, -2.203];
+MapData[CityID.Chennai].posZero = [10.302, 1.734, -1.050];
+MapData[CityID.Calcutta].posZero = [9.589, 4.266, -0.308];
+MapData[CityID.Beijing].posZero = [7.104, 7.344, 2.419];
+MapData[CityID.Seoul].posZero = [5.916, 7.177, 4.873];
+MapData[CityID.Tokyo].posZero = [4.148, 6.665, 6.973];
+MapData[CityID.Shanghai].posZero = [7.789, 5.683, 4.158];
+MapData[CityID.HongKong].posZero = [9.201, 3.773, 3.369];
+MapData[CityID.Bangkok].posZero = [10.120, 2.459, 1.335];
+MapData[CityID.Taipei].posZero = [7.964, 3.745, 5.727];
+MapData[CityID.Osaka].posZero = [6.228, 5.347, 6.547];
+MapData[CityID.Manila].posZero = [8.718, 1.362, 5.691];
+MapData[CityID.HoChiMinhCity].posZero = [9.841, 1.183, 3.465];
+MapData[CityID.Jakarta].posZero = [9.983, -1.268, 2.997];
+MapData[CityID.Sydney].posZero = [4.199, -5.852, 7.641];
+
+export function DEV_GeneratePosZeroCode(): void {
+    let output = "";
+    for (let cityId = 0; cityId < CityID.LAST; cityId++) {
+        let city = Pandemik.DEV_INSTANCE?.map?.cities[cityId];
+        if (city) {
+            output += `MapData[CityID.${CityID[cityId]}].posZero = [${city.position.x.toFixed(3)}, ${city.position.y.toFixed(3)}, ${city.position.z.toFixed(3)}];\n`;
+        }
+    }
+    console.log(output);
+}
+(window as any).DEV_GeneratePosZeroCode = DEV_GeneratePosZeroCode;
 
 export interface CityLinkData {
     city1: CityID;
