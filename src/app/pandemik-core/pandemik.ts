@@ -126,14 +126,14 @@ export class Pandemik {
             this.canvas?.addEventListener("pointerdown", this._pointerDown);
             this.canvas?.addEventListener("pointerup", this._pointerUp);
 
-            const draws = 1;
+            const draws = 3;
             for (let n = 0; n < draws; n++) {
                 let card = this.infectionDeck!.drawCard();
                 if (card) {
                     this.infectionDiscardPile!.addCard(card);
                     let city = this.map!.cities[card.cityId];
                     this.breakingNewsConnector.addBreakingInfo(
-                        new BreakingInfo("Major " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " crisis. +3", city)
+                        new BreakingInfo("Major " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " crisis. +3", city, 2)
                     )
                     await this.gameMaster.infect(city, card.diseaseColor, 3);
                 }
@@ -144,7 +144,7 @@ export class Pandemik {
                     this.infectionDiscardPile!.addCard(card);
                     let city = this.map!.cities[card.cityId];
                     this.breakingNewsConnector.addBreakingInfo(
-                        new BreakingInfo("Multiple " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " cases. +2", city)
+                        new BreakingInfo("Multiple " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " cases. +2", city, 1)
                     )
                     await this.gameMaster.infect(city, card.diseaseColor, 2);
                 }
@@ -155,7 +155,7 @@ export class Pandemik {
                     this.infectionDiscardPile!.addCard(card);
                     let city = this.map!.cities[card.cityId];
                     this.breakingNewsConnector.addBreakingInfo(
-                        new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city)
+                        new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city, 0)
                     )
                     await this.gameMaster.infect(city, card.diseaseColor, 1);
                 }
@@ -197,6 +197,9 @@ export class Pandemik {
         if (isFinite(fps)) {
             if (this.map) {
                 this.map.update();
+            }
+            if (this.sharedMaterials) {
+                this.sharedMaterials.update();
             }
         }
     }

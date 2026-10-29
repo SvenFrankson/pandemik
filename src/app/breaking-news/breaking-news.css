@@ -29,6 +29,17 @@ h3 {
     line-height: 1;
 }
 
+.breaking-news-item.severity-0 {
+    background-color: white;
+}
+.breaking-news-item.severity-1 {
+    background-color: white;
+}
+.breaking-news-item.severity-2 {
+    background-color: red;
+    color: white;
+}
+
 .location {
     display: inline-block;
     margin-right: 15px;

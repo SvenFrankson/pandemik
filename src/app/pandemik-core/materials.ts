@@ -68,6 +68,7 @@ export class SharedMaterials {
         cityMaterial.alpha = 0;
         this.cityMaterial = cityMaterial;
 
+        /*
         this._loadCityMaterial(CityID.London);
         this._loadCityMaterial(CityID.Essen);
         this._loadCityMaterial(CityID.Milano);
@@ -78,12 +79,45 @@ export class SharedMaterials {
         this._loadCityMaterial(CityID.Washington);
         this._loadCityMaterial(CityID.Atlanta);
         this._loadCityMaterial(CityID.Chicago);
+        this._loadCityMaterial(CityID.SaintPetersburg);
+        this._loadCityMaterial(CityID.LosAngeles);
+        this._loadCityMaterial(CityID.MexicoCity);
+        this._loadCityMaterial(CityID.Miami);
+        this._loadCityMaterial(CityID.Bogota);
+        this._loadCityMaterial(CityID.Lima);
+        this._loadCityMaterial(CityID.Santiago);
+        this._loadCityMaterial(CityID.BuenosAires);
+        this._loadCityMaterial(CityID.SaoPaulo);
+        this._loadCityMaterial(CityID.Lagos);
+        this._loadCityMaterial(CityID.Kinshasa);
+        this._loadCityMaterial(CityID.Khartoum);
+        this._loadCityMaterial(CityID.Johannesburg);
+        this._loadCityMaterial(CityID.Moscow);
+        this._loadCityMaterial(CityID.Istanbul);
+        this._loadCityMaterial(CityID.Cairo);
+        this._loadCityMaterial(CityID.Algiers);
+        this._loadCityMaterial(CityID.Tehran);
+        this._loadCityMaterial(CityID.Baghdad);
+        this._loadCityMaterial(CityID.Beijing);
+        this._loadCityMaterial(CityID.Seoul);
+        this._loadCityMaterial(CityID.Tokyo);
+        this._loadCityMaterial(CityID.Shanghai);
+        this._loadCityMaterial(CityID.HongKong);
+        this._loadCityMaterial(CityID.Bangkok);
+        this._loadCityMaterial(CityID.Taipei);
+        this._loadCityMaterial(CityID.Osaka);
+        this._loadCityMaterial(CityID.Manila);
+        this._loadCityMaterial(CityID.HoChiMinhCity);
+        this._loadCityMaterial(CityID.Jakarta);
+        this._loadCityMaterial(CityID.Sydney);
+        */
 
         for (let i = 0; i < 3; i++) {
-            let alertCityMaterial = QuickMaterial(Color3.White(), 0, Color3.Red().scale((i + 1) / 3).scale(0.5));
-            alertCityMaterial.diffuseTexture = new Texture("biohazard.png", this.pandemik.scene!, undefined, false);
+            let alertCityMaterial = QuickMaterial(Color3.White(), 0, RedColor.scale((i + 1) / 3).scale(0.5));
+            alertCityMaterial.diffuseTexture = new Texture("biohazard-red.png", this.pandemik.scene!);
             alertCityMaterial.diffuseTexture.hasAlpha = true;
             alertCityMaterial.useAlphaFromDiffuseTexture = true;
+            alertCityMaterial.alpha = (i + 1) / 3;
             this.alertCityMaterials.push(alertCityMaterial);
         }
         
@@ -125,5 +159,17 @@ export class SharedMaterials {
         plastic.environmentTexture = envTexture;
 
         return plastic;
+    }
+
+    private _timer: number = 0;
+    public update(): void {
+        return;
+        this._timer += this.pandemik.scene.deltaTime / 1000;
+        const P = 1.5;
+        const f = (Math.sin(this._timer * Math.PI * 2 / P) + 1) * 0.5;
+        const f2 = (Math.sin(this._timer * Math.PI * 2 / (2 * P)) + 1) * 0.5;
+        for (const alertCityMaterial of this.alertCityMaterials) {
+            alertCityMaterial.alpha = f * f2;
+        }
     }
 }

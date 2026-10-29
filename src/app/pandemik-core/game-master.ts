@@ -175,12 +175,20 @@ export class GameMaster {;
     }
 
     public async infect(city: City, diseaseColor: GameColor, count: number, skipCam: boolean = false): Promise<void> {
+        let random = city.name + "_" + (Math.random() * 10000).toFixed(0);
+        let failState = "zero";
+        let failCheck = setTimeout(() => {
+            console.warn("Fail " + failState + " " + random);
+        }, 10000);
+        console.log("Starting infection " + random);
         if (!skipCam) {
             await this.pandemik.gameCamera.goTo(city.position, 1, 20, 4);
         }
+        failState = "after camera";
 
         let currentInfection = city.infections[diseaseColor]();
         if (currentInfection + count <= 3) {
+            failState = "infecting normally";
             let promises = [];
             for (let i = 0; i < count; i++) {
                 promises.push(city.infect(diseaseColor));
@@ -188,12 +196,17 @@ export class GameMaster {;
             await Promise.all(promises);
         }
         else {
-            await this.pandemik.gameCamera.goTo(city.position, 1, 30);
+            failState = "outbreak";
+            if (!skipCam) {
+                await this.pandemik.gameCamera.goTo(city.position, 1, 30);
+            }
+            failState = "after camera for outbreak";
             this.pandemik.breakingNewsConnector.addBreakingInfo(
-                new BreakingInfo("Outbreak in " + city.name + ". Situation out of control.", city)
+                new BreakingInfo("Outbreak in " + city.name + ". Situation out of control.", city, 2)
             )
             city.outbreaking = true;
             await city.outbreakAnimate(diseaseColor);
+            failState = "after outbreak animation";
             count = 3 - currentInfection;
             let promises = [];
             for (let i = 0; i < count; i++) {
@@ -202,6 +215,7 @@ export class GameMaster {;
             if (promises.length > 0) {
                 await Promise.all(promises);
             }
+            failState = "spreading to linked cities";
             promises = [];
             let text = "It spreads to ";
             for (const link of city.links) {
@@ -217,7 +231,10 @@ export class GameMaster {;
             if (promises.length > 0) {
                 await Promise.all(promises);
             }
+            failState = "done spreading";
         }
+        clearTimeout(failCheck);
+        console.log("Ending infection " + random);
     }
 
     public async doDrawPlayerCard(player: Player): Promise<PlayerCard | null> {
@@ -248,7 +265,7 @@ export class GameMaster {;
             this.pandemik.infectionDiscardPile!.addCard(infectionCard);
             let city = this.pandemik.map!.cities[infectionCard.cityId];
             this.pandemik.breakingNewsConnector.addBreakingInfo(
-                new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city)
+                new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2)
             )
             await this.pandemik.gameMaster.infect(city, infectionCard.diseaseColor, 3);
             for (const city of this.pandemik.map!.cities) {
@@ -268,6 +285,7 @@ export class GameMaster {;
         while (this._working) {
             await NextFrame();
         }
+        this.pandemik.selectedCity = null;
         await this.doDrawPlayerCard(this.pandemik.currentPlayer!);
         await this.doDrawPlayerCard(this.pandemik.currentPlayer!);
         this._working = true;

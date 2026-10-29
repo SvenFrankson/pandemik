@@ -8,10 +8,12 @@ export class BreakingInfo {
 
     city?: City;
     text: string = "";
+    severity: number = 0;
 
-    constructor(text: string, city?: City) {
+    constructor(text: string, city?: City, severity: number = 0) {
         this.city = city;
         this.text = text;
+        this.severity = severity;
     }
 }
 
@@ -28,6 +30,6 @@ export class BreakingNewsConnector {
     }
 
     addBreakingInfo(info: BreakingInfo): void {
-        this.breakingNews.update((current) => [...current, info].slice(-1000));
+        this.breakingNews.update((current) => [...current, info].slice(-16));
     }
 }

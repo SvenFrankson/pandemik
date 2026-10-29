@@ -2,7 +2,7 @@
     <div id="container">
         <h3>BREAKING NEWS</h3>
         @for(info of connector.breakingNews(); track info) {
-            <div class="breaking-news-item">
+            <div class="breaking-news-item severity-{{ info.severity }}" >
                 <span class="location">{{ (info.city ? info.city.name : "WORLD") | uppercase }} </span>
                 <span class="text">{{ info.text }}</span>
             </div >

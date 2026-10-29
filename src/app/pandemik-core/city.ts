@@ -121,6 +121,7 @@ export class City extends Mesh {
     public frame: CityPart;
     public bottom: CityPart;
     public picture: CityPart;
+    public infectionPicture: CityPart;
     public line: Nullable<Mesh> = null;
     public playerAnchor: TransformNode;
 
@@ -195,6 +196,13 @@ export class City extends Mesh {
             this.picture.material = this.board.pandemik.sharedMaterials.cityMaterials[this.cityId];
             this.picture.visibility = 0.5;
         }
+        
+        this.infectionPicture = new CityPart("city-pic", this.getScene(), this);
+        this.infectionPicture.material = this.board.pandemik.sharedMaterials.cityMaterial;
+        this.infectionPicture.parent = this.frame;
+        this.infectionPicture.position.y += 0.05;
+        this.infectionPicture.rotation.y = Math.PI;
+        this.board.tokenMeshData[3]?.vertexData.applyToMesh(this.infectionPicture);
 
         this.playerAnchor = new TransformNode("player-anchor", this.getScene());
         this.playerAnchor.parent = this;
@@ -315,17 +323,16 @@ export class City extends Mesh {
                 count++;
             }
         }
-        this.picture!.visibility = count / 3;
         if (count > 0) {
             let index = count - 1;
             index = Math.min(2, index);
             //this.frame!.material = this.map.alertFrameMaterials[index];
             //this.frame!.material = this.map.darkFrameMaterial;
-            this.picture!.material = this.board.pandemik.sharedMaterials.alertCityMaterials[index];
+            this.infectionPicture!.material = this.board.pandemik.sharedMaterials.alertCityMaterials[index];
         }
         else {
             //this.frame!.material = this.map.frameMaterial;
-            this.picture!.material = this.board.pandemik.sharedMaterials.cityMaterial;
+            this.infectionPicture!.material = this.board.pandemik.sharedMaterials.cityMaterial;
         }
     }
 
