@@ -397,6 +397,10 @@ export class GameMaster {;
             }
         }
         if (this.pandemik.currentPlayer!) {
+            this.pandemik.currentPlayer.setAvailableAPs(0);
+        }
+        this.pandemik.currentPlayerIndex = (this.pandemik.currentPlayerIndex + 1) % this.pandemik.players.length;
+        if (this.pandemik.currentPlayer!) {
             this.pandemik.currentPlayer.setAvailableAPs(4);
             await this.pandemik.gameCamera.goTo(this.pandemik.currentPlayer.currentCity.position, 1, 25);
         }

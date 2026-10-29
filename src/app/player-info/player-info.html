@@ -1,6 +1,6 @@
 @if (player() != null) {
     <div id="container">
-        <div class="avatar"></div>
+        <div class="avatar" [style.background-color]="player()!.color"></div>
         <div class="name">{{ player()!.name | uppercase }}</div>
         <div class="ap-icon" [class.available]="player()!.availableAPs() >= 1"></div>
         <div class="ap-icon" [class.available]="player()!.availableAPs() >= 2"></div>

@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Scene } from "@babylonjs/core/scene.pure";
-import { Player } from "./player";
+import { Player, RandomAvailableRole } from "./player";
 import { BreakingInfo, BreakingNewsConnector } from "./ui-connectors/breaking-news-connector";
 import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
 import { Board } from "./board";
@@ -53,8 +53,9 @@ export class Pandemik {
     public playerDeck: Deck<PlayerCard> | null = null;
     public playerDiscardPile: Deck<PlayerCard> | null = null;
     public players: Player[] = [];
+    public currentPlayerIndex: number = 0;
     public get currentPlayer(): Player | null {
-        return this.players.length > 0 ? this.players[0] : null;
+        return this.players.length > 0 ? this.players[this.currentPlayerIndex] : null;
     }
 
     public gameMaster: GameMaster;
@@ -164,7 +165,8 @@ export class Pandemik {
 
             await this.gameCamera!.goTo(atlanta.position, 1, 25);
             for (let pIndex = 0; pIndex < 2; pIndex++) {
-                let player = new Player(this, atlanta);
+                let PlayerRole = RandomAvailableRole(this);
+                let player = new PlayerRole(this, atlanta);
                 this.players.push(player);
                 if (this.onPlayerAdded) {
                     this.onPlayerAdded(player);
@@ -181,6 +183,10 @@ export class Pandemik {
             this.playerDeck!.addCard(new EpidemyCard());
             this.playerDeck!.shuffle();
             await atlanta.buildStation();
+            this.currentPlayerIndex = 0;
+            if (this.currentPlayer) {
+                this.currentPlayer.setAvailableAPs(4);
+            }
         });
     }
 

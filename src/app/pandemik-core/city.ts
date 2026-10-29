@@ -17,6 +17,7 @@ import { InfectionToken } from "./infection-token";
 import { CityToken } from "./city-token";
 import { StationToken } from "./station-token";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode.pure";
+import { Player } from "./player";
 
 export enum CityLinkType {
     Base,
@@ -108,6 +109,22 @@ export class CityPart extends Mesh {
     }
 }
 
+export class PlayerAnchor extends TransformNode {
+
+    public player: Player | null = null;
+
+    constructor(name: string, scene: Nullable<Scene>, public city: City) {
+        super(name, scene);
+    }
+
+    public take(player: Player): void {
+        this.player = player;
+    }
+    public release(): void {
+        this.player = null;
+    }
+}
+
 export class City extends Mesh {
 
     public radius: number = 0.5;
@@ -123,7 +140,15 @@ export class City extends Mesh {
     public picture: CityPart;
     public infectionPicture: CityPart;
     public line: Nullable<Mesh> = null;
-    public playerAnchor: TransformNode;
+    public playerAnchors: PlayerAnchor[] = [];
+    public getFirstFreePlayerAnchor(): PlayerAnchor {
+        for (const anchor of this.playerAnchors) {
+            if (!anchor.player) {
+                return anchor;
+            }
+        }
+        return this.playerAnchors[this.playerAnchors.length - 1];
+    }
 
     public cityColor: GameColor;
     public color: Color3;
@@ -204,14 +229,17 @@ export class City extends Mesh {
         this.infectionPicture.rotation.y = Math.PI;
         this.board.tokenMeshData[3]?.vertexData.applyToMesh(this.infectionPicture);
 
-        this.playerAnchor = new TransformNode("player-anchor", this.getScene());
-        this.playerAnchor.parent = this;
-        let alpha = - 3 * Math.PI / 4;
-        this.playerAnchor.position.copyFromFloats(
-            (this.radius - 0.1) * Math.sin(alpha),
-            0.1,
-            (this.radius - 0.1) * Math.cos(alpha)
-        );
+        for (let n = 0; n < 8; n++) {
+            let playerAnchor = new PlayerAnchor("player-anchor", this.getScene(), this);
+            playerAnchor.parent = this;
+            let alpha = - 2 * Math.PI / 3 - n * Math.PI / 3;
+            playerAnchor.position.copyFromFloats(
+                (this.radius - 0.1) * Math.sin(alpha),
+                0.1,
+                (this.radius - 0.1) * Math.cos(alpha)
+            );
+            this.playerAnchors.push(playerAnchor);
+        }
 
         for (let i = 0; i < CityID.LAST; i++) {
             this.distanceTo[i] = Infinity;
