@@ -1,13 +1,15 @@
 @if (player() != null) {
-    <div class="avatar"></div>
-    <div class="name">{{ player()!.name | uppercase }}</div>
-    <div class="ap-icon" [class.available]="player()!.availableAPs() >= 1"></div>
-    <div class="ap-icon" [class.available]="player()!.availableAPs() >= 2"></div>
-    <div class="ap-icon" [class.available]="player()!.availableAPs() >= 3"></div>
-    <div class="ap-icon" [class.available]="player()!.availableAPs() >= 4"></div>
-    <div>
-        @for (card of player()!.playerCards(); track card) {
-            <div class="player-card color-{{ card.color?.toFixed(0) }}">{{ card.name }}</div>
-        }
+    <div id="container">
+        <div class="avatar"></div>
+        <div class="name">{{ player()!.name | uppercase }}</div>
+        <div class="ap-icon" [class.available]="player()!.availableAPs() >= 1"></div>
+        <div class="ap-icon" [class.available]="player()!.availableAPs() >= 2"></div>
+        <div class="ap-icon" [class.available]="player()!.availableAPs() >= 3"></div>
+        <div class="ap-icon" [class.available]="player()!.availableAPs() >= 4"></div>
+        <div class="cards">
+            @for (card of player()!.playerCards(); track card) {
+                <div class="player-card color-{{ card.color?.toFixed(0) }}">{{ card.name }}</div>
+            }
+        </div>
     </div>
 }

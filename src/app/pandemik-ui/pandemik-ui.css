@@ -1,5 +1,6 @@
-app-player-info {
+#players {
     position: fixed;
+    height: fit-content;
     bottom: 10px;
     left: 10px;
     z-index: 1;

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, input, signal } from '@angular/core';
 import { UpperCasePipe } from '@angular/common';
 import { Player } from '../pandemik-core/player';
 
@@ -12,5 +12,5 @@ import { Player } from '../pandemik-core/player';
 })
 export class PlayerInfo {
 
-	player = signal<Player | null>(null);
+	player = input.required<Player>()
 }

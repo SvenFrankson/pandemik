@@ -5,27 +5,53 @@
                 <button (click)="connector.onGoTo()">
                 <i class="icon bi bi-person-walking"></i>
                     <span class="label">GO TO</span>
-                    <span class="cost">({{ connector.goToCost() }} AP)</span>
+                    <span class="cost">{{ connector.goToCost() }} AP</span>
                 </button>
             }
             @else {
-                <button (click)="connector.onGoTo()" class="disabled">
-                <i class="icon bi bi-person-walking"></i>
+                <button class="disabled">
+                    <i class="icon bi bi-person-walking"></i>
                     <span class="label">GO TO</span>
                     <span class="cost">no AP</span>
                 </button>
             }
-            
         }
-        @if (connector.canFlyTo()) {
-            <button>FLY TO</button>
+
+        @if (connector.canFlyTo() === 0) {
+            <button (click)="connector.onFly()">
+                <i class="icon bi bi-airplane"></i>
+                <span class="label">FLY TO</span>
+                <span class="cost">1 AP + 1 CARD</span>
+            </button>
+        }
+        @else if (connector.canFlyTo() === 1) {
+            <button class="disabled">
+                <i class="icon bi bi-airplane"></i>
+                <span class="label">FLY TO</span>
+                <span class="cost">no AP</span>
+            </button>
+        }
+        
+        @if (connector.canCharterFlyTo() === 0) {
+            <button (click)="connector.onCharterFly()">
+                <i class="icon bi bi-airplane"></i>
+                <span class="label">CHARTER FLY TO</span>
+                <span class="cost">1 AP + 1 CARD</span>
+            </button>
+        }
+        @else if (connector.canCharterFlyTo() === 1) {
+            <button class="disabled">
+                <i class="icon bi bi-airplane"></i>
+                <span class="label">CHARTER FLY TO</span>
+                <span class="cost">no AP</span>
+            </button>
         }
 
         @if (connector.canCureDisease[0]() === 0) {
             <button (click)="connector.onCureDisease(0)">
                 <i class="icon bi bi-capsule"></i>
                 <span class="label">CURE BLUEVIRUS</span>
-                <span class="cost">(1 AP)</span>
+                <span class="cost">1 AP</span>
             </button>
         }
         @else if (connector.canCureDisease[0]() === 1) {
@@ -40,7 +66,7 @@
             <button (click)="connector.onCureDisease(1)">
                 <i class="icon bi bi-capsule"></i>
                 <span class="label">CURE YELLOWCOCCUS</span>
-                <span class="cost">(1 AP)</span>
+                <span class="cost">1 AP</span>
             </button>
         }
         @else if (connector.canCureDisease[1]() === 1) {
@@ -55,7 +81,7 @@
             <button (click)="connector.onCureDisease(2)">
                 <i class="icon bi bi-capsule"></i>
                 <span class="label">CURE BLACKTERIUM</span>
-                <span class="cost">(1 AP)</span>
+                <span class="cost">1 AP</span>
             </button>
         }
         @else if (connector.canCureDisease[2]() === 1) {
@@ -70,7 +96,7 @@
             <button (click)="connector.onCureDisease(3)">
                 <i class="icon bi bi-capsule"></i>
                 <span class="label">CURE GREENMONELLA</span>
-                <span class="cost">(1 AP)</span>
+                <span class="cost">1 AP</span>
             </button>
         }
         @else if (connector.canCureDisease[3]() === 1) {
@@ -85,7 +111,7 @@
             <button (click)="connector.onBuildResearchStation()">
                 <i class="icon bi bi-hospital"></i>
                 <span class="label">BUILD</span>
-                <span class="cost">(1 AP)</span>
+                <span class="cost">1 AP + 1 CARD</span>
             </button>
         }
 

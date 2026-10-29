@@ -16,6 +16,7 @@ export enum CanDoStatus {
     NOT_IN_CURRENT_CITY,
     NO_REQUIRED_CARD,
     NO_INFECTION,
+    NO_NEED
 }
 
 export class GameMaster {;
@@ -102,6 +103,90 @@ export class GameMaster {;
         return false;
     }
 
+    public canFlyTo(player: Player, destination: City): CanDoStatus {
+        let dist = player.currentCity?.distanceTo[destination.cityId];
+        if (dist <= 1) {
+            return CanDoStatus.NO_NEED;
+        }
+
+        if (player.availableAPs() < 1) {
+            return CanDoStatus.NOT_ENOUGH_AP;
+        }
+
+        const playerCard = player.playerCards().find(card => {
+            return card instanceof CityCard && card.cityId === destination.cityId;
+        });
+        if (!playerCard) {
+            return CanDoStatus.NO_REQUIRED_CARD;
+        }
+
+        return CanDoStatus.OK;
+    }
+
+    public async doFly(player: Player, destination: City): Promise<boolean> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
+        if (this.canFlyTo(player, destination) === CanDoStatus.OK) {
+            player.consumeAP(1);
+            const playerCard = player.playerCards().find(card => {
+                return card instanceof CityCard && card.cityId === destination.cityId;
+            });
+            if (playerCard) {
+                player.removePlayerCard(playerCard);
+                this.pandemik.playerDiscardPile?.addCard(playerCard);
+            }
+            await player.goTo(destination);
+            this._working = false;
+            return true;
+        }
+        this._working = false;
+        return false;
+    }
+
+    public canCharterFlyTo(player: Player, destination: City): CanDoStatus {
+        let dist = player.currentCity?.distanceTo[destination.cityId];
+        if (dist <= 1) {
+            return CanDoStatus.NO_NEED;
+        }
+
+        if (player.availableAPs() < 1) {
+            return CanDoStatus.NOT_ENOUGH_AP;
+        }
+
+        const playerCard = player.playerCards().find(card => {
+            return card instanceof CityCard && card.cityId === player.currentCity?.cityId;
+        });
+        if (!playerCard) {
+            return CanDoStatus.NO_REQUIRED_CARD;
+        }
+
+        return CanDoStatus.OK;
+    }
+
+    public async doCharterFly(player: Player, destination: City): Promise<boolean> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
+        if (this.canCharterFlyTo(player, destination) === CanDoStatus.OK) {
+            player.consumeAP(1);
+            const playerCard = player.playerCards().find(card => {
+                return card instanceof CityCard && card.cityId === player.currentCity?.cityId;
+            });
+            if (playerCard) {
+                player.removePlayerCard(playerCard);
+                this.pandemik.playerDiscardPile?.addCard(playerCard);
+            }
+            await player.goTo(destination);
+            this._working = false;
+            return true;
+        }
+        this._working = false;
+        return false;
+    }
+
     public canCureDisease(player: Player, city: City, diseaseColor: GameColor): CanDoStatus {
         if (city.infections[diseaseColor]() < 1) {
             return CanDoStatus.NO_INFECTION;
@@ -166,6 +251,13 @@ export class GameMaster {;
                 new BreakingInfo("Research station built.", city)
             )
             player.consumeAP(1);
+            const playerCard = player.playerCards().find(card => {
+                return card instanceof CityCard && card.cityId === city.cityId;
+            });
+            if (playerCard) {
+                player.removePlayerCard(playerCard);
+                this.pandemik.playerDiscardPile?.addCard(playerCard);
+            }
             await city.buildStation();
             this._working = false;
             return true;
@@ -202,7 +294,7 @@ export class GameMaster {;
             }
             failState = "after camera for outbreak";
             this.pandemik.breakingNewsConnector.addBreakingInfo(
-                new BreakingInfo("Outbreak in " + city.name + ". Situation out of control.", city, 2)
+                new BreakingInfo("Massive " + DiseaseNames[diseaseColor].toLocaleUpperCase() + " Outbreak. Situation out of control.", city, 2)
             )
             city.outbreaking = true;
             await city.outbreakAnimate(diseaseColor);

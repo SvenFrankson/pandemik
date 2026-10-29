@@ -7,6 +7,7 @@ import { CityActionMenu } from '../city-action-menu/city-action-menu';
 import { BreakingNews } from '../breaking-news/breaking-news';
 import { PlayerInfo } from '../player-info/player-info';
 import { GameMasterUi } from '../game-master-ui/game-master-ui';
+import { Player } from '../pandemik-core/player';
 
 @Component({
   selector: 'app-pandemik-ui',
@@ -20,9 +21,9 @@ export class PandemikUi {
 
 	@ViewChild(CityActionMenu) cityActionMenu!: CityActionMenu;
 	@ViewChild(BreakingNews) breakingNews!: BreakingNews;
-	@ViewChild(PlayerInfo) playerInfo!: PlayerInfo;
 	@ViewChild(GameMasterUi) gameMasterUi!: GameMasterUi;
 	public cities = signal<City[]>([]);
+	public players = signal<Player[]>([]);
 
 	constructor() {
 
@@ -31,7 +32,7 @@ export class PandemikUi {
 	ngOnInit() {
 		this.pandemik = new Pandemik(document.querySelector("#game-canvas") as HTMLCanvasElement);
 		this.pandemik.onPlayerAdded = (player) => {
-			this.playerInfo.player.set(player);
+			this.players.update(players => [...players, player]);
 		};
 		this.pandemik.initialize().then(() => {
 			this.pandemik!.start();

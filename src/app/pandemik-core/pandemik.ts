@@ -51,6 +51,7 @@ export class Pandemik {
     public infectionDeck: Deck<InfectionCard> | null = null;
     public infectionDiscardPile: Deck<InfectionCard> | null = null;
     public playerDeck: Deck<PlayerCard> | null = null;
+    public playerDiscardPile: Deck<PlayerCard> | null = null;
     public players: Player[] = [];
     public get currentPlayer(): Player | null {
         return this.players.length > 0 ? this.players[0] : null;
@@ -133,7 +134,7 @@ export class Pandemik {
                     this.infectionDiscardPile!.addCard(card);
                     let city = this.map!.cities[card.cityId];
                     this.breakingNewsConnector.addBreakingInfo(
-                        new BreakingInfo("Major " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " crisis. +3", city, 2)
+                        new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2)
                     )
                     await this.gameMaster.infect(city, card.diseaseColor, 3);
                 }
@@ -144,7 +145,7 @@ export class Pandemik {
                     this.infectionDiscardPile!.addCard(card);
                     let city = this.map!.cities[card.cityId];
                     this.breakingNewsConnector.addBreakingInfo(
-                        new BreakingInfo("Multiple " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " cases. +2", city, 1)
+                        new BreakingInfo("Multiple " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infections. +2", city, 1)
                     )
                     await this.gameMaster.infect(city, card.diseaseColor, 2);
                 }
@@ -162,13 +163,15 @@ export class Pandemik {
             }
 
             await this.gameCamera!.goTo(atlanta.position, 1, 25);
-            let player = new Player(this, atlanta);
-            this.players.push(player);
-            if (this.onPlayerAdded) {
-                this.onPlayerAdded(player);
-            }
-            for (let n = 0; n < 4; n++) {
-                await this.gameMaster.doDrawPlayerCard(player);
+            for (let pIndex = 0; pIndex < 2; pIndex++) {
+                let player = new Player(this, atlanta);
+                this.players.push(player);
+                if (this.onPlayerAdded) {
+                    this.onPlayerAdded(player);
+                }
+                for (let n = 0; n < 4; n++) {
+                    await this.gameMaster.doDrawPlayerCard(player);
+                }
             }
             this.playerDeck!.addCard(new EpidemyCard());
             this.playerDeck!.addCard(new EpidemyCard());

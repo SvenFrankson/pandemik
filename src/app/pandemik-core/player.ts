@@ -19,7 +19,7 @@ export class Player extends Mesh {
     public animatePosition = AnimationFactory.EmptyVector3Callback;
 
     constructor(public pandemik: Pandemik, city: City) {
-        super("player", pandemik.scene);
+        super("player_" + (Math.random() * 1000).toFixed(0), pandemik.scene);
         this.currentCity = city;
         this.position.copyFrom(city.playerAnchor.absolutePosition);
         this.rotationQuaternion = Quaternion.Identity(); 
