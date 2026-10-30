@@ -196,8 +196,8 @@ export class Pandemik {
                 let PlayerRole = RandomAvailableRole(this);
                 let player = new PlayerRole(this, atlanta);
                 this.players.push(player);
-                if (this.onPlayerAdded) {
-                    this.onPlayerAdded(player);
+                for (const callback of this.onPlayerAdded) {
+                    callback(player);
                 }
                 for (let n = 0; n < 4; n++) {
                     await this.gameMaster.doDrawPlayerCard(player);
@@ -218,7 +218,7 @@ export class Pandemik {
         });
     }
 
-    public onPlayerAdded: ((player: Player) => void) | null = null;
+    public onPlayerAdded: ((player: Player) => void)[] = [];
 
     public start() {
         this.scene!.onBeforeRenderObservable.removeCallback(this._update);
@@ -280,7 +280,12 @@ export class Pandemik {
                 if (city.opacity() > 0) {
                     if (this.DEV_MODE_CONNECTING) {
                         if (this.selectedCity && this.selectedCity !== city) {
-                            City.Connect(this.selectedCity, city);
+                            if (city.getLink(this.selectedCity)) {
+                                City.Disconnect(this.selectedCity, city);
+                            }
+                            else {
+                                City.Connect(this.selectedCity, city);
+                            }
                             city.updateLine();
                         }
                     }

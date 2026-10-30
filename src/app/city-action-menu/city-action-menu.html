@@ -122,5 +122,35 @@
                 <span class="cost">no AP</span>
             </button>
         }
+
+        @for (canGive of connector.canGiveCard; track canGive) {
+            @if (canGive() === 0) {
+                <button (click)="connector.onGiveCard($index)">
+                    <i class="icon bi bi-card-text"></i>
+                    <span class="label">GIVE CARD</span>
+                </button>
+            }
+            @else if (canGive() === 1) {
+                <button class="disabled">
+                    <i class="icon bi bi-card-text"></i>
+                    <span class="label">GIVE CARD</span>
+                </button>
+            }
+        }
+
+        @for (canTake of connector.canTakeCard; track canTake) {
+            @if (canTake() === 0) {
+                <button (click)="connector.onTakeCard($index)">
+                    <i class="icon bi bi-card-text"></i>
+                    <span class="label">TAKE CARD</span>
+                </button>
+            }
+            @else if (canTake() === 1 || canTake() === 7) {
+                <button class="disabled">
+                    <i class="icon bi bi-card-text"></i>
+                    <span class="label">TAKE CARD</span>
+                </button>
+            }
+        }
     </div>
 }

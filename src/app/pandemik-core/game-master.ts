@@ -16,7 +16,8 @@ export enum CanDoStatus {
     NOT_IN_CURRENT_CITY,
     NO_REQUIRED_CARD,
     NO_INFECTION,
-    NO_NEED
+    NO_NEED,
+    NO_ENOUGH_HAND_SPACE
 }
 
 export class GameMaster {;
@@ -30,6 +31,7 @@ export class GameMaster {;
         this.canPressDone.set(!value);
     }
 
+    outbreaksCount = signal<number>(0);
     canPressDone = signal<boolean>(false);
 
     constructor(public pandemik: Pandemik) {
@@ -266,6 +268,102 @@ export class GameMaster {;
         return false;
     }
 
+    public canGiveCard(player: Player, otherPlayer: Player, city: City): CanDoStatus {
+        if (player.currentCity !== city) {
+            return CanDoStatus.NOT_IN_CURRENT_CITY;
+        }
+
+        if (otherPlayer.currentCity !== city) {
+            return CanDoStatus.NOT_IN_CURRENT_CITY;
+        }
+
+        const playerCard = player.playerCards().find(card => {
+            return card instanceof CityCard && card.cityId === city.cityId;
+        });
+        if (!playerCard) {
+            return CanDoStatus.NO_REQUIRED_CARD;
+        }
+
+        if (otherPlayer.playerCards().length >= 7) {
+            return CanDoStatus.NO_ENOUGH_HAND_SPACE;
+        }
+
+        if (player.availableAPs() < 1) {
+            return CanDoStatus.NOT_ENOUGH_AP;
+        }
+
+        return CanDoStatus.OK;
+    }
+
+    public async doGiveCard(player: Player, otherPlayer: Player, city: City): Promise<boolean> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
+        if (this.canGiveCard(player, otherPlayer, city) === CanDoStatus.OK) {
+            const playerCard = player.playerCards().find(card => {
+                return card instanceof CityCard && card.cityId === city.cityId;
+            });
+            if (playerCard) {
+                player.removePlayerCard(playerCard);
+                player.consumeAP(1);
+                otherPlayer.addPlayerCard(playerCard);
+            }
+            this._working = false;
+            return true;
+        }
+        this._working = false;
+        return false;
+    }
+
+    public canTakeCard(player: Player, otherPlayer: Player, city: City): CanDoStatus {
+        if (player.currentCity !== city) {
+            return CanDoStatus.NOT_IN_CURRENT_CITY;
+        }
+
+        if (otherPlayer.currentCity !== city) {
+            return CanDoStatus.NOT_IN_CURRENT_CITY;
+        }
+
+        const playerCard = otherPlayer.playerCards().find(card => {
+            return card instanceof CityCard && card.cityId === city.cityId;
+        });
+        if (!playerCard) {
+            return CanDoStatus.NO_REQUIRED_CARD;
+        }
+
+        if (player.playerCards().length >= 7) {
+            return CanDoStatus.NO_ENOUGH_HAND_SPACE;
+        }
+
+        if (player.availableAPs() < 1) {
+            return CanDoStatus.NOT_ENOUGH_AP;
+        }
+
+        return CanDoStatus.OK;
+    }
+
+    public async doTakeCard(player: Player, otherPlayer: Player, city: City): Promise<boolean> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
+        if (this.canTakeCard(player, otherPlayer, city) === CanDoStatus.OK) {
+            const playerCard = otherPlayer.playerCards().find(card => {
+                return card instanceof CityCard && card.cityId === city.cityId;
+            });
+            if (playerCard) {
+                otherPlayer.removePlayerCard(playerCard);
+                player.consumeAP(1);
+                player.addPlayerCard(playerCard);
+            }
+            this._working = false;
+            return true;
+        }
+        this._working = false;
+        return false;
+    }
+
     public async infect(city: City, diseaseColor: GameColor, count: number, skipCam: boolean = false): Promise<void> {
         let random = city.name + "_" + (Math.random() * 10000).toFixed(0);
         let failState = "zero";
@@ -297,6 +395,7 @@ export class GameMaster {;
                 new BreakingInfo("Massive " + DiseaseNames[diseaseColor].toLocaleUpperCase() + " Outbreak. Situation out of control.", city, 2)
             )
             city.outbreaking = true;
+            this.outbreaksCount.update(n => n + 1);
             await city.outbreakAnimate(diseaseColor);
             failState = "after outbreak animation";
             count = 3 - currentInfection;

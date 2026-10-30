@@ -31,9 +31,9 @@ export class PandemikUi {
 
 	ngOnInit() {
 		this.pandemik = new Pandemik(document.querySelector("#game-canvas") as HTMLCanvasElement);
-		this.pandemik.onPlayerAdded = (player) => {
+		this.pandemik.onPlayerAdded.push((player) => {
 			this.players.update(players => [...players, player]);
-		};
+		});
 		this.pandemik.initialize().then(() => {
 			this.pandemik!.start();
 			this.cities.set(this.pandemik!.map?.cities ?? []);

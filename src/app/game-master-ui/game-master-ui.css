@@ -13,3 +13,47 @@
     font-weight: 500;
     color: white;
 }
+
+#outbreak-container {
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    padding: 0px 0px 10px 0px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-end;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-left: 1px solid white;
+    border-bottom: 1px solid white;
+    border-bottom-left-radius: 5px;
+}
+
+h3 {
+    line-height: normal;
+    font-size: 16px;
+    font-weight: 900;
+    margin: 0px 0px 5px 0px;
+    padding: 0px 10px;
+    color: var(--red-color);
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.outbreak {
+    width: 90px;
+    height: 16px;
+    margin-right: 10px;
+    font-size: 12px;
+    font-weight: 900;
+    text-align: center;
+    color: black;
+    border-radius: 2px;
+    border: 1px solid var(--red-color);
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+.outbreak.checked {
+    border: 1px solid white;
+    color: white;
+    background-color: var(--red-color);
+}

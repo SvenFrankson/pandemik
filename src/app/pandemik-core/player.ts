@@ -9,9 +9,13 @@ import { MakeOutline, QuickMaterial } from "./tools";
 import { Color3 } from "@babylonjs/core/Maths/math.color.pure";
 import { signal } from "@angular/core";
 import { PlayerCard } from "./deck/deck";
+import { TimeFactor } from "./constants";
 
 export class Player extends Mesh {
 
+    public get index(): number {
+        return this.pandemik.players.indexOf(this);
+    }
     public currentCity: City;
     public availableAPs = signal<number>(0);
     public playerCards = signal<PlayerCard[]>([]); 
@@ -85,7 +89,7 @@ export class Player extends Mesh {
             this.currentCity = city;
             let playerAnchor = city.getFirstFreePlayerAnchor();
             this.anchor = playerAnchor;
-            await this.animatePosition(playerAnchor.absolutePosition, duration);
+            await this.animatePosition(playerAnchor.absolutePosition, duration * TimeFactor);
         }
         else {
             let path = link.path;
@@ -94,15 +98,15 @@ export class Player extends Mesh {
             }
             this.currentCity = city;
             link.highlight();
-            await this.animatePosition(path[0], duration / 8);
-            await this.followPath(path, 6 * duration / 8);
+            await this.animatePosition(path[0], duration / 8 * TimeFactor);
+            await this.followPath(path, 6 * duration / 8 * TimeFactor);
             let playerAnchor = city.getFirstFreePlayerAnchor();
             this.anchor = playerAnchor;
             let destination = playerAnchor.absolutePosition;
             if (passOver) {
                 destination = city.absolutePosition;
             }
-            await this.animatePosition(destination, duration / 8);
+            await this.animatePosition(destination, duration / 8 * TimeFactor);
             link.unlit();
         }
     }

@@ -3,6 +3,7 @@ import { City } from "../city";
 import { Pandemik } from "../pandemik";
 import { GameColor, GameColors } from "../data";
 import { CanDoStatus, GameMaster } from "../game-master";
+import { Player } from "../player";
 
 export class CityActionMenuConnector {
 
@@ -23,6 +24,7 @@ export class CityActionMenuConnector {
         }
     }
 
+    playerCount = signal<number>(0);
     shown = signal<boolean>(false);
     canGoTo = signal<boolean>(false);
     goToCost = signal<number>(1);
@@ -30,14 +32,21 @@ export class CityActionMenuConnector {
     canCharterFlyTo = signal<number>(1);
     canCureDisease = [signal<number>(0), signal<number>(0), signal<number>(0), signal<number>(0)];
     canBuildResearchStation = signal<CanDoStatus>(CanDoStatus.NO_AND_FUCK_YOU);
+    canGiveCard = [signal<CanDoStatus>(CanDoStatus.NO_AND_FUCK_YOU)];
+    canTakeCard = [signal<CanDoStatus>(CanDoStatus.NO_AND_FUCK_YOU)];
     screenX = signal<number>(0);
     screenY = signal<number>(0);
 
     constructor(public pandemik: Pandemik) {
-        
+        pandemik.onPlayerAdded.push(() => {
+            this.canGiveCard = this.pandemik.players.map(() => signal<CanDoStatus>(CanDoStatus.NO_AND_FUCK_YOU));
+            this.canTakeCard = this.pandemik.players.map(() => signal<CanDoStatus>(CanDoStatus.NO_AND_FUCK_YOU));
+        });
     }
 
     update(): void {
+        this.playerCount.set(this.gameMaster.pandemik.players.length);
+
         if (this._city != null && this.pandemik.currentPlayer) {
             this.shown.set(true);
 
@@ -54,6 +63,16 @@ export class CityActionMenuConnector {
             this.canFlyTo.set(this.gameMaster.canFlyTo(this.pandemik.currentPlayer, this._city));
             this.canCharterFlyTo.set(this.gameMaster.canCharterFlyTo(this.pandemik.currentPlayer, this._city));
             this.canBuildResearchStation.set(this.gameMaster.canBuildStation(this.pandemik.currentPlayer, this._city));
+            for (const player of this.gameMaster.pandemik.players) {
+                if (player !== this.pandemik.currentPlayer) {
+                    this.canGiveCard[player.index].set(this.gameMaster.canGiveCard(this.pandemik.currentPlayer, player, this._city));
+                    this.canTakeCard[player.index].set(this.gameMaster.canTakeCard(this.pandemik.currentPlayer, player, this._city));
+                }
+                else {
+                    this.canGiveCard[player.index].set(CanDoStatus.NO_AND_FUCK_YOU);
+                    this.canTakeCard[player.index].set(CanDoStatus.NO_AND_FUCK_YOU);
+                }
+            }
         }
         else {
             this.shown.set(false);
@@ -98,6 +117,20 @@ export class CityActionMenuConnector {
         //this.shown.set(false);
         if (this._city) {
             await this.gameMaster.doBuildStation(this.pandemik.currentPlayer!, this._city);
+        }
+        this.update();
+    }
+
+    async onGiveCard(playerIndex: number): Promise<void> {
+        if (this._city) {
+            await this.gameMaster.doGiveCard(this.pandemik.currentPlayer!, this.pandemik.players[playerIndex], this._city);
+        }
+        this.update();
+    }
+    
+    async onTakeCard(playerIndex: number): Promise<void> {
+        if (this._city) {
+            await this.gameMaster.doTakeCard(this.pandemik.currentPlayer!, this.pandemik.players[playerIndex], this._city);
         }
         this.update();
     }

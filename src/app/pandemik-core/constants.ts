@@ -1,6 +1,6 @@
 import { Color3 } from "@babylonjs/core/Maths/math.color.pure";
 
-export var TimeFactor = 0.1;
+export var TimeFactor = 1;
 
 export var RedColor = Color3.FromHexString("#D64933");
 export var YellowColor = Color3.FromHexString("#d6ce33");

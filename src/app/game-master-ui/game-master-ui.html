@@ -1,3 +1,10 @@
 @if (gameMaster != null) {
     <button id="done-button" [class.disabled]="!gameMaster.canPressDone()" (click)="gameMaster.onDone()">DONE</button>
+    <div id="outbreak-container">
+        <h3>OUTBREAKS</h3>
+        <div class="outbreak" [class.checked]="gameMaster.outbreaksCount() > 7">GAME OVER</div>
+        @for (outbreakIndex of [6, 5, 4, 3, 2, 1, 0]; track outbreakIndex) {
+            <div class="outbreak" [class.checked]="gameMaster.outbreaksCount() > outbreakIndex" [style.width.px]="(outbreakIndex + 2) * 10">{{ outbreakIndex + 1 }}</div>
+        }
+    </div>
 }

@@ -218,7 +218,7 @@ export class Board {
         if (!this.stabilized) {
             this.stability *= 0.5;
             for (let n = 0; n < this.cities.length; n++) {
-                this.stability += this.cities[n].stepUpdate(100);
+                this.stability += this.cities[n].stepUpdate(500);
             }
             this.smoothness = Math.max(4, this.smoothness - 1);
             if (this.stability < 0.001) {

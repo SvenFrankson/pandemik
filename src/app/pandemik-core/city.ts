@@ -1,5 +1,5 @@
 import { Mesh } from "@babylonjs/core/Meshes/mesh.pure";
-import { CityDataList, CityIdToIndex, GameColor3s, type GameColor } from "./data";
+import { CityDataList, CityIdToIndex, CityRings, GameColor3s, type GameColor } from "./data";
 import { Matrix, Quaternion } from "@babylonjs/core/Maths/math.vector.pure";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder.pure";
 import type { Scene } from "@babylonjs/core/scene";
@@ -185,6 +185,19 @@ export class City extends Mesh {
         cityA.distanceTo[CityIdToIndex(cityB.cityId)] = 1;
         cityB.links.push(link);
         cityB.distanceTo[CityIdToIndex(cityA.cityId)] = 1;
+        return true;
+    }
+
+    public static Disconnect(cityA: City, cityB: City): boolean {
+        const link = cityA.getLink(cityB);
+        if (!link) {
+            return false;
+        }
+        cityA.links = cityA.links.filter(l => l !== link);
+        cityA.distanceTo[CityIdToIndex(cityB.cityId)] = Infinity;
+        cityB.links = cityB.links.filter(l => l !== link);
+        cityB.distanceTo[CityIdToIndex(cityA.cityId)] = Infinity;
+        link.dispose();
         return true;
     }
 
@@ -420,8 +433,8 @@ export class City extends Mesh {
                 path = path.slice().reverse();
             }
             infectionMeshes.push(infectionMesh);
-            promises.push(infectionMesh.popAndVanish(0.4, 1, 0.8));
-            promises.push(infectionMesh.followPath(path, 1, Easing.easeInCubic));
+            promises.push(infectionMesh.popAndVanish(0.4, 1 * TimeFactor, 0.8));
+            promises.push(infectionMesh.followPath(path, 1 * TimeFactor, Easing.easeInCubic));
         }
         await Promise.all(promises);
         for (const infectionMesh of infectionMeshes) {
@@ -458,7 +471,7 @@ export class City extends Mesh {
                 0
             );
             await this.station.animatePosition(pos, 0);
-            await this.station.animateSize(0.35, 0.5, Easing.easeOutCubic);
+            await this.station.animateSize(0.35, 0.5 * TimeFactor, Easing.easeOutCubic);
             this.board.connectAllStation();
         }
     }
@@ -477,29 +490,52 @@ export class City extends Mesh {
         }
     }
 
+    private _velocity: Vector3 = Vector3.Zero();
     public stepUpdate(smoothness: number = 100): number {
-        let cumulativeCorrection = 0;
+        let cityRing = CityRings.find(ring => ring.includes(this.cityId));
+        let ringRadius = this.board.projection.cityDistance;
+        if (cityRing) {
+            ringRadius = this.board.projection.cityDistance * cityRing.length / (2 * Math.PI) * 0.7;
+        }
+        let centerId = cityRing ? cityRing[0] : "";
+        let isCenter = this.cityId === centerId;
+        let p0 = this.position.clone();
+        let force = Vector3.Zero();
         for (const otherCity of this.board.cities) {
             if (otherCity === this) continue;
-            const distanceSquared = Vector3.DistanceSquared(this.position, otherCity.position);
-            if (distanceSquared < this.board.projection.cityDistance * this.board.projection.cityDistance) {
-                const direction = this.position.subtract(otherCity.position).normalize();
-                const correction = (this.board.projection.cityDistance * this.board.projection.cityDistance - distanceSquared) / 2 / smoothness;
-                this.position.addInPlace(direction.scale(correction));
-                this.board.projection.constraintHoveredRef(this.position, this.rotationQuaternion);
-                //this.updateLine();
-                cumulativeCorrection += correction;
-
-                otherCity.position.addInPlace(direction.scale(-correction));
-                this.board.projection.constraintHoveredRef(otherCity.position, otherCity.rotationQuaternion);
-                //otherCity.updateLine();
+            if (this.cityId === centerId || otherCity.cityId === centerId) {
+                let springK = 10;
+                let deltaDist = Vector3.Distance(this.position, otherCity.position) - ringRadius;
+                force.addInPlace(this.position.subtract(otherCity.position).normalize().scale(- springK * deltaDist));
+            }
+            else {
+                let targetDistance = this.board.projection.cityDistance;
+                let distance = Vector3.Distance(this.position, otherCity.position) / targetDistance;
+                force.addInPlace(this.position.subtract(otherCity.position).normalize().scale(1 / (distance * distance * distance * distance)));
             }
         }
+        let dBase = Vector3.Distance(this.position, this.basePosition);
+        let dirBase = this.basePosition.subtract(this.position).normalize();
+        let springK = 4;
+        if (isCenter) {
+            springK = 10000;
+        }
+        else if (cityRing && cityRing.includes(this.cityId)) {
+            springK = 1;
+        }
+        force.addInPlace(dirBase.scale(springK * dBase));
         //if (this.cityId === CityID.Atlanta) {
         //    this.position = Vector3.Lerp(this.position, this.basePosition, 0.01);
         //    this.map.projection.constraintHoveredRef(this.position, this.rotationQuaternion);
         //}
-        return cumulativeCorrection;
+        this._velocity.addInPlace(force.scale(1 / 60));
+        if (this._velocity.length() > 2) {
+            this._velocity.normalize().scaleInPlace(2);
+        }
+        this.position.addInPlace(this._velocity.scale(1 / 60));
+        this._velocity.scaleInPlace(0.95); // Apply some damping to the velocity to prevent oscillations
+        this.board.projection.constraintHoveredRef(this.position, this.rotationQuaternion);
+        return Vector3.Distance(this.position, p0);
     }
 
     public getLink(otherCity: City): CityLink | null {

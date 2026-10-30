@@ -59,19 +59,19 @@ export function CityIdToIndex(id: string): number {
 
 export var CityLinkDataList: CityLinkData[] = [];
 
-/*
+export var CityRings: string[][] = [];
+
 export function DEV_GeneratePosZeroCode(): void {
     let output = "";
     for (let cityIndex = 0; cityIndex < CityDataList.length; cityIndex++) {
         let city = Pandemik.DEV_INSTANCE?.map?.cities[cityIndex];
         if (city) {
-            output += `CityDataList[CityID.${CityID[cityIndex]}].posZero = [${city.position.x.toFixed(3)}, ${city.position.y.toFixed(3)}, ${city.position.z.toFixed(3)}];\n`;
+            output += `CityDataById("${city.cityId}").posZero = [${city.position.x.toFixed(3)}, ${city.position.y.toFixed(3)}, ${city.position.z.toFixed(3)}]\n`;
         }
     }
     console.log(output);
 }
 (window as any).DEV_GeneratePosZeroCode = DEV_GeneratePosZeroCode;
-*/
 
 export function DEV_GenerateLinkCode(): void {
     let output = "";
@@ -80,7 +80,7 @@ export function DEV_GenerateLinkCode(): void {
         if (city) {
             for (let link of city.links) {
                 if (city === link.cityA) {
-                    output += `CityLinkDataList.push({ cityId1: "${city.id}", cityId2: "${link.cityB.id}" })\n`;
+                    output += `CityLinkDataList.push({ cityId1: "${city.cityId}", cityId2: "${link.cityB.cityId}" })\n`;
                 }
             }
         }
