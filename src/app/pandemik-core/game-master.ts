@@ -274,7 +274,7 @@ export class GameMaster {;
         }, 10000);
         console.log("Starting infection " + random);
         if (!skipCam) {
-            await this.pandemik.gameCamera.goTo(city.position, 1, 20, 4);
+            await this.pandemik.gameCamera.goTo(city.position, 1, 10 + this.pandemik.map!.projection.radius, 4);
         }
         failState = "after camera";
 
@@ -290,7 +290,7 @@ export class GameMaster {;
         else {
             failState = "outbreak";
             if (!skipCam) {
-                await this.pandemik.gameCamera.goTo(city.position, 1, 30);
+                await this.pandemik.gameCamera.goTo(city.position, 1, 20 + this.pandemik.map!.projection.radius);
             }
             failState = "after camera for outbreak";
             this.pandemik.breakingNewsConnector.addBreakingInfo(
@@ -412,7 +412,7 @@ export class GameMaster {;
         this.pandemik.currentPlayerIndex = (this.pandemik.currentPlayerIndex + 1) % this.pandemik.players.length;
         if (this.pandemik.currentPlayer!) {
             this.pandemik.currentPlayer.setAvailableAPs(4);
-            await this.pandemik.gameCamera.goTo(this.pandemik.currentPlayer.currentCity.position, 1, 25);
+            await this.pandemik.gameCamera.goTo(this.pandemik.currentPlayer.currentCity.position, 1, 15 + this.pandemik.map!.projection.radius);
         }
         this._working = false;
     }

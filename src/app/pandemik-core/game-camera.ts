@@ -74,6 +74,8 @@ export class GameCamera extends ArcRotateCamera {
 
     constructor(radius: number, target: Vector3, scene: any) {
         super("gameCamera", - Math.PI / 2, Math.PI / 3, radius, target, scene);
+        this.angularSensibilityX *= 50;
+        this.angularSensibilityY *= 50;
         this.animateAlphaBeta = PDMKCreateNumbers(this, this, ["alpha", "beta"], this._radiusUpdate, [true, true], Easing.easeOutCubic);
     }
 

@@ -19,6 +19,7 @@ import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture.pure
 
 export abstract class MapProjection {
 
+    public radius: number = 10;
     public cityDistance: number = 2.5;
     public hoverDistance: number = 0.5;
 
@@ -35,7 +36,6 @@ export abstract class MapProjection {
 
 export class SphericalProjection extends MapProjection {
 
-    public radius: number = 10;
 
     constructor(radius: number) {
         super();
@@ -77,9 +77,9 @@ export class SphericalProjection extends MapProjection {
 
 export class Board {
 
-    public projection: MapProjection = new SphericalProjection(10);
+    public projection: MapProjection = new SphericalProjection(200);
 
-    public base: Mesh;
+    public base: Mesh | null = null;
     public cities: City[] = [];
     public getCityById(cityId: string): City | null {
         const index = CityIdToIndex(cityId);
@@ -93,44 +93,46 @@ export class Board {
         zero.position.z = - 1;
         this.projection.constraintRef(zero.position);
     
-        this.base = MeshBuilder.CreateSphere("base", { diameter: 20 });
-        this.base.rotation.y = Math.PI / 2;
-        this.base.rotation.z = Math.PI;
+        if (this.projection instanceof SphericalProjection) {
+            this.base = MeshBuilder.CreateSphere("base", { diameter: 2 * this.projection.radius });
+            this.base.rotation.y = Math.PI / 2;
+            this.base.rotation.z = Math.PI;
 
-        let baseMaterial = new StandardMaterial("base-material");
-        let imgElement = document.createElement("img");
-        imgElement.src = "image-4.png";
-        imgElement.onload = () => {
-            let canvas = document.createElement("canvas");
-            canvas.width = imgElement.width;
-            canvas.height = imgElement.height;
-            let ctx = canvas.getContext("2d");
-            if (ctx) {
-                ctx.drawImage(imgElement, 0, 0);
-                let pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                for (let n = 0; n < pixelData.data.length; n+=4) {
-                    let r = pixelData.data[n];
-                    let g = pixelData.data[n+1];
-                    let b = pixelData.data[n+2];
-                    if (g === 255 && r === 0 && b === 0) {
-                        pixelData.data[n] = WaterColor.r * 255;
-                        pixelData.data[n+1] = WaterColor.g * 255;
-                        pixelData.data[n+2] = WaterColor.b * 255;
+            let baseMaterial = new StandardMaterial("base-material");
+            let imgElement = document.createElement("img");
+            imgElement.src = "image-4.png";
+            imgElement.onload = () => {
+                let canvas = document.createElement("canvas");
+                canvas.width = imgElement.width;
+                canvas.height = imgElement.height;
+                let ctx = canvas.getContext("2d");
+                if (ctx) {
+                    ctx.drawImage(imgElement, 0, 0);
+                    let pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    for (let n = 0; n < pixelData.data.length; n+=4) {
+                        let r = pixelData.data[n];
+                        let g = pixelData.data[n+1];
+                        let b = pixelData.data[n+2];
+                        if (g === 255 && r === 0 && b === 0) {
+                            pixelData.data[n] = WaterColor.r * 255;
+                            pixelData.data[n+1] = WaterColor.g * 255;
+                            pixelData.data[n+2] = WaterColor.b * 255;
+                        }
+                        else if (b === 255 && r === 0 && g === 0) {
+                            pixelData.data[n] = BlackColor.r * 255;
+                            pixelData.data[n+1] = BlackColor.g * 255;
+                            pixelData.data[n+2] = BlackColor.b * 255;
+                        }
                     }
-                    else if (b === 255 && r === 0 && g === 0) {
-                        pixelData.data[n] = BlackColor.r * 255;
-                        pixelData.data[n+1] = BlackColor.g * 255;
-                        pixelData.data[n+2] = BlackColor.b * 255;
-                    }
+                    ctx.putImageData(pixelData, 0, 0);
                 }
-                ctx.putImageData(pixelData, 0, 0);
-            }
-            baseMaterial.diffuseTexture = new Texture(canvas.toDataURL(), null, false, true);
-        };
-        baseMaterial.specularColor.copyFromFloats(0, 0, 0);
-        baseMaterial.diffuseColor.copyFromFloats(1, 0, 0);
-        baseMaterial.emissiveColor.copyFromFloats(0, 0, 0);
-        this.base.material = baseMaterial;
+                baseMaterial.diffuseTexture = new Texture(canvas.toDataURL(), null, false, true);
+            };
+            baseMaterial.specularColor.copyFromFloats(0, 0, 0);
+            baseMaterial.diffuseColor.copyFromFloats(1, 0, 0);
+            baseMaterial.emissiveColor.copyFromFloats(0, 0, 0);
+            this.base.material = baseMaterial;
+        }
     }
 
     public async instantiate(): Promise<void> {
@@ -221,7 +223,9 @@ export class Board {
             this.smoothness = Math.max(4, this.smoothness - 1);
             if (this.stability < 0.001) {
                 this.stabilized = true;
-                (this.base.material as StandardMaterial).diffuseColor.copyFromFloats(1, 1, 1);
+                if (this.base) {
+                    (this.base.material as StandardMaterial).diffuseColor.copyFromFloats(1, 1, 1);
+                }
                 for (let n = 0; n < this.cities.length; n++) {
                     this.cities[n].updateLine();
                 }

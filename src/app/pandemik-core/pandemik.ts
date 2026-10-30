@@ -22,10 +22,13 @@ import { City, CityPart } from "./city";
 import { GameMaster } from "./game-master";
 import { SharedMaterials } from "./materials";
 import { EpidemyCard } from "./deck/epidemic-card";
+import { LoadWorldData } from "./data-world";
+import { LoadFranceData } from "./data-france";
 
 export class Pandemik {
 
     public DEBUG_MODE: boolean = false;
+    public DEV_MODE: boolean = true;
     public static DEV_INSTANCE: Pandemik | null = null;
 
     public canvas: HTMLCanvasElement;
@@ -79,6 +82,7 @@ export class Pandemik {
         }
         this.cityActionMenuConnector.city = city;
     }
+    private DEV_MODE_CONNECTING: boolean = false;
 
     constructor(canvas: HTMLCanvasElement) {
         Pandemik.DEV_INSTANCE = this;
@@ -108,8 +112,14 @@ export class Pandemik {
     }
 
     public async initialize(): Promise<void> {
+        LoadFranceData();
+
         this.map = new Board(this);
         await this.map.instantiate();
+        let atlanta = this.map!.cities[0];
+        requestAnimationFrame(() => {
+            this.gameCamera?.goTo(atlanta.position, 1, 15 + this.map!.projection.radius);
+        });
 
         this.infectionDeck = new Deck<InfectionCard>();
         for (let cityId = 0; cityId < CityDataList.length; cityId++) {
@@ -125,10 +135,11 @@ export class Pandemik {
         this.playerDeck.shuffle();
 
         this.map.onceStabilized(async () => {
-            let atlanta = this.map!.cities[CityIdToIndex("Atlanta")];
 
             this.canvas?.addEventListener("pointerdown", this._pointerDown);
             this.canvas?.addEventListener("pointerup", this._pointerUp);
+            this.canvas?.addEventListener("keydown", this._keyDown);
+            this.canvas?.addEventListener("keyup", this._keyUp);
 
             const draws = 3;
             for (let n = 0; n < draws; n++) {
@@ -180,7 +191,7 @@ export class Pandemik {
                 }
             }
 
-            await this.gameCamera!.goTo(atlanta.position, 1, 25);
+            await this.gameCamera!.goTo(atlanta.position, 1, 15 + this.map!.projection.radius);
             for (let pIndex = 0; pIndex < 2; pIndex++) {
                 let PlayerRole = RandomAvailableRole(this);
                 let player = new PlayerRole(this, atlanta);
@@ -267,6 +278,12 @@ export class Pandemik {
                 let cityPart = pick.pickedMesh as CityPart;
                 let city = cityPart.city;
                 if (city.opacity() > 0) {
+                    if (this.DEV_MODE_CONNECTING) {
+                        if (this.selectedCity && this.selectedCity !== city) {
+                            City.Connect(this.selectedCity, city);
+                            city.updateLine();
+                        }
+                    }
                     selectedCity = city;
                 }
             }
@@ -274,5 +291,21 @@ export class Pandemik {
         this._pointerDownX = -1;
         this._pointerDownY = -1;
         this.selectedCity = selectedCity;
+    }
+
+    private _keyDown = (evt: KeyboardEvent) => {
+        if (this.DEV_MODE) {
+            if (evt.key === "c") {
+                this.DEV_MODE_CONNECTING = true;
+            }
+        }
+    }
+
+    private _keyUp = (evt: KeyboardEvent) => {
+        if (this.DEV_MODE) {
+            if (evt.key === "c") {
+                this.DEV_MODE_CONNECTING = false;
+            }
+        }
     }
 }
