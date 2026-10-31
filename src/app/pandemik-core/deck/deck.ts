@@ -28,6 +28,35 @@ export class Deck<T extends Card> {
         this.cards = [];
     }
 
+    public cutInPlace(count: number = 2): Deck<T>[] {
+        const decks: Deck<T>[] = [this];
+        const cutIndex = Math.round(this.cards.length / count);
+        for (let n = 1; n < count; n++) {
+            const newDeck = new Deck<T>();
+            for (let i = 0; i < cutIndex; i++) {
+                let card = this.drawCard();
+                if (card) {
+                    newDeck.addCard(card);
+                }
+            }
+            decks.push(newDeck);
+        }
+        return decks;
+    }
+
+    public stack(other: Deck<T>): Deck<T> {
+        if (this === other) {
+            return this;
+        }
+        while (other.count > 0) {
+            let card = other.drawBottomCard();
+            if (card) {
+                this.addCard(card);
+            }
+        }
+        return this;
+    }
+
     public addCard(card: T): void {
         this.cards.push(card);
     }

@@ -203,13 +203,16 @@ export class Pandemik {
                     await this.gameMaster.doDrawPlayerCard(player);
                 }
             }
-            this.playerDeck!.addCard(new EpidemyCard());
-            this.playerDeck!.addCard(new EpidemyCard());
-            this.playerDeck!.addCard(new EpidemyCard());
-            this.playerDeck!.addCard(new EpidemyCard());
-            this.playerDeck!.addCard(new EpidemyCard());
-            this.playerDeck!.addCard(new EpidemyCard());
-            this.playerDeck!.shuffle();
+            let nPandemicCards = 6;
+            let cutDecks = this.playerDeck!.cutInPlace(nPandemicCards);
+            for (let i = 0; i < nPandemicCards; i++) {
+                cutDecks[i].addCard(new EpidemyCard());
+                //cutDecks[i].shuffle();
+            }
+            for (let deck of cutDecks) {
+                this.playerDeck!.stack(deck);
+            }
+            console.log(this.playerDeck);
             await atlanta.buildStation();
             this.currentPlayerIndex = 0;
             if (this.currentPlayer) {
