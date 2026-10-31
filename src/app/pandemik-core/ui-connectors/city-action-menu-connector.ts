@@ -32,6 +32,7 @@ export class CityActionMenuConnector {
     canCharterFlyTo = signal<number>(1);
     canCureDisease = [signal<number>(0), signal<number>(0), signal<number>(0), signal<number>(0)];
     canBuildResearchStation = signal<CanDoStatus>(CanDoStatus.NO_AND_FUCK_YOU);
+    canResearchDisease = [signal<number>(0), signal<number>(0), signal<number>(0), signal<number>(0)];
     canGiveCard = [signal<CanDoStatus>(CanDoStatus.NO_AND_FUCK_YOU)];
     canTakeCard = [signal<CanDoStatus>(CanDoStatus.NO_AND_FUCK_YOU)];
     screenX = signal<number>(0);
@@ -59,6 +60,7 @@ export class CityActionMenuConnector {
             this.goToCost.set(this.gameMaster.moveToCost(this.pandemik.currentPlayer, this._city));
             for (const c of GameColors) {
                 this.canCureDisease[c].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, c));
+                this.canResearchDisease[c].set(this.gameMaster.canResearchDisease(this.pandemik.currentPlayer, c));
             }
             this.canFlyTo.set(this.gameMaster.canFlyTo(this.pandemik.currentPlayer, this._city));
             this.canCharterFlyTo.set(this.gameMaster.canCharterFlyTo(this.pandemik.currentPlayer, this._city));
@@ -131,6 +133,13 @@ export class CityActionMenuConnector {
     async onTakeCard(playerIndex: number): Promise<void> {
         if (this._city) {
             await this.gameMaster.doTakeCard(this.pandemik.currentPlayer!, this.pandemik.players[playerIndex], this._city);
+        }
+        this.update();
+    }
+
+    async onResearchDisease(diseaseColor: GameColor): Promise<void> {
+        if (this._city) {
+            await this.gameMaster.doResearchDisease(this.pandemik.currentPlayer!, diseaseColor);
         }
         this.update();
     }

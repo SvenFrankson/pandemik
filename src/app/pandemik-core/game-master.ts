@@ -17,7 +17,14 @@ export enum CanDoStatus {
     NO_REQUIRED_CARD,
     NO_INFECTION,
     NO_NEED,
-    NO_ENOUGH_HAND_SPACE
+    NO_ENOUGH_HAND_SPACE,
+    NO_RESEARCH_STATION
+}
+
+export enum DiseaseStatus {
+    ACTIVE = 0,
+    RESEARCHED,
+    ERADICATED
 }
 
 export class GameMaster {;
@@ -33,6 +40,7 @@ export class GameMaster {;
 
     outbreaksCount = signal<number>(0);
     canPressDone = signal<boolean>(false);
+    diseaseStatuses = [signal<DiseaseStatus>(DiseaseStatus.ACTIVE), signal<DiseaseStatus>(DiseaseStatus.ACTIVE), signal<DiseaseStatus>(DiseaseStatus.ACTIVE), signal<DiseaseStatus>(DiseaseStatus.ACTIVE)];
 
     constructor(public pandemik: Pandemik) {
         this._working = false;
@@ -357,6 +365,46 @@ export class GameMaster {;
                 player.consumeAP(1);
                 player.addPlayerCard(playerCard);
             }
+            this._working = false;
+            return true;
+        }
+        this._working = false;
+        return false;
+    }
+
+    public canResearchDisease(player: Player, diseaseColor: GameColor): CanDoStatus {
+        if (this.diseaseStatuses[diseaseColor]() !== DiseaseStatus.ACTIVE) {
+            return CanDoStatus.NO_NEED;
+        }
+        if (!player.currentCity.hasStation) {
+            return CanDoStatus.NO_RESEARCH_STATION;
+        }
+        const cards = player.playerCards().filter((card) => {
+            return card instanceof CityCard && card.color === diseaseColor;
+        });
+        if (cards.length < 5) {
+            return CanDoStatus.NO_REQUIRED_CARD;
+        }
+        if (player.availableAPs() < 1) {
+            return CanDoStatus.NOT_ENOUGH_AP;
+        }
+        return CanDoStatus.OK;
+    }
+
+    public async doResearchDisease(player: Player, diseaseColor: GameColor): Promise<boolean> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
+        if (this.canResearchDisease(player, diseaseColor) === CanDoStatus.OK) {
+            const cards = player.playerCards().filter((card) => {
+                return card instanceof CityCard && card.color === diseaseColor;
+            });
+            for (let i = 0; i < 5; i++) {
+                player.removePlayerCard(cards[i]);
+            }
+            player.consumeAP(1);
+            this.diseaseStatuses[diseaseColor].update(() => DiseaseStatus.RESEARCHED);
             this._working = false;
             return true;
         }
