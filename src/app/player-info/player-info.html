@@ -6,9 +6,15 @@
         <div class="ap-icon" [class.available]="player()!.availableAPs() >= 2"></div>
         <div class="ap-icon" [class.available]="player()!.availableAPs() >= 3"></div>
         <div class="ap-icon" [class.available]="player()!.availableAPs() >= 4"></div>
+        @if (player()!.apPerTurn >= 5) {
+            <div class="ap-icon" [class.available]="player()!.availableAPs() >= 5"></div>
+        }
         <div class="cards">
             @for (card of player()!.playerCards(); track card) {
-                <div class="player-card color-{{ card.color?.toFixed(0) }}">{{ card.name }}</div>
+                <div class="player-card color-{{ card.color?.toFixed(0) }}">
+                    <div class="card-title">{{ card.name }}</div>
+                    <button class="discard-button" (click)="discardPlayerCard($index)"><i class="bi bi-trash"></i></button>
+                </div>
             }
         </div>
     </div>

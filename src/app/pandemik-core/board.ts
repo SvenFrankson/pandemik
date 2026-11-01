@@ -2,7 +2,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector.pure';
 import type { Quaternion } from '@babylonjs/core/Maths/math.vector.pure';
 import type { Nullable } from '@babylonjs/core/types';
 import { City, CityLinkType } from './city';
-import { GameColor3s, CityLinkDataList, CityDataList, CityIdToIndex } from './data';
+import { GameColor3s, CityLinkDataList, CityDataList, CityIdToIndex, ProjectionData } from './data';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.pure';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.pure';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture.pure';
@@ -77,7 +77,7 @@ export class SphericalProjection extends MapProjection {
 
 export class Board {
 
-    public projection: MapProjection = new SphericalProjection(200);
+    public projection: MapProjection;
 
     public base: Mesh | null = null;
     public cities: City[] = [];
@@ -89,6 +89,8 @@ export class Board {
     public tokenMeshData: IMeshData[] = [];
 
     constructor(public pandemik: Pandemik) {
+        this.projection = new SphericalProjection(ProjectionData.radius);
+
         let zero = MeshBuilder.CreateSphere("base", { diameter: 0.2 });
         zero.position.z = - 1;
         this.projection.constraintRef(zero.position);
@@ -164,6 +166,14 @@ export class Board {
         }
 
         this.recomputeDistances();
+    }
+
+    public totalInfections(diseaseColor: number): number {
+        let total = 0;
+        for (const city of this.cities) {
+            total += city.infections[diseaseColor]() ?? 0;
+        }
+        return total;
     }
 
     public connectAllStation(): void {

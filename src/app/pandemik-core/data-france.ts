@@ -1,4 +1,4 @@
-import { CityDataList, GameColor, CityDataById, CityLinkDataList, GameColors, CityRings } from "./data";
+import { CityDataList, GameColor, CityDataById, CityLinkDataList, GameColors, CityRings, ProjectionData } from "./data";
 
 export function LoadFranceData(): void {
 
@@ -59,6 +59,8 @@ export function LoadFranceData(): void {
     }
 
     CityRings.push(["paris", "montreuil", "creteil", "vitrysurseine", "boulognebillancourt", "nanterre", "colombes", "argenteuil", "asnieressurseine", "saintdenis"]);
+
+    ProjectionData.radius = 200;
 
     CityDataById("paris").posZero = [5.487, 150.852, -131.962]
     CityDataById("marseille").posZero = [13.196, 137.112, -145.692]

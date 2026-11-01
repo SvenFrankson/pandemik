@@ -1,5 +1,6 @@
 #done-button {
     position: fixed;
+    z-index: 2;
     bottom: 10px;
     left: 50%;
     transform: translateX(-50%);
@@ -16,6 +17,7 @@
 
 #outbreak-container {
     position: fixed;
+    z-index: 2;
     top: 0px;
     right: 0px;
     padding: 0px 0px 10px 0px;
@@ -57,3 +59,70 @@ h3 {
     color: white;
     background-color: var(--red-color);
 }
+
+#diseases-status-container {
+    position: fixed;
+    z-index: 2;
+    top: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.disease-status {
+    display: inline-block;
+    width: 180px;
+    margin: 4px 2px;
+    border: 2px solid white;
+    border-radius: 5px;
+    vertical-align: top;
+}
+
+.disease-status.color-0 {
+    background-color: var(--blue-color-80);
+}
+.disease-status.color-1 {
+    background-color: var(--yellow-color-80);
+}
+.disease-status.color-2 {
+    background-color: var(--black-color-80);
+}
+.disease-status.color-3 {
+    background-color: var(--green-color-80);
+}
+
+.disease-name {
+    font-weight: 500;
+    font-size: 14px;
+    text-align: center;
+    background-color: #ffffffcc;
+    color: black;
+}
+
+.disease-status-value {
+    font-weight: 900;
+    font-size: 16px;
+    text-align: center;
+    color: white;
+}
+
+.disease-status-count {
+    font-weight: 500;
+    font-size: 16px;
+    text-align: center;
+    color: white;
+}
+
+/*
+.color-0 .disease-name {
+    color: var(--blue-color);
+}
+.color-1 .disease-name {
+    color: var(--yellow-color);
+}
+.color-2 .disease-name {
+    color: var(--black-color);
+}
+.color-3 .disease-name {
+    color: var(--green-color);
+}
+*/

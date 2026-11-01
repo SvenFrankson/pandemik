@@ -1,5 +1,27 @@
 @if (gameMaster != null) {
     <button id="done-button" [class.disabled]="!gameMaster.canPressDone()" (click)="gameMaster.onDone()">DONE</button>
+    <div id="diseases-status-container">
+        <div class="disease-status color-0">
+            <div class="disease-name"><i class="icon bi bi-virus"></i> BLUEVIRUS</div>
+            <div class="disease-status-value">{{ diseaseStatusString(gameMaster.diseaseStatuses[0]()) }}</div>
+            <div class="disease-status-count">{{ gameMaster.infectionsCounts[0]() }} infections</div>
+        </div>
+        <div class="disease-status color-1">
+            <div class="disease-name"><i class="icon bi bi-virus"></i> YELLOWCOCCUS</div>
+            <div class="disease-status-value">{{ diseaseStatusString(gameMaster.diseaseStatuses[1]()) }}</div>
+            <div class="disease-status-count">{{ gameMaster.infectionsCounts[1]() }} infections</div>
+        </div>
+        <div class="disease-status color-2">
+            <div class="disease-name"><i class="icon bi bi-virus"></i> BLACKTERIUM</div>
+            <div class="disease-status-value">{{ diseaseStatusString(gameMaster.diseaseStatuses[2]()) }}</div>
+            <div class="disease-status-count">{{ gameMaster.infectionsCounts[2]() }} infections</div>
+        </div>
+        <div class="disease-status color-3">
+            <div class="disease-name"><i class="icon bi bi-virus"></i> GREENMONELLA</div>
+            <div class="disease-status-value">{{ diseaseStatusString(gameMaster.diseaseStatuses[3]()) }}</div>
+            <div class="disease-status-count">{{ gameMaster.infectionsCounts[3]() }} infections</div>
+        </div>
+    </div>
     <div id="outbreak-container">
         <h3>OUTBREAKS</h3>
         <div class="outbreak" [class.checked]="gameMaster.outbreaksCount() > 7">GAME OVER</div>

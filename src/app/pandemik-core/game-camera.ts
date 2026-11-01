@@ -4,6 +4,7 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector.pure";
 import { Scene } from "@babylonjs/core/scene.pure";
 import { Angle, AngleFromToAround, AnimationFactory, Easing, LerpAngle } from "babylonjs-tiaratumgames-tools";
 import { TimeFactor } from "./constants";
+import { ProjectionData } from "./data";
 
 interface ISceneObject {
     getScene: () => Scene;
@@ -74,8 +75,6 @@ export class GameCamera extends ArcRotateCamera {
 
     constructor(radius: number, target: Vector3, scene: any) {
         super("gameCamera", - Math.PI / 2, Math.PI / 3, radius, target, scene);
-        this.angularSensibilityX *= 50;
-        this.angularSensibilityY *= 50;
         this.animateAlphaBeta = PDMKCreateNumbers(this, this, ["alpha", "beta"], this._radiusUpdate, [true, true], Easing.easeOutCubic);
     }
 

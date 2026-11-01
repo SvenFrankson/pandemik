@@ -18,6 +18,7 @@ export class Player extends Mesh {
     }
     public currentCity: City;
     public availableAPs = signal<number>(0);
+    public apPerTurn: number = 5;
     public playerCards = signal<PlayerCard[]>([]); 
     public color: string = "#000000";
 
@@ -154,6 +155,7 @@ export class Medic extends Player {
 
     constructor(pandemik: Pandemik, city: City) {
         super("Medic", pandemik, city);
+        this.apPerTurn = 4;
         this.color = "#dd6621";
         this.material = QuickMaterial(Color3.FromHexString(this.color));
         MakeOutline(this, Color3.Black());
@@ -194,6 +196,7 @@ export class Scientist extends Player {
 
     constructor(pandemik: Pandemik, city: City) {
         super("Scientist", pandemik, city);
+        this.apPerTurn = 4;
         this.color = "#d3f1ff";
         this.material = QuickMaterial(Color3.FromHexString(this.color));
         MakeOutline(this, Color3.Black());
@@ -212,6 +215,7 @@ export class Civilian extends Player {
 
 export function RandomAvailableRole(pandemik: Pandemik) {
     let roles = [ContingencyPlanner, Dispatcher, Medic, OperationsExpert, QuarantineSpecialist, Researcher, Scientist];
+    roles = [Medic, Scientist];
     for (const player of pandemik.players) {
         roles = roles.filter(role => !(player instanceof role));
     }

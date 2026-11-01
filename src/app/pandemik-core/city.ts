@@ -95,7 +95,7 @@ export class CityLink extends Mesh {
         }
         this.path.push(p1);
         
-        let radius = 0.025;
+        let radius = 0.04;
         if (this.cityLinkType === CityLinkType.Station) {
             radius = 0.025;
         }

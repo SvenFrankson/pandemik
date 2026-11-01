@@ -1,9 +1,9 @@
 import { CityDataList, GameColor, CityDataById, CityLinkDataList } from "./data";
 
 export function LoadWorldData(): void {
+    CityDataList.push({ id: "Atlanta", name: "Atlanta", color: GameColor.Blue, lat: 33.7490, long: -84.3880 });
     CityDataList.push({ id: "SanFrancisco", name: "San Francisco", color: GameColor.Blue, lat: 37.7749, long: -122.4194 });
     CityDataList.push({ id: "Chicago", name: "Chicago", color: GameColor.Blue, lat: 41.8781, long: -87.6298 });
-    CityDataList.push({ id: "Atlanta", name: "Atlanta", color: GameColor.Blue, lat: 33.7490, long: -84.3880 });
     CityDataList.push({ id: "Montreal", name: "Montreal", color: GameColor.Blue, lat: 45.5017, long: -73.5673 });
     CityDataList.push({ id: "Washington", name: "Washington", color: GameColor.Blue, lat: 38.9072, long: -77.0369 });
     CityDataList.push({ id: "NewYork", name: "New York", color: GameColor.Blue, lat: 40.7128, long: -74.0060 });

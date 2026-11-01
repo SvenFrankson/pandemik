@@ -15,7 +15,7 @@ import { HemisphericLight, Matrix } from "@babylonjs/core";
 import { InfectionCard } from "./deck/infection-card";
 import { CityCard } from "./deck/city-card";
 import { Deck, PlayerCard } from "./deck/deck";
-import { CityDataList, CityIdToIndex, DiseaseNames } from "./data";
+import { CityDataList, CityIdToIndex, DiseaseNames, ProjectionData } from "./data";
 import { GameCamera } from "./game-camera";
 import { CityActionMenuConnector } from "./ui-connectors/city-action-menu-connector";
 import { City, CityPart } from "./city";
@@ -112,7 +112,11 @@ export class Pandemik {
     }
 
     public async initialize(): Promise<void> {
-        LoadFranceData();
+        LoadWorldData();
+        let f = (ProjectionData.radius - 10) / (200 - 10);
+        let sensibilityFactor = 1 * (1 - f) + 50 * f;
+        this.gameCamera.angularSensibilityX *= sensibilityFactor;
+        this.gameCamera.angularSensibilityY *= sensibilityFactor;
 
         this.map = new Board(this);
         await this.map.instantiate();
@@ -133,6 +137,7 @@ export class Pandemik {
             this.playerDeck.addCard(new CityCard(CityDataList[cityId].id));
         }
         this.playerDeck.shuffle();
+        this.playerDiscardPile = new Deck<PlayerCard>();
 
         this.map.onceStabilized(async () => {
 
@@ -203,11 +208,11 @@ export class Pandemik {
                     await this.gameMaster.doDrawPlayerCard(player);
                 }
             }
-            let nPandemicCards = 6;
+            let nPandemicCards = 4;
             let cutDecks = this.playerDeck!.cutInPlace(nPandemicCards);
             for (let i = 0; i < nPandemicCards; i++) {
                 cutDecks[i].addCard(new EpidemyCard());
-                //cutDecks[i].shuffle();
+                cutDecks[i].shuffle();
             }
             for (let deck of cutDecks) {
                 this.playerDeck!.stack(deck);
@@ -216,7 +221,7 @@ export class Pandemik {
             await atlanta.buildStation();
             this.currentPlayerIndex = 0;
             if (this.currentPlayer) {
-                this.currentPlayer.setAvailableAPs(4);
+                this.currentPlayer.setAvailableAPs(this.currentPlayer.apPerTurn);
             }
         });
     }

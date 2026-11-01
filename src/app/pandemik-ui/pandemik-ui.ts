@@ -17,7 +17,7 @@ import { Player } from '../pandemik-core/player';
 })
 export class PandemikUi {
 
-	private pandemik: Pandemik | null = null;
+	public pandemik: Pandemik | null = null;
 
 	@ViewChild(CityActionMenu) cityActionMenu!: CityActionMenu;
 	@ViewChild(BreakingNews) breakingNews!: BreakingNews;

@@ -10,4 +10,17 @@ import { GameMaster } from '../pandemik-core/game-master';
 export class GameMasterUi {
 
 	gameMaster: GameMaster | null = null;
+
+	diseaseStatusString(v: number) {
+		if (v === 0) {
+			return "ACTIVE";
+		}
+		if (v === 1) {
+			return "RESEARCHED";
+		}
+		if (v === 2) {
+			return "ERRADICATED";
+		}
+		return v.toString();
+	}
 }

@@ -60,6 +60,10 @@ export function CityIdToIndex(id: string): number {
 export var CityLinkDataList: CityLinkData[] = [];
 
 export var CityRings: string[][] = [];
+export var ProjectionData = {
+    type: 0,
+    radius: 10,
+}
 
 export function DEV_GeneratePosZeroCode(): void {
     let output = "";

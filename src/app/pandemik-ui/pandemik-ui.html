@@ -6,6 +6,6 @@
 <app-city-action-menu></app-city-action-menu>
 <div id="players">
 	@for (player of players(); track player.id) {
-		<app-player-info [player]="player"></app-player-info>
+		<app-player-info [player]="player" [gameMaster]="this.pandemik!.gameMaster"></app-player-info>
 	}
 </div>

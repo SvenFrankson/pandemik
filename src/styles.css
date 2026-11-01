@@ -6,6 +6,12 @@
 	--blue-color: #335cd6;
 	--black-color: #2B303A;
 	--green-color: #0C7C59;
+	
+	--red-color-80: #D64933CC;
+	--yellow-color-80: #d6ce33CC;
+	--blue-color-80: #335cd6CC;
+	--black-color-80: #2B303ACC;
+	--green-color-80: #0C7C59CC;
 }
 
 body {
