@@ -467,7 +467,7 @@ export class GameMaster {;
             }
             failState = "after camera for outbreak";
             this.pandemik.breakingNewsConnector.addBreakingInfo(
-                new BreakingInfo("Massive " + DiseaseNames[diseaseColor].toLocaleUpperCase() + " Outbreak. Situation out of control.", city, 2)
+                new BreakingInfo(DiseaseNames[diseaseColor].toLocaleUpperCase() + " Outbreak !", city, 2, "danger")
             )
             city.outbreaking = true;
             this.outbreaksCount.update(n => n + 1);

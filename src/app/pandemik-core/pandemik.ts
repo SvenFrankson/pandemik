@@ -154,7 +154,7 @@ export class Pandemik {
                     let city = this.map!.getCityById(card.cityId);
                     if (city) {
                         this.breakingNewsConnector.addBreakingInfo(
-                            new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2)
+                            new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2, "virus")
                         )
                         await this.gameMaster.infect(city, card.diseaseColor, 3);
                     }
@@ -170,7 +170,7 @@ export class Pandemik {
                     let city = this.map!.getCityById(card.cityId);
                     if (city) {
                         this.breakingNewsConnector.addBreakingInfo(
-                            new BreakingInfo("Multiple " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infections. +2", city, 1)
+                            new BreakingInfo("Multiple " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infections. +2", city, 1, "virus")
                         )
                         await this.gameMaster.infect(city, card.diseaseColor, 2);
                     }
@@ -186,7 +186,7 @@ export class Pandemik {
                     let city = this.map!.getCityById(card.cityId);
                     if (city) {
                         this.breakingNewsConnector.addBreakingInfo(
-                            new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city, 0)
+                            new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city, 0, "virus")
                         )
                         await this.gameMaster.infect(city, card.diseaseColor, 1);
                     }

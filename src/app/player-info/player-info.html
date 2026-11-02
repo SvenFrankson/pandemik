@@ -12,7 +12,7 @@
         <div class="cards">
             @for (card of player()!.playerCards(); track card) {
                 <div class="player-card color-{{ card.color?.toFixed(0) }}">
-                    <div class="card-title">{{ card.name }}</div>
+                    <div class="card-title">{{ card.name | uppercase}}</div>
                     <button class="discard-button" (click)="discardPlayerCard($index)"><i class="bi bi-trash"></i></button>
                 </div>
             }

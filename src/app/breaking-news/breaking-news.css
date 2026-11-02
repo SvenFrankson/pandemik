@@ -21,10 +21,10 @@ h3 {
 
 .breaking-news-item {
     margin: 2px 0px 0px 0px;
-    padding: 2px 5px;
+    padding: 2px 0px;
     font-size: 14px;
     font-weight: 500;
-    color: rgb(56, 86, 255);
+    color: black;
     background-color: white;
     line-height: 1;
 }
@@ -36,14 +36,37 @@ h3 {
     background-color: white;
 }
 .breaking-news-item.severity-2 {
-    background-color: red;
-    color: white;
+    background-color: white;
 }
 
 .location {
     display: inline-block;
     margin-right: 15px;
     font-weight: 700;
+    padding: 2px 5px;
+    margin: -2px 5px;
+    border: 1px solid white;
+    border-radius: 4px;
+    color: white;
+    -webkit-text-stroke: 2px black;
+    paint-order: stroke fill;
+    
+}
+
+.location.color-0 {
+    background-color: var(--blue-color);
+}
+
+.location.color-1 {
+    background-color: var(--yellow-color);
+}
+
+.location.color-2 {
+    background-color: var(--black-color); 
+}
+
+.location.color-3 {
+    background-color: var(--green-color);
 }
 
 .text {

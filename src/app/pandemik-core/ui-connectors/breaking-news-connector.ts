@@ -9,11 +9,13 @@ export class BreakingInfo {
     city?: City;
     text: string = "";
     severity: number = 0;
+    icon: string | null = null;
 
-    constructor(text: string, city?: City, severity: number = 0) {
+    constructor(text: string, city?: City, severity: number = 0, icon: string | null = null) {
         this.city = city;
         this.text = text;
         this.severity = severity;
+        this.icon = icon;
     }
 }
 
