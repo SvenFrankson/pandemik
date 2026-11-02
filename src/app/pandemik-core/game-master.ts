@@ -6,7 +6,7 @@ import { BreakingInfo } from "./ui-connectors/breaking-news-connector";
 import { NextFrame } from "babylonjs-tiaratumgames-tools";
 import { signal } from "@angular/core";
 import { PlayerCard } from "./deck/deck";
-import { CityCard } from "./deck/city-card";
+import { CityCard, JokerCard } from "./deck/city-card";
 import { EpidemyCard as EpidemicCard } from "./deck/epidemic-card";
 
 export enum CanDoStatus {
@@ -279,7 +279,7 @@ export class GameMaster {;
         this._working = true;
         if (this.canBuildStation(player, city) === CanDoStatus.OK) {
             this.pandemik.breakingNewsConnector.addBreakingInfo(
-                new BreakingInfo("Research station built.", city)
+                new BreakingInfo("Research station built.", city, 0, "hospital", this.currentTurn())
             )
             player.consumeAP(1);
             const playerCard = player.playerCards().find(card => {
@@ -401,7 +401,7 @@ export class GameMaster {;
             return CanDoStatus.NO_RESEARCH_STATION;
         }
         const cards = player.playerCards().filter((card) => {
-            return card instanceof CityCard && card.color === diseaseColor;
+            return card instanceof CityCard && card.color === diseaseColor || card instanceof JokerCard;
         });
         const requiredCards = player instanceof Scientist ? 4 : 5;
         if (cards.length < requiredCards) {
@@ -419,8 +419,13 @@ export class GameMaster {;
         }
         this._working = true;
         if (this.canResearchDisease(player, diseaseColor) === CanDoStatus.OK) {
-            const cards = player.playerCards().filter((card) => {
-                return card instanceof CityCard && card.color === diseaseColor;
+            let cards = player.playerCards().filter((card) => {
+                return card instanceof CityCard && card.color === diseaseColor || card instanceof JokerCard;
+            });
+            cards = cards.sort((a, b) => {
+                if (a instanceof JokerCard) return 1;
+                if (b instanceof JokerCard) return -1;
+                return 0;
             });
             const requiredCards = player instanceof Scientist ? 4 : 5;
             for (let i = 0; i < requiredCards; i++) {
@@ -467,7 +472,7 @@ export class GameMaster {;
             }
             failState = "after camera for outbreak";
             this.pandemik.breakingNewsConnector.addBreakingInfo(
-                new BreakingInfo(DiseaseNames[diseaseColor].toLocaleUpperCase() + " Outbreak !", city, 2, "danger")
+                new BreakingInfo(DiseaseNames[diseaseColor].toLocaleUpperCase() + " Outbreak !", city, 2, "danger", this.currentTurn())
             )
             city.outbreaking = true;
             this.outbreaksCount.update(n => n + 1);
@@ -485,15 +490,17 @@ export class GameMaster {;
             failState = "spreading to linked cities";
             promises = [];
             let text = "It spreads to ";
+            let infectionsCount = 0;
             for (const link of city.links) {
                 const otherCity = link.other(city);
                 if (otherCity && !otherCity.outbreaking) {
                     promises.push(this.infect(otherCity, diseaseColor, 1, true));
                     text += otherCity.name + ", ";
+                    infectionsCount++;
                 }
             }
             this.pandemik.breakingNewsConnector.addBreakingInfo(
-                new BreakingInfo(text.slice(0, -2) + ". +1", city)
+                new BreakingInfo(text.slice(0, -2) + ". +" + infectionsCount.toFixed(0), city, 2, "virus", this.currentTurn())
             )
             if (promises.length > 0) {
                 await Promise.all(promises);
@@ -510,7 +517,7 @@ export class GameMaster {;
         }
         this._working = true;
         let card = this.pandemik.playerDeck!.drawCard();
-        if (card instanceof CityCard) {
+        if (card instanceof CityCard || card instanceof JokerCard) {
             if (player.playerCards().length < 7) {
                 player.addPlayerCard(card);
             }
@@ -548,7 +555,7 @@ export class GameMaster {;
             let city = this.pandemik.map!.getCityById(infectionCard.cityId);
             if (city) {
                 this.pandemik.breakingNewsConnector.addBreakingInfo(
-                    new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2)
+                    new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2, "virus", this.currentTurn())
                 )
                 await this.pandemik.gameMaster.infect(city, infectionCard.diseaseColor, 3);
                 for (const city of this.pandemik.map!.cities) {
@@ -600,12 +607,12 @@ export class GameMaster {;
                     if (city) {
                         if (this.diseaseStatuses[card.diseaseColor]() === DiseaseStatus.ERADICATED) {
                             this.pandemik.breakingNewsConnector.addBreakingInfo(
-                                new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " is eradicated. +0", city)
+                                new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " is eradicated. +0", city, 0, "stars", this.currentTurn())
                             )
                         }
                         else {
                             this.pandemik.breakingNewsConnector.addBreakingInfo(
-                                new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city)
+                                new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city, 0, "virus", this.currentTurn())
                             )
                             await this.pandemik.gameMaster.infect(city, card.diseaseColor, 1);
                             for (const city of this.pandemik.map!.cities) {

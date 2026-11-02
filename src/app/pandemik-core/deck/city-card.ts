@@ -7,3 +7,10 @@ export class CityCard extends PlayerCard {
         super(CityDataById(cityId).name, CityDataById(cityId).color);
     }
 }
+
+export class JokerCard extends PlayerCard {
+
+    constructor() {
+        super("Research Paper", GameColor.Joker);
+    }
+}

@@ -13,7 +13,7 @@ import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera.pure";
 import { Engine } from "@babylonjs/core/Engines/engine.pure";
 import { HemisphericLight, Matrix } from "@babylonjs/core";
 import { InfectionCard } from "./deck/infection-card";
-import { CityCard } from "./deck/city-card";
+import { CityCard, JokerCard } from "./deck/city-card";
 import { Deck, PlayerCard } from "./deck/deck";
 import { CityDataList, CityIdToIndex, DiseaseNames, ProjectionData } from "./data";
 import { GameCamera } from "./game-camera";
@@ -120,9 +120,9 @@ export class Pandemik {
 
         this.map = new Board(this);
         await this.map.instantiate();
-        let atlanta = this.map!.cities[0];
+        let startCity = this.map!.cities[0];
         requestAnimationFrame(() => {
-            this.gameCamera?.goTo(atlanta.position, 1, 15 + this.map!.projection.radius);
+            this.gameCamera?.goTo(startCity.position, 1, 15 + this.map!.projection.radius);
         });
 
         this.infectionDeck = new Deck<InfectionCard>();
@@ -135,6 +135,9 @@ export class Pandemik {
         this.playerDeck = new Deck<PlayerCard>();
         for (let cityId = 0; cityId < CityDataList.length; cityId++) {
             this.playerDeck.addCard(new CityCard(CityDataList[cityId].id));
+        }
+        for (let i = 0; i < 4; i++) {
+            this.playerDeck.addCard(new JokerCard());
         }
         this.playerDeck.shuffle();
         this.playerDiscardPile = new Deck<PlayerCard>();
@@ -154,9 +157,9 @@ export class Pandemik {
                     let city = this.map!.getCityById(card.cityId);
                     if (city) {
                         this.breakingNewsConnector.addBreakingInfo(
-                            new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2, "virus")
+                            new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city, 0, "virus", 0)
                         )
-                        await this.gameMaster.infect(city, card.diseaseColor, 3);
+                        await this.gameMaster.infect(city, card.diseaseColor, 1);
                     }
                     else {
                         console.error(`City with ID ${card.cityId} not found`);
@@ -170,7 +173,7 @@ export class Pandemik {
                     let city = this.map!.getCityById(card.cityId);
                     if (city) {
                         this.breakingNewsConnector.addBreakingInfo(
-                            new BreakingInfo("Multiple " + DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infections. +2", city, 1, "virus")
+                            new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infections. +2", city, 1, "virus", 0)
                         )
                         await this.gameMaster.infect(city, card.diseaseColor, 2);
                     }
@@ -186,9 +189,9 @@ export class Pandemik {
                     let city = this.map!.getCityById(card.cityId);
                     if (city) {
                         this.breakingNewsConnector.addBreakingInfo(
-                            new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city, 0, "virus")
+                            new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2, "virus", 0)
                         )
-                        await this.gameMaster.infect(city, card.diseaseColor, 1);
+                        await this.gameMaster.infect(city, card.diseaseColor, 3);
                     }
                     else {
                         console.error(`City with ID ${card.cityId} not found`);
@@ -196,10 +199,10 @@ export class Pandemik {
                 }
             }
 
-            await this.gameCamera!.goTo(atlanta.position, 1, 15 + this.map!.projection.radius);
+            await this.gameCamera!.goTo(startCity.position, 1, 15 + this.map!.projection.radius);
             for (let pIndex = 0; pIndex < 2; pIndex++) {
                 let PlayerRole = RandomAvailableRole(this);
-                let player = new PlayerRole(this, atlanta);
+                let player = new PlayerRole(this, startCity);
                 this.players.push(player);
                 for (const callback of this.onPlayerAdded) {
                     callback(player);
@@ -218,7 +221,7 @@ export class Pandemik {
                 this.playerDeck!.stack(deck);
             }
             console.log(this.playerDeck);
-            await atlanta.buildStation();
+            await startCity.buildStation();
             this.gameMaster.startGame();
         });
     }

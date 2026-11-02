@@ -3,12 +3,19 @@
         <h3>BREAKING NEWS</h3>
         @for(info of connector.breakingNews(); track info) {
             <div class="breaking-news-item severity-{{ info.severity }}" >
-                <span class="location color-{{ info.city?.cityColor }}">{{ (info.city ? info.city.name : "WORLD") | uppercase }} </span>
-                <span class="text">{{ info.text }} </span>
-                @if (info.icon != null) {
-                    <i class="icon bi bi-{{ info.icon }}"></i>
-                }
-            </div >
+                <div class="day">Day {{ info.day }}</div>
+                <div class="content">
+                    <span class="location color-{{ info.city?.cityColor }}">{{ (info.city ? info.city.name : "WORLD") | uppercase }} </span>
+                    <span class="text">
+                        @if (info.icon != null) {
+                            {{ info.text }}&nbsp;<i class="bi bi-{{ info.icon }}"></i>
+                        }
+                        @else {
+                            {{ info.text }}
+                        }
+                    </span>
+                </div>
+            </div>
         }
     </div>
 }
