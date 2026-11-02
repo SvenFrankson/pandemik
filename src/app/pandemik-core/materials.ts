@@ -27,6 +27,8 @@ export class SharedMaterials {
     public get redPlasticMaterial(): Material {
         return this.plasticMaterials[5];
     }
+    public apMaterial: PBRMetallicRoughnessMaterial;
+    public apMaterialOff: PBRMetallicRoughnessMaterial;
 
     constructor(public pandemik: Pandemik) {
         this.environmentTexture = CubeTexture.CreateFromPrefilteredData("environmentSpecular.env", this.pandemik.scene!);
@@ -127,6 +129,11 @@ export class SharedMaterials {
         }
         this.plasticMaterials.push(this._makePlasticPBR("", Color3.White(), this.environmentTexture));
         this.plasticMaterials.push(this._makePlasticPBR("", RedColor, this.environmentTexture));
+
+        this.apMaterial = this._makePlasticPBR("", Color3.FromInts(0, 255, 149), this.environmentTexture);
+        this.apMaterial.emissiveColor = Color3.FromInts(0, 255, 149);
+
+        this.apMaterialOff = this._makePlasticPBR("", Color3.FromInts(0 / 8, 255 / 8, 149 / 8), this.environmentTexture);
     }
 
     /*
@@ -144,7 +151,7 @@ export class SharedMaterials {
     }
     */
 
-    private _makeMetalPBR(name: string, color: Color3, envTexture: CubeTexture): Material {
+    private _makeMetalPBR(name: string, color: Color3, envTexture: CubeTexture): PBRMetallicRoughnessMaterial {
         let metalMaterial = new PBRMetallicRoughnessMaterial(name, this.pandemik.scene!);
         metalMaterial.baseColor = color;
         metalMaterial.metallic = 0.85;
@@ -154,7 +161,7 @@ export class SharedMaterials {
         return metalMaterial;
     }
     
-    private _makePlasticPBR(name: string, color: Color3, envTexture: CubeTexture): Material {
+    private _makePlasticPBR(name: string, color: Color3, envTexture: CubeTexture): PBRMetallicRoughnessMaterial {
         let plastic = new PBRMetallicRoughnessMaterial(name, this.pandemik.scene!);
         plastic.baseColor = color;
         plastic.roughness = 1;

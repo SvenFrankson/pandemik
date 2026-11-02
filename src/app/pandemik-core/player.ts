@@ -1,4 +1,5 @@
 import { Mesh } from "@babylonjs/core/Meshes/mesh.pure";
+import type { Material } from "@babylonjs/core/Materials/material";
 import { Quaternion } from "@babylonjs/core/Maths/math.vector.pure";
 import { Axis } from "@babylonjs/core/Maths/math.axis";
 import type { Pandemik } from "./pandemik";
@@ -37,7 +38,19 @@ export class Player extends Mesh {
         }
     }
 
-    constructor(name: string,public pandemik: Pandemik, city: City) {
+    public base: Mesh;
+    public head: Mesh;
+    public apMeshes: Mesh[] = [];
+    public setMaterial(material: Material): void {
+        this.material = material;
+        this.base.material = material;
+        this.head.material = material;
+        for (let apMesh of this.apMeshes) {
+            apMesh.material = material;
+        }
+    }
+
+    constructor(name: string, apPerTurn: number, public pandemik: Pandemik, city: City) {
         super(name, pandemik.scene);
         this.currentCity = city;
         let playerAnchor = city.getFirstFreePlayerAnchor();
@@ -46,11 +59,32 @@ export class Player extends Mesh {
         this.position.copyFrom(playerAnchor.absolutePosition);
         this.rotationQuaternion = Quaternion.Identity(); 
         QuaternionFromYZAxisToRef(this.position, Axis.Y, this.rotationQuaternion!)
-        this.scaling.copyFromFloats(0.35, 0.35, 0.35);
+        this.scaling.copyFromFloats(0.4, 0.4, 0.4);
+        this.apPerTurn = apPerTurn;
+
+        this.base = new Mesh("base", pandemik.scene);
+        this.base.rotation.x = Math.PI / 10;
+        this.base.parent = this;
+
+        this.head = new Mesh("head", pandemik.scene);
+        this.head.parent = this.base;
+
+        this.apMeshes = [];
+        for (let i = 0; i < this.apPerTurn; i++) {
+            let apMesh = new Mesh("apMesh" + i, pandemik.scene);
+            apMesh.rotation.y = (this.apPerTurn - 1) / 2 * Math.PI / 5 - i * Math.PI / 5;
+            apMesh.parent = this.base;
+            apMesh.material = this.material;
+            this.apMeshes.push(apMesh);
+        }
 
         GetGLTFMeshDataArray("pion.gltf", pandemik.scene!).then(data => {
             if (data) {
-                data[1].vertexData.applyToMesh(this);
+                data[1].vertexData.applyToMesh(this.base);
+                data[2].vertexData.applyToMesh(this.head);
+                for (let i = 0; i < this.apMeshes.length; i++) {
+                    data[3].vertexData.applyToMesh(this.apMeshes[i]);
+                }
             }
         });
         this.animatePosition = AnimationFactory.CreateVector3(
@@ -114,10 +148,26 @@ export class Player extends Mesh {
 
     public consumeAP(amount: number = 1): void {
         this.availableAPs.set(this.availableAPs() - amount);
+        for (let n = 0; n < this.apMeshes.length; n++) {
+            if (n < this.availableAPs()) {
+                this.apMeshes[n].material = this.pandemik.sharedMaterials.apMaterial;
+            }
+            else {
+                this.apMeshes[n].material = this.material;
+            }
+        }
     }
 
     public setAvailableAPs(amount: number): void {
         this.availableAPs.set(amount);
+        for (let n = 0; n < this.apMeshes.length; n++) {
+            if (n < this.availableAPs()) {
+                this.apMeshes[n].material = this.pandemik.sharedMaterials.apMaterial;
+            }
+            else {
+                this.apMeshes[n].material = this.material;
+            }
+        }
     }
 
     public addPlayerCard(card: PlayerCard): PlayerCard {
@@ -134,82 +184,89 @@ export class Player extends Mesh {
 export class ContingencyPlanner extends Player {
 
     constructor(pandemik: Pandemik, city: City) {
-        super("Contingency Planner", pandemik, city);
+        super("Contingency Planner", 5, pandemik, city);
         this.color = "#21ddd4";
         this.material = QuickMaterial(Color3.FromHexString(this.color));
-        MakeOutline(this, Color3.Black());
+        this.head.material = this.material;
+        MakeOutline(this.base, Color3.Black());
+        MakeOutline(this.head, Color3.Black());
     }
 }
 
 export class Dispatcher extends Player {
 
     constructor(pandemik: Pandemik, city: City) {
-        super("Dispatcher", pandemik, city);
+        super("Dispatcher", 5, pandemik, city);
         this.color = "#dd21be";
-        this.material = QuickMaterial(Color3.FromHexString(this.color));
-        MakeOutline(this, Color3.Black());
+        this.setMaterial(QuickMaterial(Color3.FromHexString(this.color)));
+        MakeOutline(this.base, Color3.Black());
+        MakeOutline(this.head, Color3.Black());
     }
 }
 
 export class Medic extends Player {
 
     constructor(pandemik: Pandemik, city: City) {
-        super("Medic", pandemik, city);
-        this.apPerTurn = 4;
+        super("Medic", 4, pandemik, city);
         this.color = "#dd6621";
-        this.material = QuickMaterial(Color3.FromHexString(this.color));
-        MakeOutline(this, Color3.Black());
+        this.setMaterial(QuickMaterial(Color3.FromHexString(this.color)));
+        MakeOutline(this.base, Color3.Black());
+        MakeOutline(this.head, Color3.Black());
     }
 }
 
 export class OperationsExpert extends Player {
 
     constructor(pandemik: Pandemik, city: City) {
-        super("Operations Expert", pandemik, city);
+        super("Operations Expert", 5, pandemik, city);
         this.color = "#21dd40";
-        this.material = QuickMaterial(Color3.FromHexString(this.color));
-        MakeOutline(this, Color3.Black());
+        this.setMaterial(QuickMaterial(Color3.FromHexString(this.color)));
+        MakeOutline(this.base, Color3.Black());
+        MakeOutline(this.head, Color3.Black());
     }
 }
 
 export class QuarantineSpecialist extends Player {
 
     constructor(pandemik: Pandemik, city: City) {
-        super("Quarantine Specialist", pandemik, city);
+        super("Quarantine Specialist", 5, pandemik, city);
         this.color = "#3421dd";
-        this.material = QuickMaterial(Color3.FromHexString(this.color));
-        MakeOutline(this, Color3.Black());
+        this.setMaterial(QuickMaterial(Color3.FromHexString(this.color)));
+        MakeOutline(this.base, Color3.Black());
+        MakeOutline(this.head, Color3.Black());
     }
 }
 
 export class Researcher extends Player {
 
     constructor(pandemik: Pandemik, city: City) {
-        super("Researcher", pandemik, city);
+        super("Researcher", 5, pandemik, city);
         this.color = "#ddb121";
-        this.material = QuickMaterial(Color3.FromHexString(this.color));
-        MakeOutline(this, Color3.Black());
+        this.setMaterial(QuickMaterial(Color3.FromHexString(this.color)));
+        MakeOutline(this.base, Color3.Black());
+        MakeOutline(this.head, Color3.Black());
     }
 }
 
 export class Scientist extends Player {
 
     constructor(pandemik: Pandemik, city: City) {
-        super("Scientist", pandemik, city);
-        this.apPerTurn = 4;
+        super("Scientist", 4, pandemik, city);
         this.color = "#d3f1ff";
-        this.material = QuickMaterial(Color3.FromHexString(this.color));
-        MakeOutline(this, Color3.Black());
+        this.setMaterial(QuickMaterial(Color3.FromHexString(this.color)));
+        MakeOutline(this.base, Color3.Black());
+        MakeOutline(this.head, Color3.Black());
     }
 }
 
 export class Civilian extends Player {
 
     constructor(pandemik: Pandemik, city: City) {
-        super("Civilian", pandemik, city);
+        super("Civilian", 5, pandemik, city);
         this.color = "#31395e";
-        this.material = QuickMaterial(Color3.FromHexString(this.color));
-        MakeOutline(this, Color3.Black());
+        this.setMaterial(QuickMaterial(Color3.FromHexString(this.color)));
+        MakeOutline(this.base, Color3.Black());
+        MakeOutline(this.head, Color3.Black());
     }
 }
 
