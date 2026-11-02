@@ -1,5 +1,9 @@
 @if (gameMaster != null) {
     <button id="done-button" [class.disabled]="!gameMaster.canPressDone()" (click)="gameMaster.onDone()">DONE</button>
+    <div id="player-deck-container">
+        <div class="player-deck-day"><i class="icon bi bi-calendar3"></i> DAY {{ gameMaster.currentTurn() }}</div>
+        <div class="player-deck-days-left">{{ (gameMaster.playerDeckSize() / 2).toFixed(0) }} DAYS LEFT</div>
+    </div>
     <div id="diseases-status-container">
         <div class="disease-status color-0">
             <div class="disease-name"><i class="icon bi bi-virus"></i> BLUEVIRUS</div>

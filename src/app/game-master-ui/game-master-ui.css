@@ -60,10 +60,40 @@ h3 {
     background-color: var(--red-color);
 }
 
+#player-deck-container {
+    position: fixed;
+    width: 400px;
+    z-index: 2;
+    top: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: 900;
+    border: 2px solid white;
+    border-top: none;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+}
+
+.player-deck-day {
+    display: inline-block;
+    width: 50%;
+    margin: 0px;
+}
+
+.player-deck-days-left {
+    display: inline-block;
+    width: 50%;
+    margin: 0px;
+    color: var(--red-color);
+    font-weight: 900;
+}
+
 #diseases-status-container {
     position: fixed;
     z-index: 2;
-    top: 0px;
+    top: 22px;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -100,14 +130,14 @@ h3 {
 
 .disease-status-value {
     font-weight: 900;
-    font-size: 16px;
+    font-size: 14px;
     text-align: center;
     color: white;
 }
 
 .disease-status-count {
     font-weight: 500;
-    font-size: 16px;
+    font-size: 14px;
     text-align: center;
     color: white;
 }

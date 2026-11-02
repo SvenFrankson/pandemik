@@ -219,10 +219,7 @@ export class Pandemik {
             }
             console.log(this.playerDeck);
             await atlanta.buildStation();
-            this.currentPlayerIndex = 0;
-            if (this.currentPlayer) {
-                this.currentPlayer.setAvailableAPs(this.currentPlayer.apPerTurn);
-            }
+            this.gameMaster.startGame();
         });
     }
 

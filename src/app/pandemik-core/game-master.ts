@@ -38,6 +38,8 @@ export class GameMaster {;
         this.canPressDone.set(!value);
     }
 
+    currentTurn = signal<number>(1);
+    playerDeckSize = signal<number>(0);
     outbreaksCount = signal<number>(0);
     canPressDone = signal<boolean>(false);
     diseaseStatuses = [signal<DiseaseStatus>(DiseaseStatus.ACTIVE), signal<DiseaseStatus>(DiseaseStatus.ACTIVE), signal<DiseaseStatus>(DiseaseStatus.ACTIVE), signal<DiseaseStatus>(DiseaseStatus.ACTIVE)];
@@ -512,11 +514,13 @@ export class GameMaster {;
             if (player.playerCards().length < 7) {
                 player.addPlayerCard(card);
             }
+            this.playerDeckSize.set(this.pandemik.playerDeck!.count);
             this._working = false;
             return card;
         }
         else if (card instanceof EpidemicCard) {
             await this.doEpidemic();
+            this.playerDeckSize.set(this.pandemik.playerDeck!.count);
             this._working = false;
             return card;
         }
@@ -564,6 +568,21 @@ export class GameMaster {;
         }
     }
 
+    public async startGame(): Promise<void> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
+        this.currentTurn.set(1);
+        this.playerDeckSize.set(this.pandemik.playerDeck!.count);
+        this.pandemik.currentPlayerIndex = 0;
+        if (this.pandemik.currentPlayer!) {
+            this.pandemik.currentPlayer.setAvailableAPs(this.pandemik.currentPlayer.apPerTurn);
+            await this.pandemik.gameCamera.goTo(this.pandemik.currentPlayer.currentCity.position, 1, 15 + this.pandemik.map!.projection.radius);
+        }
+        this._working = false;
+    }
+
     public async onDone(): Promise<void> {
         while (this._working) {
             await NextFrame();
@@ -602,6 +621,7 @@ export class GameMaster {;
         if (this.pandemik.currentPlayer!) {
             this.pandemik.currentPlayer.setAvailableAPs(0);
         }
+        this.currentTurn.set(this.currentTurn() + 1);
         this.pandemik.currentPlayerIndex = (this.pandemik.currentPlayerIndex + 1) % this.pandemik.players.length;
         if (this.pandemik.currentPlayer!) {
             this.pandemik.currentPlayer.setAvailableAPs(this.pandemik.currentPlayer.apPerTurn);
