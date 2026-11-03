@@ -1,7 +1,7 @@
 import { Pandemik } from "./pandemik";
 import { Medic, Player, Scientist } from "./player";
 import { City } from "./city";
-import { CityIdToIndex, DiseaseNames, GameColor } from "./data";
+import { CityIdToIndex, DiseaseNames, GameColor, GameColors } from "./data";
 import { BreakingInfo } from "./ui-connectors/breaking-news-connector";
 import { NextFrame } from "babylonjs-tiaratumgames-tools";
 import { signal } from "@angular/core";
@@ -114,6 +114,15 @@ export class GameMaster {;
             for (const city of path) {
                 player.consumeAP(1);
                 await player.goTo(city, undefined, city != destination);
+                if (player instanceof Medic) {
+                    this.__working = false;
+                    for (const diseaseColor of GameColors) {
+                        if (this.diseaseStatuses[diseaseColor]() === DiseaseStatus.RESEARCHED) {
+                            await this.doTreatDisease(player, city, diseaseColor, true);
+                        }
+                    }
+                    this.__working = true;
+                }
             }
             this._working = false;
             return true;
@@ -157,6 +166,15 @@ export class GameMaster {;
                 this.pandemik.playerDiscardPile?.addCard(playerCard);
             }
             await player.goTo(destination);
+            if (player instanceof Medic) {
+                this.__working = false;
+                for (const diseaseColor of GameColors) {
+                    if (this.diseaseStatuses[diseaseColor]() === DiseaseStatus.RESEARCHED) {
+                        await this.doTreatDisease(player, destination, diseaseColor, true);
+                    }
+                }
+                this.__working = true;
+            }
             this._working = false;
             return true;
         }
@@ -199,6 +217,15 @@ export class GameMaster {;
                 this.pandemik.playerDiscardPile?.addCard(playerCard);
             }
             await player.goTo(destination);
+            if (player instanceof Medic) {
+                this.__working = false;
+                for (const diseaseColor of GameColors) {
+                    if (this.diseaseStatuses[diseaseColor]() === DiseaseStatus.RESEARCHED) {
+                        await this.doTreatDisease(player, destination, diseaseColor, true);
+                    }
+                }
+                this.__working = true;
+            }
             this._working = false;
             return true;
         }
@@ -206,7 +233,7 @@ export class GameMaster {;
         return false;
     }
 
-    public canCureDisease(player: Player, city: City, diseaseColor: GameColor): CanDoStatus {
+    public canTreatDisease(player: Player, city: City, diseaseColor: GameColor, freeAction: boolean = false): CanDoStatus {
         if (city.infections[diseaseColor]() < 1) {
             return CanDoStatus.NO_INFECTION;
         }
@@ -215,23 +242,27 @@ export class GameMaster {;
             return CanDoStatus.NOT_IN_CURRENT_CITY;
         }
 
-        if (player.availableAPs() < 1) {
+        if (!freeAction && player.availableAPs() < 1) {
             return CanDoStatus.NOT_ENOUGH_AP;
         }
         
         return CanDoStatus.OK;
     }
 
-    public async doCureDisease(player: Player, city: City, diseaseColor: GameColor): Promise<boolean> {
+    public async doTreatDisease(player: Player, city: City, diseaseColor: GameColor, freeAction: boolean = false): Promise<boolean> {
         while (this._working) {
             await NextFrame();
         }
         this._working = true;
-        if (this.canCureDisease(player, city, diseaseColor) === CanDoStatus.OK) {
-            player.consumeAP(1);
+        if (this.canTreatDisease(player, city, diseaseColor, freeAction) === CanDoStatus.OK) {
+            if (!freeAction) {
+                player.consumeAP(1);
+            }
             await city.cure(diseaseColor);
             if (player instanceof Medic) {
-                await city.cure(diseaseColor);
+                while (city.infections[diseaseColor]() > 0) {
+                    await city.cure(diseaseColor);
+                }
             }
             if (this.diseaseStatuses[diseaseColor]() === DiseaseStatus.RESEARCHED) {
                 while (city.infections[diseaseColor]() > 0) {
@@ -393,10 +424,15 @@ export class GameMaster {;
         return false;
     }
 
-    public canResearchDisease(player: Player, diseaseColor: GameColor): CanDoStatus {
+    public canResearchDisease(player: Player, city: City, diseaseColor: GameColor): CanDoStatus {
         if (this.diseaseStatuses[diseaseColor]() !== DiseaseStatus.ACTIVE) {
             return CanDoStatus.NO_NEED;
         }
+
+        if (player.currentCity !== city) {
+            return CanDoStatus.NOT_IN_CURRENT_CITY;
+        }
+
         if (!player.currentCity.hasStation) {
             return CanDoStatus.NO_RESEARCH_STATION;
         }
@@ -413,12 +449,12 @@ export class GameMaster {;
         return CanDoStatus.OK;
     }
 
-    public async doResearchDisease(player: Player, diseaseColor: GameColor): Promise<boolean> {
+    public async doResearchDisease(player: Player, city: City, diseaseColor: GameColor): Promise<boolean> {
         while (this._working) {
             await NextFrame();
         }
         this._working = true;
-        if (this.canResearchDisease(player, diseaseColor) === CanDoStatus.OK) {
+        if (this.canResearchDisease(player, city, diseaseColor) === CanDoStatus.OK) {
             let cards = player.playerCards().filter((card) => {
                 return card instanceof CityCard && card.color === diseaseColor || card instanceof JokerCard;
             });
@@ -554,12 +590,17 @@ export class GameMaster {;
             this.pandemik.infectionDiscardPile!.addCard(infectionCard);
             let city = this.pandemik.map!.getCityById(infectionCard.cityId);
             if (city) {
-                this.pandemik.breakingNewsConnector.addBreakingInfo(
-                    new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2, "virus", this.currentTurn())
-                )
-                await this.pandemik.gameMaster.infect(city, infectionCard.diseaseColor, 3);
-                for (const city of this.pandemik.map!.cities) {
-                    city.outbreaking = false;
+                if (this.diseaseStatuses[infectionCard.diseaseColor]() === DiseaseStatus.ERADICATED) {
+                    new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " is eradicated. +0", city, 0, "stars", this.currentTurn())
+                }
+                else {
+                    this.pandemik.breakingNewsConnector.addBreakingInfo(
+                        new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2, "virus", this.currentTurn())
+                    )
+                    await this.pandemik.gameMaster.infect(city, infectionCard.diseaseColor, 3);
+                    for (const city of this.pandemik.map!.cities) {
+                        city.outbreaking = false;
+                    }
                 }
             }
             else {

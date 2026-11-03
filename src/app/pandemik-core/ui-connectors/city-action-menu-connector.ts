@@ -59,8 +59,8 @@ export class CityActionMenuConnector {
             this.canGoTo.set(this.gameMaster.canMoveTo(this.pandemik.currentPlayer, this._city));
             this.goToCost.set(this.gameMaster.moveToCost(this.pandemik.currentPlayer, this._city));
             for (const c of GameColors) {
-                this.canCureDisease[c].set(this.gameMaster.canCureDisease(this.pandemik.currentPlayer, this._city, c));
-                this.canResearchDisease[c].set(this.gameMaster.canResearchDisease(this.pandemik.currentPlayer, c));
+                this.canCureDisease[c].set(this.gameMaster.canTreatDisease(this.pandemik.currentPlayer, this._city, c));
+                this.canResearchDisease[c].set(this.gameMaster.canResearchDisease(this.pandemik.currentPlayer, this._city, c));
             }
             this.canFlyTo.set(this.gameMaster.canFlyTo(this.pandemik.currentPlayer, this._city));
             this.canCharterFlyTo.set(this.gameMaster.canCharterFlyTo(this.pandemik.currentPlayer, this._city));
@@ -110,7 +110,7 @@ export class CityActionMenuConnector {
     async onCureDisease(diseaseColor: GameColor): Promise<void> {
         //this.shown.set(false);
         if (this._city) {
-            await this.gameMaster.doCureDisease(this.pandemik.currentPlayer!, this._city, diseaseColor);
+            await this.gameMaster.doTreatDisease(this.pandemik.currentPlayer!, this._city, diseaseColor);
         }
         this.update();
     }
@@ -139,7 +139,7 @@ export class CityActionMenuConnector {
 
     async onResearchDisease(diseaseColor: GameColor): Promise<void> {
         if (this._city) {
-            await this.gameMaster.doResearchDisease(this.pandemik.currentPlayer!, diseaseColor);
+            await this.gameMaster.doResearchDisease(this.pandemik.currentPlayer!, this._city, diseaseColor);
         }
         this.update();
     }

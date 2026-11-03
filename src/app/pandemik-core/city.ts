@@ -230,12 +230,10 @@ export class City extends Mesh {
         this.picture.rotation.y = Math.PI;
         this.board.tokenMeshData[3]?.vertexData.applyToMesh(this.picture);
 
-        /*
-        if (this.board.pandemik.sharedMaterials.cityMaterials[this.cityId]) {
-            this.picture.material = this.board.pandemik.sharedMaterials.cityMaterials[this.cityId];
-            this.picture.visibility = 0.5;
+        if (this.board.pandemik.sharedMaterials.cityMaterials.has(this.cityId)) {
+            this.picture.material = this.board.pandemik.sharedMaterials.cityMaterials.get(this.cityId)!;
+            this.picture.visibility = 0.3;
         }
-        */
         
         this.infectionPicture = new CityPart("city-pic", this.getScene(), this);
         this.infectionPicture.material = this.board.pandemik.sharedMaterials.cityMaterial;
