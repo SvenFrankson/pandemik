@@ -76,7 +76,7 @@ export class SharedMaterials {
         this._loadCityMaterial("Paris");
         //this._loadCityMaterial("Madrid");
         //this._loadCityMaterial("Montreal");
-        //this._loadCityMaterial("NewYork");
+        this._loadCityMaterial("NewYork");
         //this._loadCityMaterial("Washington");
         //this._loadCityMaterial("Atlanta");
         //this._loadCityMaterial("Chicago");
@@ -144,7 +144,6 @@ export class SharedMaterials {
         material.useAlphaFromDiffuseTexture = true;
         material.emissiveTexture = material.diffuseTexture;
         */
-        material.emissiveColor = new Color3(0.1, 0.1, 0.1);
 
         let imgElement = document.createElement("img");
         imgElement.src = name + ".png";
@@ -160,15 +159,24 @@ export class SharedMaterials {
             if (ctx) {
                 ctx.drawImage(imgElement, (imgWidth - s) / 2, (imgHeight - s) / 2, s, s, 0, 0, s, s);
                 let pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                for (let n = 0; n < pixelData.data.length; n+=4) {
+                for (let n = 0; n < pixelData.data.length; n += 4) {
                     let r = pixelData.data[n];
                     let g = pixelData.data[n+1];
                     let b = pixelData.data[n+2];
-                    
+                    let v = 1 - (r + g + b) / 3 / 255;
+                    v = Math.round(v * 4) / 4 * 255;
+                    pixelData.data[n] = v;
+                    pixelData.data[n+1] = v;
+                    pixelData.data[n+2] = v;
+                    pixelData.data[n+3] = v;
                 }
                 ctx.putImageData(pixelData, 0, 0);
             }
             material.diffuseTexture = new Texture(canvas.toDataURL(), null, false, true);
+            material.diffuseTexture!.hasAlpha = true;
+            material.useAlphaFromDiffuseTexture = true;
+            material.emissiveTexture = material.diffuseTexture;
+            material.emissiveColor = new Color3(0.3, 0.3, 0.3);
         };
 
         this.cityMaterials.set(cityId, material);
