@@ -232,7 +232,7 @@ export class City extends Mesh {
 
         if (this.board.pandemik.sharedMaterials.cityMaterials.has(this.cityId)) {
             this.picture.material = this.board.pandemik.sharedMaterials.cityMaterials.get(this.cityId)!;
-            this.picture.visibility = 0.3;
+            this.picture.visibility = 1;
         }
         
         this.infectionPicture = new CityPart("city-pic", this.getScene(), this);

@@ -55,6 +55,37 @@ export class GameMaster {;
         }
     }
 
+    public async doMedicFreeTreatmentStep(): Promise<void> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
+        const medic = this.pandemik.players.find(p => p instanceof Medic);
+        if (medic instanceof Medic) {
+            const city = medic.currentCity;
+            for (const diseaseColor of GameColors) {
+                if (this.diseaseStatuses[diseaseColor]() === DiseaseStatus.RESEARCHED) {
+                    this._working = false;
+                    await this.doTreatDisease(medic, city, diseaseColor, true);
+                    this.__working = true;
+                }
+            }
+        }
+        this._working = false;
+    }
+
+    public isCityProtected(city: City, diseaseColor: GameColor): Player | null {
+        const medic = this.pandemik.players.find(p => p instanceof Medic);
+        if (medic instanceof Medic) {
+            if (medic.currentCity === city) {
+                if (this.diseaseStatuses[diseaseColor]() === DiseaseStatus.RESEARCHED) {
+                    return medic;
+                }
+            }
+        }
+        return null;
+    }
+
     public canMoveTo(player: Player, destination: City): boolean {
         let dist = player.currentCity?.distanceTo[CityIdToIndex(destination.cityId)];
         return dist > 0 && dist <= player.availableAPs();
@@ -473,6 +504,9 @@ export class GameMaster {;
                 this.diseaseStatuses[diseaseColor].set(DiseaseStatus.ERADICATED);
             }
             this._working = false;
+            await this.doMedicFreeTreatmentStep();
+            this._working = true;
+            this._working = false;
             return true;
         }
         this._working = false;
@@ -530,9 +564,11 @@ export class GameMaster {;
             for (const link of city.links) {
                 const otherCity = link.other(city);
                 if (otherCity && !otherCity.outbreaking) {
-                    promises.push(this.infect(otherCity, diseaseColor, 1, true));
-                    text += otherCity.name + ", ";
-                    infectionsCount++;
+                    if (this.isCityProtected(otherCity, diseaseColor) === null) {
+                        promises.push(this.infect(otherCity, diseaseColor, 1, true));
+                        text += otherCity.name + ", ";
+                        infectionsCount++;
+                    }
                 }
             }
             this.pandemik.breakingNewsConnector.addBreakingInfo(
@@ -594,12 +630,20 @@ export class GameMaster {;
                     new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " is eradicated. +0", city, 0, "stars", this.currentTurn())
                 }
                 else {
-                    this.pandemik.breakingNewsConnector.addBreakingInfo(
-                        new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2, "virus", this.currentTurn())
-                    )
-                    await this.pandemik.gameMaster.infect(city, infectionCard.diseaseColor, 3);
-                    for (const city of this.pandemik.map!.cities) {
-                        city.outbreaking = false;
+                    const protection = this.isCityProtected(city, infectionCard.diseaseColor);
+                    if (protection) {
+                        this.pandemik.breakingNewsConnector.addBreakingInfo(
+                            new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " infection prevented by " + protection.name + ". +0", city, 0, "shield", this.currentTurn())
+                        )
+                    }
+                    else {
+                        this.pandemik.breakingNewsConnector.addBreakingInfo(
+                            new BreakingInfo(DiseaseNames[infectionCard.diseaseColor].toLocaleUpperCase() + " epidemic. +3", city, 2, "virus", this.currentTurn())
+                        )
+                        await this.pandemik.gameMaster.infect(city, infectionCard.diseaseColor, 3);
+                        for (const city of this.pandemik.map!.cities) {
+                            city.outbreaking = false;
+                        }
                     }
                 }
             }
@@ -652,12 +696,20 @@ export class GameMaster {;
                             )
                         }
                         else {
-                            this.pandemik.breakingNewsConnector.addBreakingInfo(
-                                new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city, 0, "virus", this.currentTurn())
-                            )
-                            await this.pandemik.gameMaster.infect(city, card.diseaseColor, 1);
-                            for (const city of this.pandemik.map!.cities) {
-                                city.outbreaking = false;
+                            const protection = this.isCityProtected(city, card.diseaseColor);
+                            if (protection) {
+                                this.pandemik.breakingNewsConnector.addBreakingInfo(
+                                    new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection prevented by " + protection.name + ". +0", city, 0, "shield", this.currentTurn())
+                                )
+                            }
+                            else {
+                                this.pandemik.breakingNewsConnector.addBreakingInfo(
+                                    new BreakingInfo(DiseaseNames[card.diseaseColor].toLocaleUpperCase() + " infection. +1", city, 0, "virus", this.currentTurn())
+                                )
+                                await this.pandemik.gameMaster.infect(city, card.diseaseColor, 1);
+                                for (const city of this.pandemik.map!.cities) {
+                                    city.outbreaking = false;
+                                }
                             }
                         }
                     }

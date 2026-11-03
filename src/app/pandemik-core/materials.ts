@@ -70,47 +70,47 @@ export class SharedMaterials {
         cityMaterial.alpha = 0;
         this.cityMaterial = cityMaterial;
 
-        this._loadCityMaterial("London");
-        this._loadCityMaterial("Essen");
-        this._loadCityMaterial("Milano");
+        //this._loadCityMaterial("London");
+        //this._loadCityMaterial("Essen");
+        //this._loadCityMaterial("Milano");
         this._loadCityMaterial("Paris");
-        this._loadCityMaterial("Madrid");
-        this._loadCityMaterial("Montreal");
-        this._loadCityMaterial("NewYork");
-        this._loadCityMaterial("Washington");
-        this._loadCityMaterial("Atlanta");
-        this._loadCityMaterial("Chicago");
-        this._loadCityMaterial("SaintPetersburg");
-        this._loadCityMaterial("LosAngeles");
-        this._loadCityMaterial("MexicoCity");
-        this._loadCityMaterial("Miami");
-        this._loadCityMaterial("Bogota");
-        this._loadCityMaterial("Lima");
-        this._loadCityMaterial("Santiago");
-        this._loadCityMaterial("BuenosAires");
-        this._loadCityMaterial("SaoPaulo");
-        this._loadCityMaterial("Lagos");
-        this._loadCityMaterial("Kinshasa");
-        this._loadCityMaterial("Khartoum");
-        this._loadCityMaterial("Johannesburg");
-        this._loadCityMaterial("Moscow");
-        this._loadCityMaterial("Istanbul");
-        this._loadCityMaterial("Cairo");
-        this._loadCityMaterial("Algiers");
-        this._loadCityMaterial("Tehran");
-        this._loadCityMaterial("Baghdad");
-        this._loadCityMaterial("Beijing");
-        this._loadCityMaterial("Seoul");
-        this._loadCityMaterial("Tokyo");
-        this._loadCityMaterial("Shanghai");
-        this._loadCityMaterial("HongKong");
-        this._loadCityMaterial("Bangkok");
-        this._loadCityMaterial("Taipei");
-        this._loadCityMaterial("Osaka");
-        this._loadCityMaterial("Manila");
-        this._loadCityMaterial("HoChiMinhCity");
-        this._loadCityMaterial("Jakarta");
-        this._loadCityMaterial("Sydney");
+        //this._loadCityMaterial("Madrid");
+        //this._loadCityMaterial("Montreal");
+        //this._loadCityMaterial("NewYork");
+        //this._loadCityMaterial("Washington");
+        //this._loadCityMaterial("Atlanta");
+        //this._loadCityMaterial("Chicago");
+        //this._loadCityMaterial("SaintPetersburg");
+        //this._loadCityMaterial("LosAngeles");
+        //this._loadCityMaterial("MexicoCity");
+        //this._loadCityMaterial("Miami");
+        //this._loadCityMaterial("Bogota");
+        //this._loadCityMaterial("Lima");
+        //this._loadCityMaterial("Santiago");
+        //this._loadCityMaterial("BuenosAires");
+        //this._loadCityMaterial("SaoPaulo");
+        //this._loadCityMaterial("Lagos");
+        //this._loadCityMaterial("Kinshasa");
+        //this._loadCityMaterial("Khartoum");
+        //this._loadCityMaterial("Johannesburg");
+        //this._loadCityMaterial("Moscow");
+        //this._loadCityMaterial("Istanbul");
+        //this._loadCityMaterial("Cairo");
+        //this._loadCityMaterial("Algiers");
+        //this._loadCityMaterial("Tehran");
+        //this._loadCityMaterial("Baghdad");
+        //this._loadCityMaterial("Beijing");
+        //this._loadCityMaterial("Seoul");
+        //this._loadCityMaterial("Tokyo");
+        //this._loadCityMaterial("Shanghai");
+        //this._loadCityMaterial("HongKong");
+        //this._loadCityMaterial("Bangkok");
+        //this._loadCityMaterial("Taipei");
+        //this._loadCityMaterial("Osaka");
+        //this._loadCityMaterial("Manila");
+        //this._loadCityMaterial("HoChiMinhCity");
+        //this._loadCityMaterial("Jakarta");
+        //this._loadCityMaterial("Sydney");
 
         for (let i = 0; i < 3; i++) {
             let alertCityMaterial = QuickMaterial(Color3.White(), 0, RedColor.scale((i + 1) / 3).scale(0.5));
@@ -135,15 +135,42 @@ export class SharedMaterials {
     }
 
     private _loadCityMaterial(cityId: string): void {
-        return;
         let name = cityId.toLocaleLowerCase();
         name = name.split('').filter(c => c >= 'a' && c <= 'z').join('');
         let material = QuickMaterial(Color3.White(), 0.2);
+        /*
         material.diffuseTexture = new Texture(name + ".png", this.pandemik.scene!);
         material.diffuseTexture!.hasAlpha = true;
         material.useAlphaFromDiffuseTexture = true;
         material.emissiveTexture = material.diffuseTexture;
-        material.emissiveColor = new Color3(0.3, 0.3, 0.3);
+        */
+        material.emissiveColor = new Color3(0.1, 0.1, 0.1);
+
+        let imgElement = document.createElement("img");
+        imgElement.src = name + ".png";
+        imgElement.onload = () => {
+            let imgWidth = imgElement.width;
+            let imgHeight = imgElement.height;
+            let s = Math.min(imgElement.width, imgElement.height);
+            let canvas = document.createElement("canvas");
+            canvas.width = s;
+            canvas.height = s;
+            console.log("size = " + s);
+            let ctx = canvas.getContext("2d");
+            if (ctx) {
+                ctx.drawImage(imgElement, (imgWidth - s) / 2, (imgHeight - s) / 2, s, s, 0, 0, s, s);
+                let pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                for (let n = 0; n < pixelData.data.length; n+=4) {
+                    let r = pixelData.data[n];
+                    let g = pixelData.data[n+1];
+                    let b = pixelData.data[n+2];
+                    
+                }
+                ctx.putImageData(pixelData, 0, 0);
+            }
+            material.diffuseTexture = new Texture(canvas.toDataURL(), null, false, true);
+        };
+
         this.cityMaterials.set(cityId, material);
     }
 
