@@ -70,16 +70,16 @@ export class SharedMaterials {
         cityMaterial.alpha = 0;
         this.cityMaterial = cityMaterial;
 
-        //this._loadCityMaterial("London");
+        this._loadCityMaterial("London");
         //this._loadCityMaterial("Essen");
         //this._loadCityMaterial("Milano");
         this._loadCityMaterial("Paris");
-        //this._loadCityMaterial("Madrid");
-        //this._loadCityMaterial("Montreal");
+        this._loadCityMaterial("Madrid");
+        this._loadCityMaterial("Montreal");
         this._loadCityMaterial("NewYork");
-        //this._loadCityMaterial("Washington");
-        //this._loadCityMaterial("Atlanta");
-        //this._loadCityMaterial("Chicago");
+        this._loadCityMaterial("Washington");
+        this._loadCityMaterial("Atlanta");
+        this._loadCityMaterial("Chicago");
         //this._loadCityMaterial("SaintPetersburg");
         //this._loadCityMaterial("LosAngeles");
         //this._loadCityMaterial("MexicoCity");
@@ -159,16 +159,24 @@ export class SharedMaterials {
             if (ctx) {
                 ctx.drawImage(imgElement, (imgWidth - s) / 2, (imgHeight - s) / 2, s, s, 0, 0, s, s);
                 let pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                let colBackground = Color3.FromHexString("#4a03bb");
+                let r0 = colBackground.r * 255;
+                let g0 = colBackground.g * 255;
+                let b0 = colBackground.b * 255;
+                let colLight = Color3.FromHexString("#00ffdd");
+                let r1 = colLight.r * 255;
+                let g1 = colLight.g * 255;
+                let b1 = colLight.b * 255;
                 for (let n = 0; n < pixelData.data.length; n += 4) {
                     let r = pixelData.data[n];
                     let g = pixelData.data[n+1];
                     let b = pixelData.data[n+2];
                     let v = 1 - (r + g + b) / 3 / 255;
-                    v = Math.round(v * 4) / 4 * 255;
-                    pixelData.data[n] = v;
-                    pixelData.data[n+1] = v;
-                    pixelData.data[n+2] = v;
-                    pixelData.data[n+3] = v;
+                    v = Math.round(v * 7) / 7;
+                    pixelData.data[n] = r0 * (1 - v) + r1 * v;
+                    pixelData.data[n+1] = g0 * (1 - v) + g1 * v;
+                    pixelData.data[n+2] = b0 * (1 - v) + b1 * v;
+                    pixelData.data[n+3] = v * 255;
                 }
                 ctx.putImageData(pixelData, 0, 0);
             }
