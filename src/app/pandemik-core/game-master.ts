@@ -38,6 +38,11 @@ export class GameMaster {;
         this.canPressDone.set(!value);
     }
 
+    public currentPlayerIndex = signal<number>(0);
+    public get currentPlayer(): Player | null {
+        return this.pandemik.players.length > 0 ? this.pandemik.players[this.currentPlayerIndex()] : null;
+    }
+
     currentTurn = signal<number>(1);
     playerDeckSize = signal<number>(0);
     outbreaksCount = signal<number>(0);
@@ -667,10 +672,10 @@ export class GameMaster {;
         this._working = true;
         this.currentTurn.set(1);
         this.playerDeckSize.set(this.pandemik.playerDeck!.count);
-        this.pandemik.currentPlayerIndex = 0;
-        if (this.pandemik.currentPlayer!) {
-            this.pandemik.currentPlayer.setAvailableAPs(this.pandemik.currentPlayer.apPerTurn);
-            await this.pandemik.gameCamera.goTo(this.pandemik.currentPlayer.currentCity.position, 1, 15 + this.pandemik.map!.projection.radius);
+        this.currentPlayerIndex.set(0);
+        if (this.currentPlayer!) {
+            this.currentPlayer.setAvailableAPs(this.currentPlayer.apPerTurn);
+            await this.pandemik.gameCamera.goTo(this.currentPlayer.currentCity.position, 1, 15 + this.pandemik.map!.projection.radius);
         }
         this._working = false;
     }
@@ -680,8 +685,8 @@ export class GameMaster {;
             await NextFrame();
         }
         this.pandemik.selectedCity = null;
-        await this.doDrawPlayerCard(this.pandemik.currentPlayer!);
-        await this.doDrawPlayerCard(this.pandemik.currentPlayer!);
+        await this.doDrawPlayerCard(this.currentPlayer!);
+        await this.doDrawPlayerCard(this.currentPlayer!);
         this._working = true;
         const draws = 2;
         for (let n = 0; n < draws; n++) {
@@ -718,14 +723,14 @@ export class GameMaster {;
                     }
             }
         }
-        if (this.pandemik.currentPlayer!) {
-            this.pandemik.currentPlayer.setAvailableAPs(0);
+        if (this.currentPlayer!) {
+            this.currentPlayer.setAvailableAPs(0);
         }
         this.currentTurn.set(this.currentTurn() + 1);
-        this.pandemik.currentPlayerIndex = (this.pandemik.currentPlayerIndex + 1) % this.pandemik.players.length;
-        if (this.pandemik.currentPlayer!) {
-            this.pandemik.currentPlayer.setAvailableAPs(this.pandemik.currentPlayer.apPerTurn);
-            await this.pandemik.gameCamera.goTo(this.pandemik.currentPlayer.currentCity.position, 1, 15 + this.pandemik.map!.projection.radius);
+        this.currentPlayerIndex.set((this.currentPlayerIndex() + 1) % this.pandemik.players.length);
+        if (this.currentPlayer!) {
+            this.currentPlayer.setAvailableAPs(this.currentPlayer.apPerTurn);
+            await this.pandemik.gameCamera.goTo(this.currentPlayer.currentCity.position, 1, 15 + this.pandemik.map!.projection.radius);
         }
         this._working = false;
     }

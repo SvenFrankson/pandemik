@@ -265,14 +265,14 @@ export class Civilian extends Player {
         super("Civilian", 5, pandemik, city);
         this.color = "#31395e";
         this.setMaterial(QuickMaterial(Color3.FromHexString(this.color)));
-        MakeOutline(this.base, Color3.Black());
-        MakeOutline(this.head, Color3.Black());
+        MakeOutline(this.base, Color3.White());
+        MakeOutline(this.head, Color3.White());
     }
 }
 
 export function RandomAvailableRole(pandemik: Pandemik) {
     let roles = [ContingencyPlanner, Dispatcher, Medic, OperationsExpert, QuarantineSpecialist, Researcher, Scientist];
-    roles = [Medic, Scientist];
+    roles = [Medic, Scientist, Civilian];
     for (const player of pandemik.players) {
         roles = roles.filter(role => !(player instanceof role));
     }

@@ -48,7 +48,7 @@ export class CityActionMenuConnector {
     update(): void {
         this.playerCount.set(this.gameMaster.pandemik.players.length);
 
-        if (this._city != null && this.pandemik.currentPlayer) {
+        if (this._city != null && this.pandemik.gameMaster.currentPlayer) {
             this.shown.set(true);
 
             this.screenX.set(this._city.screenEastX());
@@ -56,19 +56,19 @@ export class CityActionMenuConnector {
             this.screenX = this._city.screenEastX;
             this.screenY = this._city.screenEastY;
 
-            this.canGoTo.set(this.gameMaster.canMoveTo(this.pandemik.currentPlayer, this._city));
-            this.goToCost.set(this.gameMaster.moveToCost(this.pandemik.currentPlayer, this._city));
+            this.canGoTo.set(this.gameMaster.canMoveTo(this.pandemik.gameMaster.currentPlayer, this._city));
+            this.goToCost.set(this.gameMaster.moveToCost(this.pandemik.gameMaster.currentPlayer, this._city));
             for (const c of GameColors) {
-                this.canCureDisease[c].set(this.gameMaster.canTreatDisease(this.pandemik.currentPlayer, this._city, c));
-                this.canResearchDisease[c].set(this.gameMaster.canResearchDisease(this.pandemik.currentPlayer, this._city, c));
+                this.canCureDisease[c].set(this.gameMaster.canTreatDisease(this.pandemik.gameMaster.currentPlayer, this._city, c));
+                this.canResearchDisease[c].set(this.gameMaster.canResearchDisease(this.pandemik.gameMaster.currentPlayer, this._city, c));
             }
-            this.canFlyTo.set(this.gameMaster.canFlyTo(this.pandemik.currentPlayer, this._city));
-            this.canCharterFlyTo.set(this.gameMaster.canCharterFlyTo(this.pandemik.currentPlayer, this._city));
-            this.canBuildResearchStation.set(this.gameMaster.canBuildStation(this.pandemik.currentPlayer, this._city));
+            this.canFlyTo.set(this.gameMaster.canFlyTo(this.pandemik.gameMaster.currentPlayer, this._city));
+            this.canCharterFlyTo.set(this.gameMaster.canCharterFlyTo(this.pandemik.gameMaster.currentPlayer, this._city));
+            this.canBuildResearchStation.set(this.gameMaster.canBuildStation(this.pandemik.gameMaster.currentPlayer, this._city));
             for (const player of this.gameMaster.pandemik.players) {
-                if (player !== this.pandemik.currentPlayer) {
-                    this.canGiveCard[player.index].set(this.gameMaster.canGiveCard(this.pandemik.currentPlayer, player, this._city));
-                    this.canTakeCard[player.index].set(this.gameMaster.canTakeCard(this.pandemik.currentPlayer, player, this._city));
+                if (player !== this.pandemik.gameMaster.currentPlayer) {
+                    this.canGiveCard[player.index].set(this.gameMaster.canGiveCard(this.pandemik.gameMaster.currentPlayer, player, this._city));
+                    this.canTakeCard[player.index].set(this.gameMaster.canTakeCard(this.pandemik.gameMaster.currentPlayer, player, this._city));
                 }
                 else {
                     this.canGiveCard[player.index].set(CanDoStatus.NO_AND_FUCK_YOU);
@@ -86,7 +86,7 @@ export class CityActionMenuConnector {
     async onGoTo(): Promise<void> {
         //this.shown.set(false);
         if (this._city) {
-            await this.gameMaster.doMove(this.pandemik.currentPlayer!, this._city);
+            await this.gameMaster.doMove(this.pandemik.gameMaster.currentPlayer!, this._city);
         }
         this.update();
     }
@@ -94,7 +94,7 @@ export class CityActionMenuConnector {
     async onFly(): Promise<void> {
         //this.shown.set(false);
         if (this._city) {
-            await this.gameMaster.doFly(this.pandemik.currentPlayer!, this._city);
+            await this.gameMaster.doFly(this.pandemik.gameMaster.currentPlayer!, this._city);
         }
         this.update();
     }
@@ -102,7 +102,7 @@ export class CityActionMenuConnector {
     async onCharterFly(): Promise<void> {
         //this.shown.set(false);
         if (this._city) {
-            await this.gameMaster.doCharterFly(this.pandemik.currentPlayer!, this._city);
+            await this.gameMaster.doCharterFly(this.pandemik.gameMaster.currentPlayer!, this._city);
         }
         this.update();
     }
@@ -110,7 +110,7 @@ export class CityActionMenuConnector {
     async onCureDisease(diseaseColor: GameColor): Promise<void> {
         //this.shown.set(false);
         if (this._city) {
-            await this.gameMaster.doTreatDisease(this.pandemik.currentPlayer!, this._city, diseaseColor);
+            await this.gameMaster.doTreatDisease(this.pandemik.gameMaster.currentPlayer!, this._city, diseaseColor);
         }
         this.update();
     }
@@ -118,28 +118,28 @@ export class CityActionMenuConnector {
     async onBuildResearchStation(): Promise<void> {
         //this.shown.set(false);
         if (this._city) {
-            await this.gameMaster.doBuildStation(this.pandemik.currentPlayer!, this._city);
+            await this.gameMaster.doBuildStation(this.pandemik.gameMaster.currentPlayer!, this._city);
         }
         this.update();
     }
 
     async onGiveCard(playerIndex: number): Promise<void> {
         if (this._city) {
-            await this.gameMaster.doGiveCard(this.pandemik.currentPlayer!, this.pandemik.players[playerIndex], this._city);
+            await this.gameMaster.doGiveCard(this.pandemik.gameMaster.currentPlayer!, this.pandemik.players[playerIndex], this._city);
         }
         this.update();
     }
     
     async onTakeCard(playerIndex: number): Promise<void> {
         if (this._city) {
-            await this.gameMaster.doTakeCard(this.pandemik.currentPlayer!, this.pandemik.players[playerIndex], this._city);
+            await this.gameMaster.doTakeCard(this.pandemik.gameMaster.currentPlayer!, this.pandemik.players[playerIndex], this._city);
         }
         this.update();
     }
 
     async onResearchDisease(diseaseColor: GameColor): Promise<void> {
         if (this._city) {
-            await this.gameMaster.doResearchDisease(this.pandemik.currentPlayer!, this._city, diseaseColor);
+            await this.gameMaster.doResearchDisease(this.pandemik.gameMaster.currentPlayer!, this._city, diseaseColor);
         }
         this.update();
     }

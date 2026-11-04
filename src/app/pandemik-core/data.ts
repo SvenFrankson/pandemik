@@ -37,6 +37,8 @@ export interface CityData {
     lat: number;
     long: number;
     posZero?: [number, number, number];
+    inv?: boolean;
+    img?: string;
 }
 
 export interface CityLinkData {

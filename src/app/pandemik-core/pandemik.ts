@@ -57,10 +57,6 @@ export class Pandemik {
     public playerDeck: Deck<PlayerCard> | null = null;
     public playerDiscardPile: Deck<PlayerCard> | null = null;
     public players: Player[] = [];
-    public currentPlayerIndex: number = 0;
-    public get currentPlayer(): Player | null {
-        return this.players.length > 0 ? this.players[this.currentPlayerIndex] : null;
-    }
 
     public gameMaster: GameMaster;
     public cityActionMenuConnector: CityActionMenuConnector;
@@ -113,6 +109,12 @@ export class Pandemik {
 
     public async initialize(): Promise<void> {
         LoadWorldData();
+        this.sharedMaterials.loadAllCityMaterials().then(() => {
+            CityCard.Instances.forEach(card => {
+                card.redrawImg();
+            });
+        })
+
         let f = (ProjectionData.radius - 10) / (200 - 10);
         let sensibilityFactor = 1 * (1 - f) + 50 * f;
         this.gameCamera.angularSensibilityX *= sensibilityFactor;
@@ -200,7 +202,7 @@ export class Pandemik {
             }
 
             await this.gameCamera!.goTo(startCity.position, 1, 15 + this.map!.projection.radius);
-            for (let pIndex = 0; pIndex < 2; pIndex++) {
+            for (let pIndex = 0; pIndex < 3; pIndex++) {
                 let PlayerRole = RandomAvailableRole(this);
                 let player = new PlayerRole(this, startCity);
                 this.players.push(player);

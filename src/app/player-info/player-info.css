@@ -1,8 +1,14 @@
 #container {
-    border: 2px solid white;
+    border: 2px solid black;
     margin: 5px 0px;
     padding: 5px;
     border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#container.active {
+    border: 2px solid white;
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 .avatar {
@@ -11,6 +17,7 @@
     width: 26px;
     height: 26px;
     background-color: gray;
+    border: 2px solid black;
     border-radius: 50%;
     vertical-align: middle;
 }
@@ -54,20 +61,32 @@
 .player-card {
     position: relative;
     display: inline-block;
-    width: 100px;
-    height: 80px;
+    width: 110px;
+    height: 50px;
     margin: 1px;
-    padding: 2px 5px;
 
-    background-color: rgb(161, 6, 175);
+    background-color: rgb(106, 255, 218);
     border: 1px solid white;
     border-radius: 5px;
     vertical-align: middle;
+
+    background-size: cover;
+    background-position: center;
+
+    transition: height 0.3s ease;
+}
+
+.active .player-card {
+    height: 110px;
 }
 
 .card-title {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, serif;
     font-weight: 500;
+    padding: 0px 5px;
+    border-bottom: 1px solid white;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
     color: white;
     -webkit-text-stroke: 2px black;
     paint-order: stroke fill;
@@ -79,10 +98,11 @@
     right: 2px;
     width: 20px;
     height: 20px;
-    padding: 0;
+    padding: 2px;
     font-size: 16px;
-    background-color: transparent;
+    background-color: rgba(0, 0, 0, 80%);
     border: none;
+    border-radius: 3px;
     color: white;
     font-weight: 100;
 }
@@ -99,7 +119,19 @@
 .player-card.color-3 {
     background-color: var(--green-color);
 }
-.player-card.color-4 {
+.player-card.color-0 .card-title {
+    background-color: var(--blue-color);
+}
+.player-card.color-1 .card-title {
+    background-color: var(--yellow-color);
+}
+.player-card.color-2 .card-title {
+    background-color: var(--black-color);
+}
+.player-card.color-3 .card-title {
+    background-color: var(--green-color);
+}
+.player-card.color-4  .card-title{
     background: linear-gradient(
         120deg,
         var(--blue-color) 0%,

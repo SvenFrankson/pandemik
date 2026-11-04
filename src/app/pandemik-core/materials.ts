@@ -3,10 +3,11 @@ import { City } from "./city";
 import type { Material } from '@babylonjs/core/Materials/material.pure';
 import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture.pure';
 import { PBRMetallicRoughnessMaterial } from '@babylonjs/core/Materials/PBR/pbrMetallicRoughnessMaterial.pure';
-import { Color3, Texture } from "@babylonjs/core";
-import { GameColor3s } from "./data";
+import { Color3, StandardMaterial, Texture } from "@babylonjs/core";
+import { CityDataById, CityDataList, GameColor3s } from "./data";
 import { QuickMaterial } from "./tools";
 import { RedColor } from "./constants";
+import { Easing } from "babylonjs-tiaratumgames-tools";
 
 export class SharedMaterials {
 
@@ -70,16 +71,17 @@ export class SharedMaterials {
         cityMaterial.alpha = 0;
         this.cityMaterial = cityMaterial;
 
-        this._loadCityMaterial("London");
+        
+        //this._loadCityMaterial("London");
         //this._loadCityMaterial("Essen");
         //this._loadCityMaterial("Milano");
-        this._loadCityMaterial("Paris");
-        this._loadCityMaterial("Madrid");
-        this._loadCityMaterial("Montreal");
-        this._loadCityMaterial("NewYork");
-        this._loadCityMaterial("Washington");
-        this._loadCityMaterial("Atlanta");
-        this._loadCityMaterial("Chicago");
+        //this._loadCityMaterial("Paris");
+        //this._loadCityMaterial("Madrid");
+        //this._loadCityMaterial("Montreal");
+        //this._loadCityMaterial("NewYork");
+        //this._loadCityMaterial("Washington");
+        //this._loadCityMaterial("Atlanta");
+        //this._loadCityMaterial("Chicago");
         //this._loadCityMaterial("SaintPetersburg");
         //this._loadCityMaterial("LosAngeles");
         //this._loadCityMaterial("MexicoCity");
@@ -134,10 +136,28 @@ export class SharedMaterials {
         this.apMaterialOff = this._makePlasticPBR("", Color3.FromInts(0 / 8, 255 / 8, 149 / 8), this.environmentTexture);
     }
 
-    private _loadCityMaterial(cityId: string): void {
+    public async loadAllCityMaterials(): Promise<void> {
+        for (let n = 0; n < CityDataList.length; n++) {
+            let cityData = CityDataList[n];
+            let material = QuickMaterial(Color3.White(), 0.2);
+            this.cityMaterials.set(cityData.id, material);
+        }
+
+        for (let n = 0; n < CityDataList.length; n++) {
+            let cityData = CityDataList[n];
+            let result = await this._loadCityMaterial(cityData.id, "png");
+            if (!result) {
+                result = await this._loadCityMaterial(cityData.id, "jpg");
+                if (!result) {
+                    result = await this._loadCityMaterial(cityData.id, "jpeg");
+                }
+            }
+        }
+    }
+
+    private _loadCityMaterial(cityId: string, fileFormat: string = "png"): Promise<boolean> {
         let name = cityId.toLocaleLowerCase();
         name = name.split('').filter(c => c >= 'a' && c <= 'z').join('');
-        let material = QuickMaterial(Color3.White(), 0.2);
         /*
         material.diffuseTexture = new Texture(name + ".png", this.pandemik.scene!);
         material.diffuseTexture!.hasAlpha = true;
@@ -145,49 +165,96 @@ export class SharedMaterials {
         material.emissiveTexture = material.diffuseTexture;
         */
 
-        let imgElement = document.createElement("img");
-        imgElement.src = name + ".png";
-        imgElement.onload = () => {
-            let imgWidth = imgElement.width;
-            let imgHeight = imgElement.height;
-            let s = Math.min(imgElement.width, imgElement.height);
-            let canvas = document.createElement("canvas");
-            canvas.width = s;
-            canvas.height = s;
-            console.log("size = " + s);
-            let ctx = canvas.getContext("2d");
-            if (ctx) {
-                ctx.drawImage(imgElement, (imgWidth - s) / 2, (imgHeight - s) / 2, s, s, 0, 0, s, s);
-                let pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                let colBackground = Color3.FromHexString("#4a03bb");
-                let r0 = colBackground.r * 255;
-                let g0 = colBackground.g * 255;
-                let b0 = colBackground.b * 255;
-                let colLight = Color3.FromHexString("#00ffdd");
-                let r1 = colLight.r * 255;
-                let g1 = colLight.g * 255;
-                let b1 = colLight.b * 255;
-                for (let n = 0; n < pixelData.data.length; n += 4) {
-                    let r = pixelData.data[n];
-                    let g = pixelData.data[n+1];
-                    let b = pixelData.data[n+2];
-                    let v = 1 - (r + g + b) / 3 / 255;
-                    v = Math.round(v * 7) / 7;
-                    pixelData.data[n] = r0 * (1 - v) + r1 * v;
-                    pixelData.data[n+1] = g0 * (1 - v) + g1 * v;
-                    pixelData.data[n+2] = b0 * (1 - v) + b1 * v;
-                    pixelData.data[n+3] = v * 255;
-                }
-                ctx.putImageData(pixelData, 0, 0);
+        return new Promise<boolean>((resolve, reject) => {
+            let cityData = CityDataList.find((c) => c.id === cityId);
+            if (cityData?.inv) {
+                console.log("City " + cityId + " has inv set to true");
             }
-            material.diffuseTexture = new Texture(canvas.toDataURL(), null, false, true);
-            material.diffuseTexture!.hasAlpha = true;
-            material.useAlphaFromDiffuseTexture = true;
-            material.emissiveTexture = material.diffuseTexture;
-            material.emissiveColor = new Color3(0.3, 0.3, 0.3);
-        };
+            let col = GameColor3s[cityData?.color ?? 0];
+            let imgElement = document.createElement("img");
+            imgElement.src = name + "." + fileFormat;
+            imgElement.onload = () => {
+                console.log("LOADED " + imgElement.src);
+                let imgWidth = imgElement.width;
+                let imgHeight = imgElement.height;
+                let s = Math.min(imgElement.width, imgElement.height);
+                let cs = 512;
+                let canvas = document.createElement("canvas");
+                canvas.width = cs;
+                canvas.height = cs;
+                let ctx = canvas.getContext("2d");
+                if (ctx) {
+                    ctx.drawImage(imgElement, (imgWidth - s) / 2, (imgHeight - s) / 2, s, s, 0, 0, cs, cs);
+                    let pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-        this.cityMaterials.set(cityId, material);
+                    let colBackground = Color3.FromHexString("#ffffff");
+                    let r0 = colBackground.r * 255;
+                    let g0 = colBackground.g * 255;
+                    let b0 = colBackground.b * 255;
+
+                    let colLight = col;
+                    let r1 = colLight.r * 255;
+                    let g1 = colLight.g * 255;
+                    let b1 = colLight.b * 255;
+                    let avgCol1 = (r1 + g1 + b1) / 3;
+                    r1 = r1 / avgCol1 * 32;
+                    g1 = g1 / avgCol1 * 32;
+                    b1 = b1 / avgCol1 * 32;
+
+                    let averageVal = 0;
+                    for (let n = 0; n < pixelData.data.length; n += 4) {
+                        let r = pixelData.data[n];
+                        let g = pixelData.data[n+1];
+                        let b = pixelData.data[n+2];
+                        if (cityData?.inv) {
+                            //r = 255 - r;
+                            //g = 255 - g;
+                            //b = 255 - b;
+                            //pixelData.data[n] = r;
+                            //pixelData.data[n+1] = g;
+                            //pixelData.data[n+2] = b;
+                        }
+                        let v = (r + g + b) / 3 / 255;
+                        //v = Easing.easeOutCubic(v);
+                        //v = 1 - Math.round(v * 7) / 7;
+                        //v = Easing.easeInOutSine(v);
+                        averageVal += v;
+                    }
+                    averageVal /= (pixelData.data.length / 4); // Average value of v
+
+                    let correction = 0.5 / averageVal;
+                    
+                    for (let n = 0; n < pixelData.data.length; n += 4) {
+                        let r = pixelData.data[n];
+                        let g = pixelData.data[n+1];
+                        let b = pixelData.data[n+2];
+                        let v = (r + g + b) / 3 / 255 * correction;
+                        //v = Easing.easeOutCubic(v);
+                        //v = 1 - Math.round(v * 5) / 5;
+                        //v = Easing.easeInOutSine(v);
+                        v = v * v;
+                        v = Math.round(v * 15) / 15;
+                        v *= 0.9;
+                        pixelData.data[n] = r1 * (1 - v) + r * v;
+                        pixelData.data[n+1] = g1 * (1 - v) + g * v;
+                        pixelData.data[n+2] = b1 * (1 - v) + b * v;
+                        pixelData.data[n+3] = 255;
+                    }
+                    ctx.putImageData(pixelData, 0, 0);
+                }
+                let material = this.cityMaterials.get(cityId) as StandardMaterial;
+                material.diffuseTexture = new Texture(canvas.toDataURL(), null, false, true);
+                cityData!.img = canvas.toDataURL();
+                material.diffuseTexture!.hasAlpha = true;
+                material.useAlphaFromDiffuseTexture = true;
+                material.emissiveTexture = material.diffuseTexture;
+                material.emissiveColor = Color3.White().scale(0.75);
+                resolve(true);
+            };
+            imgElement.onerror = () => {
+                resolve(false);
+            };
+        });
     }
 
     private _makeMetalPBR(name: string, color: Color3, envTexture: CubeTexture): PBRMetallicRoughnessMaterial {

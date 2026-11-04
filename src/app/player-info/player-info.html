@@ -1,5 +1,5 @@
 @if (player() != null) {
-    <div id="container">
+    <div id="container" [class.active]="player().index === gameMaster().currentPlayerIndex()">
         <div class="avatar" [style.background-color]="player()!.color"></div>
         <div class="name">{{ player()!.name | uppercase }}</div>
         <div class="ap-icon" [class.available]="player()!.availableAPs() >= 1"></div>
@@ -11,7 +11,7 @@
         }
         <div class="cards">
             @for (card of player()!.playerCards(); track card) {
-                <div class="player-card color-{{ card.color?.toFixed(0) }}">
+                <div class="player-card color-{{ card.color?.toFixed(0) }}" [style.background-image]="'url(' + card.img() + ')'">
                     <div class="card-title">{{ card.name | uppercase}}</div>
                     <button class="discard-button" (click)="discardPlayerCard($index)"><i class="bi bi-trash"></i></button>
                 </div>
