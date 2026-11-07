@@ -9,7 +9,7 @@ import { City, PlayerAnchor } from "./city";
 import { MakeOutline, QuickMaterial } from "./tools";
 import { Color3 } from "@babylonjs/core/Maths/math.color.pure";
 import { signal } from "@angular/core";
-import { PlayerCard } from "./deck/deck";
+import { PlayerCard } from "./deck/player-card";
 import { TimeFactor } from "./constants";
 
 export class Player extends Mesh {

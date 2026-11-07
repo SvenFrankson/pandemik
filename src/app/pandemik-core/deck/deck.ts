@@ -8,17 +8,6 @@ export class Card {
     }
 }
 
-export class PlayerCard extends Card {
-
-    public color: GameColor | null = null;
-    public img = signal<string>("");
-    
-    constructor(name: string, color: GameColor | null = null) {
-        super(name);
-        this.color = color;
-    }
-}
-
 export class Deck<T extends Card> {
 
     public cards: T[] = [];

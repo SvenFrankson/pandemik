@@ -28,7 +28,8 @@ export class CityActionMenuConnector {
     shown = signal<boolean>(false);
     canGoTo = signal<boolean>(false);
     goToCost = signal<number>(1);
-    canFlyTo = signal<number>(1);
+    canFlyTo = signal<number>(0);
+    canUseAirplaneCard = signal<number>(0);
     canCharterFlyTo = signal<number>(1);
     canCureDisease = [signal<number>(0), signal<number>(0), signal<number>(0), signal<number>(0)];
     canBuildResearchStation = signal<CanDoStatus>(CanDoStatus.NO_AND_FUCK_YOU);
@@ -63,6 +64,7 @@ export class CityActionMenuConnector {
                 this.canResearchDisease[c].set(this.gameMaster.canResearchDisease(this.pandemik.gameMaster.currentPlayer, this._city, c));
             }
             this.canFlyTo.set(this.gameMaster.canFlyTo(this.pandemik.gameMaster.currentPlayer, this._city));
+            this.canUseAirplaneCard.set(this.gameMaster.canUseAirplaneCard(this.pandemik.gameMaster.currentPlayer, this._city));
             this.canCharterFlyTo.set(this.gameMaster.canCharterFlyTo(this.pandemik.gameMaster.currentPlayer, this._city));
             this.canBuildResearchStation.set(this.gameMaster.canBuildStation(this.pandemik.gameMaster.currentPlayer, this._city));
             for (const player of this.gameMaster.pandemik.players) {
@@ -103,6 +105,14 @@ export class CityActionMenuConnector {
         //this.shown.set(false);
         if (this._city) {
             await this.gameMaster.doCharterFly(this.pandemik.gameMaster.currentPlayer!, this._city);
+        }
+        this.update();
+    }
+
+    async onUseAirplaneCard(): Promise<void> {
+        //this.shown.set(false);
+        if (this._city) {
+            await this.gameMaster.doUseAirplaneCard(this.pandemik.gameMaster.currentPlayer!, this._city);
         }
         this.update();
     }

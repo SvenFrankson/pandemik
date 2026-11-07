@@ -13,8 +13,7 @@ import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera.pure";
 import { Engine } from "@babylonjs/core/Engines/engine.pure";
 import { HemisphericLight, Matrix } from "@babylonjs/core";
 import { InfectionCard } from "./deck/infection-card";
-import { CityCard, JokerCard } from "./deck/city-card";
-import { Deck, PlayerCard } from "./deck/deck";
+import { Deck } from "./deck/deck";
 import { CityDataList, CityIdToIndex, DiseaseNames, ProjectionData } from "./data";
 import { GameCamera } from "./game-camera";
 import { CityActionMenuConnector } from "./ui-connectors/city-action-menu-connector";
@@ -24,6 +23,7 @@ import { SharedMaterials } from "./materials";
 import { EpidemyCard } from "./deck/epidemic-card";
 import { LoadWorldData } from "./data-world";
 import { LoadFranceData } from "./data-france";
+import { PlayerCard, CityCard, ResearchJokerCard, AirplaneCard, TaskForceCard } from "./deck/player-card";
 
 export class Pandemik {
 
@@ -138,8 +138,10 @@ export class Pandemik {
         for (let cityId = 0; cityId < CityDataList.length; cityId++) {
             this.playerDeck.addCard(new CityCard(CityDataList[cityId].id));
         }
-        for (let i = 0; i < 4; i++) {
-            this.playerDeck.addCard(new JokerCard());
+        for (let i = 0; i < 2; i++) {
+            this.playerDeck.addCard(new ResearchJokerCard());
+            this.playerDeck.addCard(new AirplaneCard());
+            this.playerDeck.addCard(new TaskForceCard());
         }
         this.playerDeck.shuffle();
         this.playerDiscardPile = new Deck<PlayerCard>();
@@ -202,7 +204,7 @@ export class Pandemik {
             }
 
             await this.gameCamera!.goTo(startCity.position, 1, 15 + this.map!.projection.radius);
-            for (let pIndex = 0; pIndex < 3; pIndex++) {
+            for (let pIndex = 0; pIndex < 2; pIndex++) {
                 let PlayerRole = RandomAvailableRole(this);
                 let player = new PlayerRole(this, startCity);
                 this.players.push(player);

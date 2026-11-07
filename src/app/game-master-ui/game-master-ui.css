@@ -134,6 +134,21 @@ h3 {
     text-align: center;
     color: white;
 }
+.disease-status-value-0 {
+    color: var(--red-color);
+    -webkit-text-stroke: 2px white;
+    paint-order: stroke fill;
+}
+.disease-status-value-1 {
+    color: white;
+    -webkit-text-stroke: 2px black;
+    paint-order: stroke fill;
+}
+.disease-status-value-2 {
+    color: var(--mint-color);
+    -webkit-text-stroke: 2px black;
+    paint-order: stroke fill;
+}
 
 .disease-status-count {
     font-weight: 500;

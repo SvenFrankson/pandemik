@@ -47,6 +47,14 @@
             </button>
         }
 
+        @if (connector.canUseAirplaneCard() === 0) {
+            <button class="bonus" (click)="connector.onUseAirplaneCard()">
+                <i class="icon bi bi-airplane"></i>
+                <span class="label">FLY TO</span>
+                <span class="cost">AIRPLANE CARD</span>
+            </button>
+        }
+
         @if (connector.canCureDisease[0]() === 0) {
             <button (click)="connector.onCureDisease(0)">
                 <i class="icon bi bi-capsule"></i>

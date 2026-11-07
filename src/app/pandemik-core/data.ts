@@ -6,7 +6,8 @@ export enum GameColor {
     Yellow,
     Black,
     Green,
-    Joker
+    Joker,
+    Amber
 }
 
 export const GameColors = [

@@ -3,11 +3,10 @@
     margin: 5px 0px;
     padding: 5px;
     border-radius: 5px;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 #container.active {
-    border: 2px solid white;
     background-color: rgba(255, 255, 255, 0.5);
 }
 
@@ -46,15 +45,16 @@
     border-radius: 5px;
     display: inline-block;
     vertical-align: middle;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
 }
 
 .ap-icon.available {
-    background-color: rgb(0, 255, 149);
+    background-color: var(--mint-color);
 }
 
 .cards {
     width: fit-content;
-    max-width: 460px;
+    max-width: 465px;
     margin: 10px 0px 0px 0px;
 }
 
@@ -63,12 +63,13 @@
     display: inline-block;
     width: 110px;
     height: 50px;
-    margin: 1px;
+    margin: 2px;
 
     background-color: rgb(106, 255, 218);
     border: 1px solid white;
     border-radius: 5px;
     vertical-align: middle;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
 
     background-size: cover;
     background-position: center;
@@ -119,6 +120,13 @@
 .player-card.color-3 {
     background-color: var(--green-color);
 }
+.player-card.color-4 {
+    background-color: var(--amber-color);
+}
+.player-card.color-5 {
+    background-color: var(--amber-color);
+}
+
 .player-card.color-0 .card-title {
     background-color: var(--blue-color);
 }
@@ -143,4 +151,7 @@
         var(--green-color) 76%,
         var(--green-color) 100%
     );
+}
+.player-card.color-5 .card-title {
+    background-color: var(--amber-color);
 }

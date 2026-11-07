@@ -5,9 +5,8 @@ import { CityIdToIndex, DiseaseNames, GameColor, GameColors } from "./data";
 import { BreakingInfo } from "./ui-connectors/breaking-news-connector";
 import { NextFrame } from "babylonjs-tiaratumgames-tools";
 import { signal } from "@angular/core";
-import { PlayerCard } from "./deck/deck";
-import { CityCard, JokerCard } from "./deck/city-card";
 import { EpidemyCard as EpidemicCard } from "./deck/epidemic-card";
+import { CityCard, ResearchJokerCard, PlayerCard, AirplaneCard, TaskForceCard } from "./deck/player-card";
 
 export enum CanDoStatus {
     OK = 0,
@@ -473,7 +472,7 @@ export class GameMaster {;
             return CanDoStatus.NO_RESEARCH_STATION;
         }
         const cards = player.playerCards().filter((card) => {
-            return card instanceof CityCard && card.color === diseaseColor || card instanceof JokerCard;
+            return card instanceof CityCard && card.color === diseaseColor || card instanceof ResearchJokerCard;
         });
         const requiredCards = player instanceof Scientist ? 4 : 5;
         if (cards.length < requiredCards) {
@@ -492,11 +491,11 @@ export class GameMaster {;
         this._working = true;
         if (this.canResearchDisease(player, city, diseaseColor) === CanDoStatus.OK) {
             let cards = player.playerCards().filter((card) => {
-                return card instanceof CityCard && card.color === diseaseColor || card instanceof JokerCard;
+                return card instanceof CityCard && card.color === diseaseColor || card instanceof ResearchJokerCard;
             });
             cards = cards.sort((a, b) => {
-                if (a instanceof JokerCard) return 1;
-                if (b instanceof JokerCard) return -1;
+                if (a instanceof ResearchJokerCard) return 1;
+                if (b instanceof ResearchJokerCard) return -1;
                 return 0;
             });
             const requiredCards = player instanceof Scientist ? 4 : 5;
@@ -511,6 +510,48 @@ export class GameMaster {;
             this._working = false;
             await this.doMedicFreeTreatmentStep();
             this._working = true;
+            this._working = false;
+            return true;
+        }
+        this._working = false;
+        return false;
+    }
+
+    public canUseAirplaneCard(player: Player, destination: City): CanDoStatus {
+        let dist = player.currentCity?.distanceTo[CityIdToIndex(destination.cityId)];
+        if (dist <= 0) {
+            return CanDoStatus.NO_NEED;
+        }
+
+        const playerCard = player.playerCards().find(card => {
+            return card instanceof AirplaneCard;
+        });
+        if (!playerCard) {
+            return CanDoStatus.NO_REQUIRED_CARD;
+        }
+
+        return CanDoStatus.OK;
+    }
+
+    public async doUseAirplaneCard(player: Player, destination: City): Promise<boolean> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
+        if (this.canUseAirplaneCard(player, destination) === CanDoStatus.OK) {
+            const playerCard = player.playerCards().find(card => {
+                return card instanceof AirplaneCard;
+            });
+            if (playerCard) {
+                player.removePlayerCard(playerCard);
+                this.pandemik.playerDiscardPile?.addCard(playerCard);
+            }
+            await player.goTo(destination);
+            if (player instanceof Medic) {
+                this.__working = false;
+                await this.doMedicFreeTreatmentStep();
+                this.__working = true;
+            }
             this._working = false;
             return true;
         }
@@ -594,8 +635,8 @@ export class GameMaster {;
         }
         this._working = true;
         let card = this.pandemik.playerDeck!.drawCard();
-        if (card instanceof CityCard || card instanceof JokerCard) {
-            if (player.playerCards().length < 7) {
+        if (card instanceof CityCard || card instanceof ResearchJokerCard || card instanceof AirplaneCard || card instanceof TaskForceCard) {
+            if (player.playerCards().length < 8) {
                 player.addPlayerCard(card);
             }
             this.playerDeckSize.set(this.pandemik.playerDeck!.count);

@@ -4,8 +4,19 @@
 <app-game-master-ui></app-game-master-ui>
 <app-breaking-news></app-breaking-news>
 <app-city-action-menu></app-city-action-menu>
-<div id="players">
-	@for (player of players(); track player.id) {
-		<app-player-info [player]="player" [gameMaster]="this.pandemik!.gameMaster"></app-player-info>
+<div id="players-left">
+	@if (players()[1]) {
+		<app-player-info [player]="players()[1]" [gameMaster]="this.pandemik!.gameMaster"></app-player-info>
+	}
+	@if (players()[0]) {
+		<app-player-info [player]="players()[0]" [gameMaster]="this.pandemik!.gameMaster"></app-player-info>
+	}
+</div>
+<div id="players-right">
+	@if (players()[2]) {
+		<app-player-info [player]="players()[2]" [gameMaster]="this.pandemik!.gameMaster"></app-player-info>
+	}
+	@if (players()[3]) {
+		<app-player-info [player]="players()[3]" [gameMaster]="this.pandemik!.gameMaster"></app-player-info>
 	}
 </div>
