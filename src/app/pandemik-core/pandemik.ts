@@ -23,7 +23,7 @@ import { SharedMaterials } from "./materials";
 import { EpidemyCard } from "./deck/epidemic-card";
 import { LoadWorldData } from "./data-world";
 import { LoadFranceData } from "./data-france";
-import { PlayerCard, CityCard, ResearchJokerCard, AirplaneCard, TaskForceCard } from "./deck/player-card";
+import { PlayerCard, CityCard, ResearchJokerCard, AirplaneCard, TaskForceCard, ResearchCenterCard } from "./deck/player-card";
 
 export class Pandemik {
 
@@ -142,6 +142,7 @@ export class Pandemik {
             this.playerDeck.addCard(new ResearchJokerCard());
             this.playerDeck.addCard(new AirplaneCard());
             this.playerDeck.addCard(new TaskForceCard());
+            this.playerDeck.addCard(new ResearchCenterCard());
         }
         this.playerDeck.shuffle();
         this.playerDiscardPile = new Deck<PlayerCard>();

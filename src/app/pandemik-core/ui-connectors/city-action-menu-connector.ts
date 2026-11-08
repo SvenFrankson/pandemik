@@ -36,6 +36,8 @@ export class CityActionMenuConnector {
     canResearchDisease = [signal<number>(0), signal<number>(0), signal<number>(0), signal<number>(0)];
     canGiveCard = [signal<CanDoStatus>(CanDoStatus.NO_AND_FUCK_YOU)];
     canTakeCard = [signal<CanDoStatus>(CanDoStatus.NO_AND_FUCK_YOU)];
+    canUseTaskForceCard = signal<number>(0);
+    canUseResearchCenterCard = signal<number>(0);
     screenX = signal<number>(0);
     screenY = signal<number>(0);
 
@@ -77,6 +79,8 @@ export class CityActionMenuConnector {
                     this.canTakeCard[player.index].set(CanDoStatus.NO_AND_FUCK_YOU);
                 }
             }
+            this.canUseTaskForceCard.set(this.gameMaster.canUseTaskForceCard(this.pandemik.gameMaster.currentPlayer, this._city));
+            this.canUseResearchCenterCard.set(this.gameMaster.canUseResearchCenterCard(this.pandemik.gameMaster.currentPlayer, this._city));
         }
         else {
             this.shown.set(false);
@@ -150,6 +154,20 @@ export class CityActionMenuConnector {
     async onResearchDisease(diseaseColor: GameColor): Promise<void> {
         if (this._city) {
             await this.gameMaster.doResearchDisease(this.pandemik.gameMaster.currentPlayer!, this._city, diseaseColor);
+        }
+        this.update();
+    }
+
+    async onUseTaskForceCard(): Promise<void> {
+        if (this._city) {
+            await this.gameMaster.doUseTaskForceCard(this.pandemik.gameMaster.currentPlayer!, this._city);
+        }
+        this.update();
+    }
+
+    async onUseResearchCenterCard(): Promise<void> {
+        if (this._city) {
+            await this.gameMaster.doUseResearchCenterCard(this.pandemik.gameMaster.currentPlayer!, this._city);
         }
         this.update();
     }

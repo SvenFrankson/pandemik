@@ -6,7 +6,7 @@ import { BreakingInfo } from "./ui-connectors/breaking-news-connector";
 import { NextFrame } from "babylonjs-tiaratumgames-tools";
 import { signal } from "@angular/core";
 import { EpidemyCard as EpidemicCard } from "./deck/epidemic-card";
-import { CityCard, ResearchJokerCard, PlayerCard, AirplaneCard, TaskForceCard } from "./deck/player-card";
+import { CityCard, ResearchJokerCard, PlayerCard, AirplaneCard, TaskForceCard, JokerCard, ResearchCenterCard } from "./deck/player-card";
 
 export enum CanDoStatus {
     OK = 0,
@@ -559,6 +559,93 @@ export class GameMaster {;
         return false;
     }
 
+    public canUseTaskForceCard(player: Player, targetCity: City): CanDoStatus {
+        let infections = 0;
+        for (const diseaseColor of GameColors) {
+            infections += targetCity.infections[diseaseColor]();
+        }
+        if (infections <= 0) {
+            return CanDoStatus.NO_NEED;
+        }
+
+        const playerCard = player.playerCards().find(card => {
+            return card instanceof TaskForceCard;
+        });
+        if (!playerCard) {
+            return CanDoStatus.NO_REQUIRED_CARD;
+        }
+
+        return CanDoStatus.OK;
+    }
+
+    public async doUseTaskForceCard(player: Player, targetCity: City): Promise<boolean> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
+        if (this.canUseTaskForceCard(player, targetCity) === CanDoStatus.OK) {
+            const playerCard = player.playerCards().find(card => {
+                return card instanceof TaskForceCard;
+            });
+            if (playerCard) {
+                player.removePlayerCard(playerCard);
+                this.pandemik.playerDiscardPile?.addCard(playerCard);
+            }
+            for (const diseaseColor of GameColors) {
+                while (targetCity.infections[diseaseColor]() > 0) {
+                    await targetCity.cure(diseaseColor);
+                    this.updateInfectionsCounts();
+                }
+                if (this.diseaseStatuses[diseaseColor]() === DiseaseStatus.RESEARCHED) {
+                    if (this.pandemik.map?.totalInfections(diseaseColor) === 0) {
+                        this.diseaseStatuses[diseaseColor].set(DiseaseStatus.ERADICATED);
+                    }
+                }
+                this.updateInfectionsCounts();
+            }
+            this._working = false;
+            return true;
+        }
+        this._working = false;
+        return false;
+    }
+
+    public canUseResearchCenterCard(player: Player, targetCity: City): CanDoStatus {
+        if (targetCity.hasStation) {
+            return CanDoStatus.NO_NEED;
+        }
+
+        const playerCard = player.playerCards().find(card => {
+            return card instanceof ResearchCenterCard;
+        });
+        if (!playerCard) {
+            return CanDoStatus.NO_REQUIRED_CARD;
+        }
+
+        return CanDoStatus.OK;
+    }
+
+    public async doUseResearchCenterCard(player: Player, targetCity: City): Promise<boolean> {
+        while (this._working) {
+            await NextFrame();
+        }
+        this._working = true;
+        if (this.canUseResearchCenterCard(player, targetCity) === CanDoStatus.OK) {
+            const playerCard = player.playerCards().find(card => {
+                return card instanceof ResearchCenterCard;
+            });
+            if (playerCard) {
+                player.removePlayerCard(playerCard);
+                this.pandemik.playerDiscardPile?.addCard(playerCard);
+            }
+            await targetCity.buildStation();
+            this._working = false;
+            return true;
+        }
+        this._working = false;
+        return false;
+    }
+
     public async infect(city: City, diseaseColor: GameColor, count: number, skipCam: boolean = false): Promise<void> {
         let random = city.name + "_" + (Math.random() * 10000).toFixed(0);
         let failState = "zero";
@@ -635,7 +722,7 @@ export class GameMaster {;
         }
         this._working = true;
         let card = this.pandemik.playerDeck!.drawCard();
-        if (card instanceof CityCard || card instanceof ResearchJokerCard || card instanceof AirplaneCard || card instanceof TaskForceCard) {
+        if (card instanceof CityCard || card instanceof JokerCard) {
             if (player.playerCards().length < 8) {
                 player.addPlayerCard(card);
             }

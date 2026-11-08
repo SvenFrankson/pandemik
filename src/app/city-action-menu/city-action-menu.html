@@ -55,6 +55,22 @@
             </button>
         }
 
+        @if (connector.canUseTaskForceCard() === 0) {
+            <button class="bonus" (click)="connector.onUseTaskForceCard()">
+                <i class="icon bi bi-bandaid"></i>
+                <span class="label">TASK FORCE</span>
+                <span class="cost">TASK FORCE CARD</span>
+            </button>
+        }
+
+        @if (connector.canUseResearchCenterCard() === 0) {
+            <button class="bonus" (click)="connector.onUseResearchCenterCard()">
+                <i class="icon bi bi-hospital"></i>
+                <span class="label">BUILD RESEARCH STATION</span>
+                <span class="cost">RESEARCH CENTER CARD</span>
+            </button>
+        }
+
         @if (connector.canCureDisease[0]() === 0) {
             <button (click)="connector.onCureDisease(0)">
                 <i class="icon bi bi-capsule"></i>
