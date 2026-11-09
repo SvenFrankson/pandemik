@@ -31,8 +31,16 @@ export class CityCard extends PlayerCard {
 
 export class JokerCard extends PlayerCard {
 
+    public static Instances: JokerCard[] = [];
+
     constructor(name: string, color: GameColor) {
         super(name, color);
+        JokerCard.Instances.push(this);
+    }
+
+    public redrawImg(imgData: string): void {
+        console.log("Redrawing image for " + this.name);
+        this.img.set(imgData);
     }
 }
 

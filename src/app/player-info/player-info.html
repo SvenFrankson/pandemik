@@ -13,7 +13,7 @@
             @for (card of player()!.playerCards(); track card) {
                 <div class="player-card color-{{ card.color?.toFixed(0) }}" [style.background-image]="'url(' + card.img() + ')'">
                     <div class="card-title">{{ card.name | uppercase}}</div>
-                    @if (card.icon() != "") {
+                    @if (false && card.icon() != "") {
                         <i class="card-icon bi bi-{{ card.icon() }}"></i>
                     }
                     <button class="discard-button" (click)="discardPlayerCard($index)"><i class="bi bi-trash"></i></button>

@@ -155,24 +155,10 @@ export class SharedMaterials {
         }
     }
 
-    private _loadCityMaterial(cityId: string, fileFormat: string = "png"): Promise<boolean> {
-        let name = cityId.toLocaleLowerCase();
-        name = name.split('').filter(c => c >= 'a' && c <= 'z').join('');
-        /*
-        material.diffuseTexture = new Texture(name + ".png", this.pandemik.scene!);
-        material.diffuseTexture!.hasAlpha = true;
-        material.useAlphaFromDiffuseTexture = true;
-        material.emissiveTexture = material.diffuseTexture;
-        */
-
-        return new Promise<boolean>((resolve, reject) => {
-            let cityData = CityDataList.find((c) => c.id === cityId);
-            if (cityData?.inv) {
-                console.log("City " + cityId + " has inv set to true");
-            }
-            let col = GameColor3s[cityData?.color ?? 0];
+    public async getImageDataUrl(imgName: string, fileFormat: string = "png", col: Color3): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
             let imgElement = document.createElement("img");
-            imgElement.src = name + "." + fileFormat;
+            imgElement.src = imgName + "." + fileFormat;
             imgElement.onload = () => {
                 console.log("LOADED " + imgElement.src);
                 let imgWidth = imgElement.width;
@@ -206,18 +192,7 @@ export class SharedMaterials {
                         let r = pixelData.data[n];
                         let g = pixelData.data[n+1];
                         let b = pixelData.data[n+2];
-                        if (cityData?.inv) {
-                            //r = 255 - r;
-                            //g = 255 - g;
-                            //b = 255 - b;
-                            //pixelData.data[n] = r;
-                            //pixelData.data[n+1] = g;
-                            //pixelData.data[n+2] = b;
-                        }
                         let v = (r + g + b) / 3 / 255;
-                        //v = Easing.easeOutCubic(v);
-                        //v = 1 - Math.round(v * 7) / 7;
-                        //v = Easing.easeInOutSine(v);
                         averageVal += v;
                     }
                     averageVal /= (pixelData.data.length / 4); // Average value of v
@@ -242,18 +217,44 @@ export class SharedMaterials {
                     }
                     ctx.putImageData(pixelData, 0, 0);
                 }
+                resolve(canvas.toDataURL());
+            };
+            imgElement.onerror = () => {
+                resolve("");
+            };
+        });
+    }
+
+    private _loadCityMaterial(cityId: string, fileFormat: string = "png"): Promise<boolean> {
+        let name = cityId.toLocaleLowerCase();
+        name = name.split('').filter(c => c >= 'a' && c <= 'z').join('');
+        /*
+        material.diffuseTexture = new Texture(name + ".png", this.pandemik.scene!);
+        material.diffuseTexture!.hasAlpha = true;
+        material.useAlphaFromDiffuseTexture = true;
+        material.emissiveTexture = material.diffuseTexture;
+        */
+
+        return new Promise<boolean>(async (resolve, reject) => {
+            let cityData = CityDataList.find((c) => c.id === cityId);
+            if (cityData?.inv) {
+                console.log("City " + cityId + " has inv set to true");
+            }
+            let col = GameColor3s[cityData?.color ?? 0];
+            let imageData: string = await this.getImageDataUrl(name, fileFormat, col);
+            if (imageData != "") {
                 let material = this.cityMaterials.get(cityId) as StandardMaterial;
-                material.diffuseTexture = new Texture(canvas.toDataURL(), null, false, true);
-                cityData!.img = canvas.toDataURL();
+                material.diffuseTexture = new Texture(imageData, null, false, true);
+                cityData!.img = imageData;
                 material.diffuseTexture!.hasAlpha = true;
                 material.useAlphaFromDiffuseTexture = true;
                 material.emissiveTexture = material.diffuseTexture;
                 material.emissiveColor = Color3.White().scale(0.75);
                 resolve(true);
-            };
-            imgElement.onerror = () => {
+            }
+            else {
                 resolve(false);
-            };
+            }
         });
     }
 

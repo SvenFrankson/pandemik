@@ -11,7 +11,7 @@ import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight.pure";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector.pure";
 import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera.pure";
 import { Engine } from "@babylonjs/core/Engines/engine.pure";
-import { HemisphericLight, Matrix } from "@babylonjs/core";
+import { Color3, HemisphericLight, Matrix } from "@babylonjs/core";
 import { InfectionCard } from "./deck/infection-card";
 import { Deck } from "./deck/deck";
 import { CityDataList, CityIdToIndex, DiseaseNames, ProjectionData } from "./data";
@@ -23,7 +23,7 @@ import { SharedMaterials } from "./materials";
 import { EpidemyCard } from "./deck/epidemic-card";
 import { LoadWorldData } from "./data-world";
 import { LoadFranceData } from "./data-france";
-import { PlayerCard, CityCard, ResearchJokerCard, AirplaneCard, TaskForceCard, ResearchCenterCard } from "./deck/player-card";
+import { PlayerCard, CityCard, ResearchJokerCard, AirplaneCard, TaskForceCard, ResearchCenterCard, JokerCard } from "./deck/player-card";
 
 export class Pandemik {
 
@@ -109,6 +109,7 @@ export class Pandemik {
 
     public async initialize(): Promise<void> {
         LoadWorldData();
+        
         this.sharedMaterials.loadAllCityMaterials().then(() => {
             CityCard.Instances.forEach(card => {
                 card.redrawImg();
@@ -146,6 +147,28 @@ export class Pandemik {
         }
         this.playerDeck.shuffle();
         this.playerDiscardPile = new Deck<PlayerCard>();
+
+        let offThread = async () => {
+            let airplaneImgData = await this.sharedMaterials.getImageDataUrl("airplane", "jpg", Color3.FromInts(255, 166, 0));
+            let researchPaperImgData = await this.sharedMaterials.getImageDataUrl("research-paper", "jpg", Color3.FromInts(255, 166, 0));
+            let taskForceImgData = await this.sharedMaterials.getImageDataUrl("task-force", "jpg", Color3.FromInts(255, 166, 0));
+            let researchCenterImgData = await this.sharedMaterials.getImageDataUrl("research-center", "jpg", Color3.FromInts(255, 166, 0));
+            JokerCard.Instances.forEach(card => {
+                if (card instanceof AirplaneCard) {
+                    card.redrawImg(airplaneImgData);
+                }
+                else if (card instanceof ResearchJokerCard) {
+                    card.redrawImg(researchPaperImgData);
+                }
+                else if (card instanceof TaskForceCard) {
+                    card.redrawImg(taskForceImgData);
+                }
+                else if (card instanceof ResearchCenterCard) {
+                    card.redrawImg(researchCenterImgData);
+                }
+            });
+        }
+        offThread();
 
         this.map.onceStabilized(async () => {
 
