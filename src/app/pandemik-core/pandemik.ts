@@ -149,10 +149,10 @@ export class Pandemik {
         this.playerDiscardPile = new Deck<PlayerCard>();
 
         let offThread = async () => {
-            let airplaneImgData = await this.sharedMaterials.getImageDataUrl("airplane", "jpg", Color3.FromInts(255, 166, 0));
-            let researchPaperImgData = await this.sharedMaterials.getImageDataUrl("research-paper", "jpg", Color3.FromInts(255, 166, 0));
-            let taskForceImgData = await this.sharedMaterials.getImageDataUrl("task-force", "jpg", Color3.FromInts(255, 166, 0));
-            let researchCenterImgData = await this.sharedMaterials.getImageDataUrl("research-center", "jpg", Color3.FromInts(255, 166, 0));
+            let airplaneImgData = await this.sharedMaterials.getImageDataUrl("airplane", "jpg", Color3.FromInts(255, 166, 0), 1);
+            let researchPaperImgData = await this.sharedMaterials.getImageDataUrl("research-paper", "jpg", Color3.FromInts(255, 166, 0), 1);
+            let taskForceImgData = await this.sharedMaterials.getImageDataUrl("task-force", "jpg", Color3.FromInts(255, 166, 0), 1);
+            let researchCenterImgData = await this.sharedMaterials.getImageDataUrl("research-center", "jpg", Color3.FromInts(255, 166, 0), 1);
             JokerCard.Instances.forEach(card => {
                 if (card instanceof AirplaneCard) {
                     card.redrawImg(airplaneImgData);

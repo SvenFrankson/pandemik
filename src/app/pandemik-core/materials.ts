@@ -155,7 +155,7 @@ export class SharedMaterials {
         }
     }
 
-    public async getImageDataUrl(imgName: string, fileFormat: string = "png", col: Color3): Promise<string> {
+    public async getImageDataUrl(imgName: string, fileFormat: string = "png", col: Color3, filter: number = 0): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             let imgElement = document.createElement("img");
             imgElement.src = imgName + "." + fileFormat;
@@ -199,21 +199,40 @@ export class SharedMaterials {
 
                     let correction = 0.5 / averageVal;
                     
-                    for (let n = 0; n < pixelData.data.length; n += 4) {
-                        let r = pixelData.data[n];
-                        let g = pixelData.data[n+1];
-                        let b = pixelData.data[n+2];
-                        let v = (r + g + b) / 3 / 255 * correction;
-                        //v = Easing.easeOutCubic(v);
-                        //v = 1 - Math.round(v * 5) / 5;
-                        //v = Easing.easeInOutSine(v);
-                        v = v * v;
-                        v = Math.round(v * 15) / 15;
-                        v *= 0.9;
-                        pixelData.data[n] = r1 * (1 - v) + r * v;
-                        pixelData.data[n+1] = g1 * (1 - v) + g * v;
-                        pixelData.data[n+2] = b1 * (1 - v) + b * v;
-                        pixelData.data[n+3] = 255;
+                    if (filter === 0) {
+                        for (let n = 0; n < pixelData.data.length; n += 4) {
+                            let r = pixelData.data[n];
+                            let g = pixelData.data[n+1];
+                            let b = pixelData.data[n+2];
+                            let v = (r + g + b) / 3 / 255 * correction;
+                            //v = Easing.easeOutCubic(v);
+                            //v = 1 - Math.round(v * 5) / 5;
+                            //v = Easing.easeInOutSine(v);
+                            v = v * v;
+                            v = Math.round(v * 15) / 15;
+                            v *= 0.9;
+                            pixelData.data[n] = r1 * (1 - v) + r * v;
+                            pixelData.data[n+1] = g1 * (1 - v) + g * v;
+                            pixelData.data[n+2] = b1 * (1 - v) + b * v;
+                            pixelData.data[n+3] = 255;
+                        }
+                    }
+                    else if (filter === 1) {
+                        for (let n = 0; n < pixelData.data.length; n += 4) {
+                            let r = pixelData.data[n];
+                            let g = pixelData.data[n+1];
+                            let b = pixelData.data[n+2];
+                            let v = (r + g + b) / 3 / 255 * correction;
+                            let baseV = v * 255;
+                            //v = Easing.easeOutCubic(v);
+                            //v = 1 - Math.round(v * 5) / 5;
+                            v = Easing.easeInOutSine(v);
+                            v = Math.round(v * 7) / 7;
+                            pixelData.data[n] = r1 * v * 5;
+                            pixelData.data[n+1] = g1 * v * 5;
+                            pixelData.data[n+2] = b1 * v * 5;
+                            pixelData.data[n+3] = 255;
+                        }
                     }
                     ctx.putImageData(pixelData, 0, 0);
                 }
@@ -241,7 +260,7 @@ export class SharedMaterials {
                 console.log("City " + cityId + " has inv set to true");
             }
             let col = GameColor3s[cityData?.color ?? 0];
-            let imageData: string = await this.getImageDataUrl(name, fileFormat, col);
+            let imageData: string = await this.getImageDataUrl(name, fileFormat, col, 0);
             if (imageData != "") {
                 let material = this.cityMaterials.get(cityId) as StandardMaterial;
                 material.diffuseTexture = new Texture(imageData, null, false, true);
