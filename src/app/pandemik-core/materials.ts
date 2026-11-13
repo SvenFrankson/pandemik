@@ -165,6 +165,7 @@ export class SharedMaterials {
                 let imgHeight = imgElement.height;
                 let s = Math.min(imgElement.width, imgElement.height);
                 let cs = 512;
+                let halfCs = cs / 2;
                 let canvas = document.createElement("canvas");
                 canvas.width = cs;
                 canvas.height = cs;
@@ -201,6 +202,10 @@ export class SharedMaterials {
                     
                     if (filter === 0) {
                         for (let n = 0; n < pixelData.data.length; n += 4) {
+                            let x = (n / 4) % cs;
+                            let y = Math.floor((n / 4) / cs);
+                            let dCenter = Math.sqrt((x - halfCs) * (x - halfCs) + (y - halfCs) * (y - halfCs));
+                            let fOut = Math.min(1, Math.max(0, (dCenter - halfCs) * 10));
                             let r = pixelData.data[n];
                             let g = pixelData.data[n+1];
                             let b = pixelData.data[n+2];
@@ -214,11 +219,20 @@ export class SharedMaterials {
                             pixelData.data[n] = r1 * (1 - v) + r * v;
                             pixelData.data[n+1] = g1 * (1 - v) + g * v;
                             pixelData.data[n+2] = b1 * (1 - v) + b * v;
+
+                            pixelData.data[n] = pixelData.data[n] * (1 - fOut) + r1 * fOut;
+                            pixelData.data[n+1] = pixelData.data[n+1] * (1 - fOut) + g1 * fOut;
+                            pixelData.data[n+2] = pixelData.data[n+2] * (1 - fOut) + b1 * fOut;
+
                             pixelData.data[n+3] = 255;
                         }
                     }
                     else if (filter === 1) {
                         for (let n = 0; n < pixelData.data.length; n += 4) {
+                            let x = (n / 4) % cs;
+                            let y = Math.floor((n / 4) / cs);
+                            let dCenter = Math.sqrt((x - halfCs) * (x - halfCs) + (y - halfCs) * (y - halfCs));
+                            let fOut = Math.min(1, Math.max(0, (dCenter - halfCs) * 10));
                             let r = pixelData.data[n];
                             let g = pixelData.data[n+1];
                             let b = pixelData.data[n+2];
@@ -231,6 +245,11 @@ export class SharedMaterials {
                             pixelData.data[n] = r1 * v * 5;
                             pixelData.data[n+1] = g1 * v * 5;
                             pixelData.data[n+2] = b1 * v * 5;
+
+                            pixelData.data[n] = pixelData.data[n] * (1 - fOut) + r1 * fOut;
+                            pixelData.data[n+1] = pixelData.data[n+1] * (1 - fOut) + g1 * fOut;
+                            pixelData.data[n+2] = pixelData.data[n+2] * (1 - fOut) + b1 * fOut;
+
                             pixelData.data[n+3] = 255;
                         }
                     }
